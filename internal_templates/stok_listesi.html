@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Stok ve Envanter Yönetimi</h1>
+            <p class="text-slate-500 text-sm">
+                Ürünlerinizi, stok miktarlarınızı ve depo hareketlerini yönetin.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/urun/ekle"
+                class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95 group">
+                <span
+                    class="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
+                <span>Yeni Ürün Ekle</span>
+            </a>
+            <a href="/stok/hareket"
+                class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium py-3 px-6 rounded-xl shadow-sm transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">swap_vert</span>
+                <span>Stok Giriş/Çıkış</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+            class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-blue-500 transition-all">
+            <div
+                class="size-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-[28px]">inventory_2</span>
+            </div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Toplam Ürün</p>
+                <p class="text-2xl font-bold text-slate-900">{{ urunler|length }} Adet</p>
+            </div>
+        </div>
+        <div
+            class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-orange-500 transition-all">
+            <div
+                class="size-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-[28px]">report_problem</span>
+            </div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Kritik Stok</p>
+                <p class="text-2xl font-bold text-slate-900">
+                    {% set k_count = namespace(val=0) %}
+                    {% for u in urunler %}
+                    {% if u.StokMiktari <= (u.KritikStok or 0) %} {% set k_count.val=k_count.val + 1 %} {% endif %} {%
+                        endfor %} {{ k_count.val }} Ürün </p>
+            </div>
+        </div>
+        <div
+            class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-green-500 transition-all">
+            <div
+                class="size-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-[28px]">payments</span>
+            </div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Envanter Değeri (Alış)</p>
+                <p class="text-2xl font-bold text-slate-900">
+                    {% set total_val = namespace(sum=0) %}
+                    {% for u in urunler %}
+                    {% set total_val.sum = total_val.sum + ((u.StokMiktari or 0) * (u.AlisFiyati or 0)) %}
+                    {% endfor %}
+                    {{ '{:,.2f}'.format(total_val.sum) }} ₺
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <form action="/urunler" method="GET" class="relative max-w-md w-full">
+            <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input type="text" name="search" value="{{ search or '' }}" placeholder="Ürün adı veya barkod ile ara..."
+                class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all">
+        </form>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Ürün Adı</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Birim</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-right">Alış / Satış</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-center">Stok Durumu</th>
+                        <th class="px-6 py-4 text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for u in urunler %}
+                    <tr class="group hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-bold text-slate-900 uppercase">{{ u.UrunAdi }}</span>
+                                <span class="text-xs text-slate-500">{{ u.Barkod or 'Barkodsuz' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600">{{ u.Birim }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-slate-500 text-xs text-nowrap">A: {{ '{:,.2f}'.format(u.AlisFiyati or
+                                    0) }} ₺</span>
+                                <span class="font-bold text-slate-900 text-nowrap">S: {{ '{:,.2f}'.format(u.SatisFiyati
+                                    or 0) }} ₺</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-3">
+                                <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                                    {% set perc = namespace(val=100) %}
+                                    {% if u.KritikStok and u.KritikStok > 0 %}
+                                    {% set perc.val = (u.StokMiktari / (u.KritikStok * 3)) * 100 %}
+                                    {% elif u.StokMiktari > 0 %}
+                                    {% set perc.val = 100 %}
+                                    {% else %}
+                                    {% set perc.val = 0 %}
+                                    {% endif %}
+                                    <div class="h-full {% if u.StokMiktari <= (u.KritikStok or 0) %}bg-red-500{% else %}bg-green-500{% endif %}"
+                                        style="width: {{ [perc.val, 100]|min }}%"></div>
+                                </div>
+                                <span
+                                    class="font-bold whitespace-nowrap {% if u.StokMiktari <= (u.KritikStok or 0) %}text-red-600{% else %}text-slate-900{% endif %}">
+                                    {{ u.StokMiktari }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="/urun/{{ u.UrunID }}/duzenle"
+                                    class="size-9 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors"
+                                    title="Düzenle">
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </a>
+                                <form action="/urun/{{ u.UrunID }}/sil" method="POST" class="inline"
+                                    onsubmit="return confirm('Bu ürünü silmek istediğinize emin misiniz?')">
+                                    <button type="submit"
+                                        class="size-9 border border-slate-200 rounded-lg text-red-600 hover:bg-red-50 hover:border-red-200 flex items-center justify-center transition-colors"
+                                        title="Sil">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500 font-medium">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="material-symbols-outlined text-4xl text-slate-300">inventory_2</span>
+                                <span>Henüz ürün eklenmemiş.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

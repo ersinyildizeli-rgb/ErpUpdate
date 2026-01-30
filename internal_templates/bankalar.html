@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex-1 overflow-y-auto p-8">
+    <div class="mx-auto flex max-w-6xl flex-col gap-8">
+        <!-- Page Heading & Main Action -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Bankalarım</h1>
+                <p class="mt-2 text-gray-500 dark:text-gray-400">Şirket banka hesaplarını, bakiyelerini ve hareketlerini
+                    buradan yönetebilirsiniz.</p>
+            </div>
+            <a href="/bankalar/ekle"
+                class="group flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary-hover active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                <span>Banka Hesabı Ekle</span>
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid gap-4 md:grid-cols-3">
+            <div
+                class="flex flex-col gap-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] p-6 shadow-sm">
+                <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <span class="material-symbols-outlined text-[20px]">account_balance</span>
+                    <span class="text-sm font-medium">Toplam Varlık</span>
+                </div>
+                <div class="flex items-end justify-between">
+                    <div class="flex flex-col">
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_assets|currency }} TL</p>
+                        <p class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">info</span>
+                            Güncel kurlarla hesaplanan yaklaşık değer
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="flex flex-col gap-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] p-6 shadow-sm">
+                <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <span class="material-symbols-outlined text-[20px]">currency_lira</span>
+                    <span class="text-sm font-medium">TL Bakiyesi</span>
+                </div>
+                <div class="flex items-end justify-between">
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ tl_balance|currency }} TL</p>
+                </div>
+            </div>
+            <div
+                class="flex flex-col gap-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] p-6 shadow-sm">
+                <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <span class="material-symbols-outlined text-[20px]">currency_exchange</span>
+                    <span class="text-sm font-medium">Döviz Varlığı</span>
+                </div>
+                <div class="flex flex-col justify-end min-h-[32px] gap-1">
+                    {% if fx_balances %}
+                    {% for fx in fx_balances %}
+                    <p class="text-xl font-bold text-gray-900 dark:text-white flex justify-between gap-4">
+                        <span>{{ fx.code }} {{ '{:,.2f}'.format(fx.amount) }}</span>
+                        {% if rates and rates.get(fx.code) %}
+                        <span class="text-sm font-normal text-gray-400">≈ ₺ {{ '{:,.2f}'.format(fx.amount *
+                            rates[fx.code]) }}</span>
+                        {% endif %}
+                    </p>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">$ 0.00</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Data Table -->
+        <div
+            class="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] shadow-sm overflow-hidden">
+            <!-- Table Toolbar -->
+            <div
+                class="flex flex-wrap items-center justify-between gap-4 p-5 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Hesap Listesi</h2>
+                <div class="flex items-center gap-2">
+                    <div class="relative group mr-2">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                        <input id="bankSearch" type="text"
+                            class="w-64 pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:border-primary focus:ring-0 shadow-sm transition-all text-slate-900 dark:text-white"
+                            placeholder="Hesaplarda ara...">
+                    </div>
+                    <button
+                        class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filtrele
+                    </button>
+                    <button id="bankExportBtn"
+                        class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <span class="material-symbols-outlined text-[18px]">download</span>
+                        Dışa Aktar
+                    </button>
+                </div>
+            </div>
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[800px] text-left text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+                        <tr>
+                            <th class="px-6 py-4 font-medium">Banka Adı</th>
+                            <th class="px-6 py-4 font-medium">Hesap Bilgileri</th>
+                            <th class="px-6 py-4 font-medium">Şube</th>
+                            <th class="px-6 py-4 font-medium">Hesap Tipi</th>
+                            <th class="px-6 py-4 font-medium text-right">Bakiye</th>
+                            <th class="px-6 py-4 font-medium text-center">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for b in banks %}
+                        <tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-gray-200 dark:border-gray-700">
+                                        <span class="material-symbols-outlined">account_balance</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 dark:text-white">{{ b.BankaAdi }}</p>
+                                        <p class="text-xs text-gray-500">{{ b.IBAN or '-' }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="text-gray-900 dark:text-white font-medium">{{ b.HesapAdi }}</span>
+                                    <span class="text-xs text-gray-500">{{ b.HesapNo or '-' }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 dark:text-gray-300">{{ b.Sube or '-' }}</td>
+                            <td class="px-6 py-4">
+                                <span
+                                    class="inline-flex items-center rounded-md {% if 'USD' in (b.HesapTipi or '') %}bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 ring-purple-700/10 dark:ring-purple-400/30{% elif 'Kredi' in (b.HesapTipi or '') %}bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 ring-orange-700/10 dark:ring-orange-400/30{% else %}bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ring-blue-700/10 dark:ring-blue-400/30{% endif %} px-2 py-1 text-xs font-medium ring-1 ring-inset">
+                                    {{ b.HesapTipi or 'Vadesiz TL' }}
+                                </span>
+                            </td>
+                            <td
+                                class="px-6 py-4 text-right font-bold align-top {% if b.Bakiye < 0 %}text-red-600 dark:text-red-400{% else %}text-gray-900 dark:text-white{% endif %}">
+                                <div class="flex flex-col items-end gap-1">
+                                    <span>
+                                        {{ b.ParaBirimi }} {{ b.Bakiye|currency }}
+                                    </span>
+                                    {% if b.pending_checks and b.pending_checks_total %}
+                                    <span
+                                        class="inline-flex items-center gap-1 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-[11px] font-semibold px-2 py-0.5 border border-purple-100 dark:border-purple-700">
+                                        <span class="material-symbols-outlined text-[14px]">checkbook</span>
+                                        Bankadaki çekler: {{ b.pending_checks|length }} adet,
+                                        {{ b.pending_checks_total|currency }} TL
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-3">
+                                    <button type="button"
+                                        class="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+                                        onclick="document.getElementById('bankTransactionModal-{{ b.BankaID }}').classList.remove('hidden')">
+                                        <span class="material-symbols-outlined text-[16px]">payments</span>
+                                        İşlem Yap
+                                    </button>
+                                    <button type="button"
+                                        class="flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+                                        onclick="document.getElementById('bankMovementsModal-{{ b.BankaID }}').classList.remove('hidden')">
+                                        <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+                                        Hareketler
+                                    </button>
+                                    <div
+                                        class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-3">
+                                        <a href="/bankalar/{{ b.BankaID }}/edit"
+                                            class="p-1 text-gray-400 hover:text-primary transition-colors"
+                                            title="Düzenle">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </a>
+                                        <form action="/bankalar/{{ b.BankaID }}/delete" method="POST" class="inline"
+                                            onsubmit="return confirm('Bu banka hesabını silmek istediğinize emin misiniz?')">
+                                            <button type="submit"
+                                                class="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                                title="Sil">
+                                                <span class="material-symbols-outlined text-[20px]">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-row">
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+                                <div class="flex flex-col items-center gap-2">
+                                    <span
+                                        class="material-symbols-outlined text-4xl text-slate-300">account_balance</span>
+                                    <p>Henüz banka hesabı eklenmemiş.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination Placeholder -->
+            <div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Toplam <span class="font-medium text-gray-900 dark:text-white">{{ banks|length }}</span> hesaptan
+                    <span class="font-medium text-gray-900 dark:text-white">1-{{ banks|length }}</span> arası
+                    gösteriliyor
+                </p>
+                <div class="flex gap-2">
+                    <button
+                        class="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        disabled>Önceki</button>
+                    <button
+                        class="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        disabled>Sonraki</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for b in banks %}
+<div aria-labelledby="modal-title-transaction-{{ b.BankaID }}" aria-modal="true" class="hidden relative z-50"
+    id="bankTransactionModal-{{ b.BankaID }}" role="dialog">
+    <div
+        class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto overflow-x-hidden p-4 sm:p-6 bg-black/40 backdrop-blur-sm transition-all">
+    </div>
+    <div
+        class="fixed inset-0 z-50 w-screen overflow-y-auto overflow-x-hidden p-4 sm:p-6 flex items-center justify-center">
+        <div
+            class="relative w-full max-w-2xl transform rounded-xl bg-white dark:bg-[#1a192b] shadow-2xl transition-all flex flex-col max-h-[90vh]">
+            <form action="/bankalar/{{ b.BankaID }}/islem" method="POST" class="flex flex-col h-full">
+                <div class="flex items-start justify-between border-b border-gray-100 dark:border-gray-800 p-6">
+                    <div class="flex flex-col gap-1">
+                        <h2 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl"
+                            id="modal-title-transaction-{{ b.BankaID }}">
+                            Banka İşlemi Ekle
+                        </h2>
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                            <span>{{ b.BankaAdi }} - {{ b.IBAN or b.HesapAdi }}</span>
+                        </div>
+                    </div>
+                    <button type="button"
+                        class="group flex items-center justify-center rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                        onclick="document.getElementById('bankTransactionModal-{{ b.BankaID }}').classList.add('hidden')">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div
+                    class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                    <div class="flex flex-col gap-6">
+                        <div class="flex flex-col gap-2">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">İşlem Tipi</span>
+                            <div class="flex w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
+                                <label class="flex-1 cursor-pointer">
+                                    <input class="peer sr-only" name="transactionType" type="radio" value="deposit"
+                                        checked>
+                                    <div
+                                        class="flex items-center justify-center rounded-md py-2 px-3 text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-white">
+                                        <span class="material-symbols-outlined mr-2 text-[18px]">arrow_downward</span>
+                                        Para Yatırma
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input class="peer sr-only" name="transactionType" type="radio" value="withdraw">
+                                    <div
+                                        class="flex items-center justify-center rounded-md py-2 px-3 text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-white">
+                                        <span class="material-symbols-outlined mr-2 text-[18px]">arrow_upward</span>
+                                        Para Çekme
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input class="peer sr-only" name="transactionType" type="radio" value="transfer">
+                                    <div
+                                        class="flex items-center justify-center rounded-md py-2 px-3 text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-white">
+                                        <span class="material-symbols-outlined mr-2 text-[18px]">sync_alt</span>
+                                        Havale/EFT
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                    for="amount-{{ b.BankaID }}">Tutar</label>
+                                <div class="relative rounded-lg shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">{{ b.ParaBirimi }}</span>
+                                    </div>
+                                    <input
+                                        class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 pl-10 py-3 text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm"
+                                        id="amount-{{ b.BankaID }}" name="amount" placeholder="0.00" type="number"
+                                        step="0.01">
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                    for="date-{{ b.BankaID }}">İşlem Tarihi</label>
+                                <div class="relative">
+                                    <input
+                                        class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3 px-4 text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm"
+                                        id="date-{{ b.BankaID }}" name="date" type="date" value="{{ today_date }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="material-symbols-outlined text-primary text-sm">info</span>
+                                <span class="text-xs font-semibold text-primary uppercase tracking-wider">Transfer
+                                    Detayları</span>
+                            </div>
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                for="target-account-{{ b.BankaID }}">Hedef Banka Hesabı</label>
+                            <select
+                                class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-3 px-4 text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm"
+                                id="target-account-{{ b.BankaID }}" name="target_account">
+                                <option value="">Alıcı hesap seçiniz...</option>
+                                {% for target in banks %}
+                                {% if target.BankaID != b.BankaID %}
+                                <option value="{{ target.BankaID }}">{{ target.BankaAdi }} - {{ target.HesapAdi }} ({{
+                                    target.ParaBirimi }})</option>
+                                {% endif %}
+                                {% endfor %}
+                                <option value="Diğer">Diğer (Manuel IBAN Girişi)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                                for="description-{{ b.BankaID }}">
+                                Açıklama <span class="text-gray-400 font-normal">(Opsiyonel)</span>
+                            </label>
+                            <textarea
+                                class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3 px-4 text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary sm:text-sm resize-none"
+                                id="description-{{ b.BankaID }}" name="description"
+                                placeholder="İşlem hakkında not ekleyin..." rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 p-6 bg-gray-50/50 dark:bg-gray-800/30 rounded-b-xl">
+                    <button type="button"
+                        class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                        onclick="document.getElementById('bankTransactionModal-{{ b.BankaID }}').classList.add('hidden')">
+                        İptal
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 gap-2">
+                        <span class="material-symbols-outlined text-[18px]">save</span>
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div aria-labelledby="modal-title-movements-{{ b.BankaID }}" aria-modal="true" class="hidden relative z-50"
+    id="bankMovementsModal-{{ b.BankaID }}" role="dialog">
+    <div
+        class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto overflow-x-hidden p-4 sm:p-6 bg-black/40 backdrop-blur-sm transition-all">
+    </div>
+    <div
+        class="fixed inset-0 z-50 w-screen overflow-y-auto overflow-x-hidden p-4 sm:p-6 flex items-center justify-center">
+        <div
+            class="relative w-full max-w-3xl transform rounded-xl bg-white dark:bg-[#1a192b] shadow-2xl transition-all flex flex-col max-h-[90vh]">
+            <div class="flex items-start justify-between border-b border-gray-100 dark:border-gray-800 p-6">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl"
+                        id="modal-title-movements-{{ b.BankaID }}">
+                        Hesap Hareketleri
+                    </h2>
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                        <span>{{ b.BankaAdi }} - {{ b.IBAN or b.HesapAdi }}</span>
+                    </div>
+                </div>
+                <button type="button"
+                    class="group flex items-center justify-center rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                    onclick="document.getElementById('bankMovementsModal-{{ b.BankaID }}').classList.add('hidden')">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                {% if b.movements %}
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-800/60 text-gray-500 dark:text-gray-400">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium">Tarih</th>
+                            <th class="px-4 py-2 text-left font-medium">Açıklama</th>
+                            <th class="px-4 py-2 text-left font-medium">Kategori</th>
+                            <th class="px-4 py-2 text-center font-medium">Tür</th>
+                            <th class="px-4 py-2 text-right font-medium">Tutar</th>
+                            <th class="px-4 py-2 text-center font-medium">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for e in b.movements %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                            <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                {{ e.Tarih.strftime('%d.%m.%Y') if e.Tarih else '-' }}
+                            </td>
+                            <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                {{ e.Aciklama or '-' }}
+                            </td>
+                            <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                {{ e.Kategori or '-' }}
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                {% if (e.IslemTuru or '').lower() == 'gelir' %}
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[11px] font-semibold px-2 py-0.5">
+                                    <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+                                    Giriş
+                                </span>
+                                {% elif (e.IslemTuru or '').lower() == 'gider' %}
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-[11px] font-semibold px-2 py-0.5">
+                                    <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                                    Çıkış
+                                </span>
+                                {% else %}
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold px-2 py-0.5">
+                                    Diğer
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td
+                                class="px-4 py-2 text-right font-semibold {% if (e.IslemTuru or '').lower() == 'gider' %}text-red-600 dark:text-red-400{% else %}text-gray-900 dark:text-white{% endif %}">
+                                {{ e.Tutar|currency }} TL
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="/finans/{{ e.FinansID }}/edit?next=/bankalar"
+                                        class="text-slate-400 hover:text-primary transition-colors" title="Düzenle">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                    </a>
+                                    <form action="/finans/{{ e.FinansID }}/delete?next=/bankalar" method="POST"
+                                        class="inline"
+                                        onsubmit="return confirm('Bu hareketi silmek istediğinize emin misiniz?')">
+                                        <button type="submit"
+                                            class="text-slate-400 hover:text-red-500 transition-colors" title="Sil">
+                                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="flex flex-col items-center justify-center gap-3 py-8 text-gray-500 dark:text-gray-400">
+                    <span
+                        class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600">receipt_long</span>
+                    <p>Bu banka hesabı için henüz hareket bulunmuyor.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div
+                class="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-b-xl">
+                <button type="button"
+                    class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    onclick="document.getElementById('bankMovementsModal-{{ b.BankaID }}').classList.add('hidden')">
+                    Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    // Filtreleme
+    const bankSearch = document.getElementById('bankSearch');
+    bankSearch.addEventListener('input', function () {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr:not(.empty-row)');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+
+    // Dışa Aktar
+    document.getElementById('bankExportBtn').addEventListener('click', function () {
+        const table = document.querySelector('table');
+        const rows = Array.from(table.querySelectorAll('thead tr, tbody tr:not(.empty-row)'));
+        const csvContent = rows.map(row => {
+            const cells = Array.from(row.querySelectorAll('th, td'));
+            const rowData = cells.slice(0, -1).map(cell => {
+                let text = cell.innerText.replace(/[\n\r]+/g, ' ').trim();
+                text = text.replace(/"/g, '""');
+                return `"${text}"`;
+            });
+            return rowData.join(',');
+        }).join('\n');
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'banka_hesaplari.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+</script>
+{% endblock %}

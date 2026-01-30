@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto pb-20" x-data="teklifForm()">
+    <form action="/teklif/ekle" method="POST" class="flex flex-col gap-8">
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Yeni Teklif Hazırla</h1>
+            <div class="flex gap-3">
+                <a href="/teklifler"
+                    class="px-6 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-all">İptal</a>
+                <button type="submit"
+                    class="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all active:scale-95">Teklifi
+                    Kaydet</button>
+            </div>
+        </div>
+
+        <!-- Upper Info -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Teklif Türü</label>
+                <select name="teklif_turu"
+                    class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary focus:border-primary transition-all">
+                    <option value="Satış">Satış Teklifi</option>
+                    <option value="Alış">Alış Teklifi</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Teklif No</label>
+                <input type="text" name="teklif_no" value="{{ current_no }}" required
+                    class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary focus:border-primary">
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tarih</label>
+                <input type="date" name="tarih" value="{{ now_date_str }}" required
+                    class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary focus:border-primary">
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Geçerlilik</label>
+                <input type="date" name="gecerlilik_tarihi" value="{{ gecerlilik_default }}"
+                    class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary focus:border-primary">
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cari Hesap</label>
+                <select name="cari_id" required
+                    class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary focus:border-primary">
+                    <option value="">Seçiniz...</option>
+                    {% for c in cariler %}
+                    <option value="{{ c.CariID }}">{{ c.Unvan }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden text-sm">
+            <div class="bg-slate-50 border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+                <h3 class="font-bold text-slate-700 uppercase tracking-tighter">Teklif Kalemleri</h3>
+                <button type="button" @click="addRow()"
+                    class="flex items-center gap-2 text-primary hover:text-blue-700 font-bold bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Satır Ekle
+                </button>
+            </div>
+
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 font-bold text-[10px] uppercase border-b border-slate-100">
+                        <th class="px-8 py-4 text-left">Ürün / Hizmet</th>
+                        <th class="px-4 py-4 text-left w-48">Seri No (Opsiyonel)</th>
+                        <th class="px-4 py-4 text-right w-32">Miktar</th>
+                        <th class="px-4 py-4 text-right w-40">Birim Fiyat (₺)</th>
+                        <th class="px-4 py-4 text-center w-24">KDV (%)</th>
+                        <th class="px-4 py-4 text-right w-40">Toplam (Net)</th>
+                        <th class="px-8 py-4 text-center w-20"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <template x-for="(row, index) in rows" :key="index">
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-8 py-4">
+                                <select :name="'urun_id[]'" required x-model="row.urun_id" @change="updatePrice(index)"
+                                    class="w-full h-11 px-3 rounded-lg border-slate-200 text-xs font-bold focus:ring-primary focus:border-primary">
+                                    <option value="">Ürün Seçin...</option>
+                                    {% for u in urunler %}
+                                    <option value="{{ u.UrunID }}" data-price="{{ u.SatisFiyati or 0 }}"
+                                        data-kdv="{{ u.KDV or 20 }}">{{ u.UrunAdi }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="px-4 py-4">
+                                <input type="text" :name="'seri_no[]'" x-model="row.seri_no" placeholder="S/N..."
+                                    class="w-full h-11 px-3 rounded-lg border-slate-200 text-xs font-bold focus:ring-primary focus:border-primary">
+                            </td>
+                            <td class="px-4 py-4">
+                                <input type="number" step="0.01" :name="'miktar[]'" x-model="row.miktar" required
+                                    @input="calculateTotals()"
+                                    class="w-full h-11 px-3 text-right rounded-lg border-slate-200 font-bold focus:ring-primary focus:border-primary">
+                            </td>
+                            <td class="px-4 py-4">
+                                <input type="number" step="0.01" :name="'birim_fiyat[]'" x-model="row.birim_fiyat"
+                                    required @input="calculateTotals()"
+                                    class="w-full h-11 px-3 text-right rounded-lg border-slate-200 font-bold focus:ring-primary focus:border-primary">
+                            </td>
+                            <td class="px-4 py-4">
+                                <select :name="'kdv[]'" x-model="row.kdv" @change="calculateTotals()"
+                                    class="w-full h-11 px-3 rounded-lg border-slate-200 font-bold text-center focus:ring-primary focus:border-primary">
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-4 text-right font-black text-slate-900 tabular-nums">
+                                <span x-text="formatCurrency(row.miktar * row.birim_fiyat)"></span> ₺
+                            </td>
+                            <td class="px-8 py-4 text-center">
+                                <button type="button" @click="removeRow(index)"
+                                    class="text-rose-500 hover:text-rose-700 transition-colors p-1"
+                                    x-show="rows.length > 1">
+                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary and Bottom -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-8">
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm h-full">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Teklif
+                        Notları (Önemli)</label>
+                    <textarea name="aciklama" rows="5"
+                        placeholder="Teslim süresi, ödeme şartları ve banka bilgileri gibi notlar..."
+                        class="w-full p-4 rounded-xl border-slate-200 font-medium focus:ring-primary focus:border-primary"></textarea>
+                </div>
+            </div>
+            <div class="lg:col-span-4">
+                <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-xl shadow-slate-900/20 flex flex-col gap-6">
+                    <div
+                        class="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                        <span>Teklif Ara Toplam</span>
+                        <span class="text-white tabular-nums" x-text="'₺' + formatCurrency(totals.subtotal)"></span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                        <span>Toplam KDV</span>
+                        <span class="text-white tabular-nums" x-text="'₺' + formatCurrency(totals.tax)"></span>
+                    </div>
+                    <div class="h-px bg-white/10"></div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-black text-sm uppercase text-slate-200">TEKLİF TOPLAMI</span>
+                        <span class="text-2xl font-black tabular-nums text-emerald-400"
+                            x-text="'₺' + formatCurrency(totals.grand)"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function teklifForm() {
+        return {
+            rows: [
+                { urun_id: '', miktar: 1, birim_fiyat: 0, kdv: 20, seri_no: '' }
+            ],
+            totals: {
+                subtotal: 0,
+                tax: 0,
+                grand: 0
+            },
+            addRow() {
+                this.rows.push({ urun_id: '', miktar: 1, birim_fiyat: 0, kdv: 20, seri_no: '' });
+            },
+            removeRow(index) {
+                this.rows.splice(index, 1);
+                this.calculateTotals();
+            },
+            updatePrice(index) {
+                const select = document.querySelectorAll('select[name="urun_id[]"]')[index];
+                const option = select.selectedOptions[0];
+                if (option && option.value) {
+                    this.rows[index].birim_fiyat = parseFloat(option.dataset.price);
+                    this.rows[index].kdv = parseInt(option.dataset.kdv);
+                }
+                this.calculateTotals();
+            },
+            calculateTotals() {
+                let sub = 0;
+                let tax = 0;
+                this.rows.forEach(row => {
+                    const rowSub = (parseFloat(row.miktar) || 0) * (parseFloat(row.birim_fiyat) || 0);
+                    const rowTax = rowSub * (parseInt(row.kdv) / 100);
+                    sub += rowSub;
+                    tax += rowTax;
+                });
+                this.totals.subtotal = sub;
+                this.totals.tax = tax;
+                this.totals.grand = sub + tax;
+            },
+            formatCurrency(val) {
+                return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0);
+            }
+        }
+    }
+</script>
+{% endblock %}

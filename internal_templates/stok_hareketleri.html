@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Stok Hareket Geçmişi</h1>
+            <p class="text-slate-500 text-sm">Tüm depo giriş ve çıkış işlemlerinin detaylı listesi.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/stok/hareket"
+                class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                <span>Yeni Stok Hareketi</span>
+            </a>
+            <a href="/urunler"
+                class="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium py-3 px-6 rounded-xl shadow-sm transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                <span>Ürün Listesi</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Tarih</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Ürün</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">İşlem</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-right">Miktar</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-right">Birim Fiyat</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-right">Toplam</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Cari / Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for h in hareketler %}
+                    <tr class="group hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 text-slate-500 whitespace-nowrap">
+                            {{ h.Tarih.strftime('%d.%m.%Y %H:%M') if h.Tarih else '-' }}
+                        </td>
+                        <td class="px-6 py-4 font-bold text-slate-900 uppercase">
+                            {% if h.Urun %}
+                            {{ h.Urun.UrunAdi }}
+                            {% if h.SeriNo %}
+                            <div class="text-[10px] text-primary font-black mt-0.5">S/N: {{ h.SeriNo }}</div>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-rose-400 italic">Bilinmeyen Ürün (Silinmiş)</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black uppercase
+                                {% if h.HareketTuru == 'Giriş' %}
+                                bg-emerald-100 text-emerald-700
+                                {% else %}
+                                bg-rose-100 text-rose-700
+                                {% endif %}">
+                                {{ h.HareketTuru }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-black tabular-nums">
+                            {{ h.Miktar }} {% if h.Urun %}{{ h.Urun.Birim }}{% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right text-slate-500 tabular-nums">
+                            {{ '{:,.2f}'.format(h.BirimFiyat or 0) }} ₺
+                        </td>
+                        <td class="px-6 py-4 text-right font-black text-slate-900 tabular-nums">
+                            {{ '{:,.2f}'.format((h.Miktar or 0) * (h.BirimFiyat or 0)) }} ₺
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-0.5">
+                                {% if h.Cari %}
+                                <span class="text-xs font-bold text-primary">{{ h.Cari.Unvan }}</span>
+                                {% endif %}
+                                <span class="text-xs text-slate-500 italic">{{ h.Aciklama or '-' }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                            <p>Henüz stok hareketi kaydedilmemiş.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

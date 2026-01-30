@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html class="light" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Şirket Ayarları (Mola ve Mesai Çarpanı ile) - ERP Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4f46e5", // Indigo-600 for a more modern ERP look
+                        "primary-dark": "#4338ca",
+                        "primary-light": "#e0e7ff",
+                        "sidebar-bg": "#0f172a", // Slate-900
+                        "sidebar-hover": "#1e293b",
+                        "background-light": "#f3f4f6", // Gray-100
+                        "background-dark": "#0B1120",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1e293b",
+                        "text-main": "#111827", // Gray-900
+                        "text-secondary": "#6b7280", // Gray-500
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem" },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }.form-input:focus, .form-textarea:focus, .form-select:focus {
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            border-color: #4f46e5;
+        }
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.5);
+            cursor: pointer;
+        }
+        .dark input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+        }input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden antialiased">
+<div class="flex h-screen w-full">
+<aside class="flex w-72 flex-col bg-sidebar-bg border-r border-gray-800 h-full shrink-0 transition-all duration-300">
+<div class="flex h-20 items-center px-6 gap-3 border-b border-gray-800/50">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined">dataset</span>
+</div>
+<div>
+<h1 class="text-white text-lg font-bold tracking-tight leading-none">Nexus ERP</h1>
+<p class="text-xs text-gray-500 font-medium mt-1">Kurumsal Yönetim</p>
+</div>
+</div>
+<div class="flex flex-col gap-1.5 p-4 overflow-y-auto flex-1">
+<p class="px-4 pb-2 pt-2 text-[11px] font-bold text-gray-500 uppercase tracking-widest">Modüller</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-sidebar-hover hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Genel Bakış</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-sidebar-hover hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-blue-400 transition-colors">groups</span>
+<span class="text-sm font-medium">Personel Yönetimi</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-sidebar-hover hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-green-400 transition-colors">account_balance_wallet</span>
+<span class="text-sm font-medium">Finans &amp; Muhasebe</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-sidebar-hover hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-orange-400 transition-colors">timer</span>
+<span class="text-sm font-medium">Puantaj Takibi</span>
+</a>
+<div class="my-2 border-t border-gray-800/50 mx-4"></div>
+<p class="px-4 pb-2 pt-2 text-[11px] font-bold text-gray-500 uppercase tracking-widest">Yapılandırma</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white shadow-md shadow-primary/20 relative overflow-hidden" href="#">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent to-white/10"></div>
+<span class="material-symbols-outlined filled">domain</span>
+<span class="text-sm font-medium relative z-10">Şirket Ayarları</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-sidebar-hover hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-purple-400 transition-colors">shield_person</span>
+<span class="text-sm font-medium">Yetkilendirme</span>
+</a>
+</div>
+<div class="p-4 border-t border-gray-800/50">
+<button class="flex items-center gap-3 w-full rounded-xl bg-sidebar-hover p-3 hover:bg-gray-800 transition-colors group">
+<div class="h-10 w-10 rounded-full bg-cover bg-center ring-2 ring-gray-700 group-hover:ring-primary transition-all" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBDJUUHfrjv2oh1plDHnSO8sBsoGCCi8Od4QYSsJ3heepcruwToqBWr1YGFsc4ypxsWrYfksJPPiY3zNekXsS1b73yfe7dcVVMKZDQyjX5dv-vsInUBvhplZzNvo7zfDWPaKwo7C_R2vt16yF857BNFIetNNUFaTWD-GWY-uzdoHwcaeT25E4hQIuKvmUXLeTkMIW3FN2txcG7aIxERmoyI3cwVYmCXSqJmNZAZUSs_zNoGy7Vw2yhYKgwqQ-atnwZtr65c1Y_9xc8');"></div>
+<div class="flex flex-col items-start">
+<span class="text-sm font-semibold text-white">Ali Yılmaz</span>
+<span class="text-xs text-gray-400">Sistem Yöneticisi</span>
+</div>
+<span class="material-symbols-outlined text-gray-500 ml-auto text-[20px]">expand_more</span>
+</button>
+</div>
+</aside>
+<main class="flex flex-1 flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<header class="flex h-20 w-full items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-card-dark px-8 shrink-0 z-20">
+<div class="flex flex-col">
+<nav class="flex items-center text-xs font-medium text-gray-500 mb-1">
+<a class="hover:text-primary transition-colors" href="#">Ana Menü</a>
+<span class="material-symbols-outlined mx-1 text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Şirket Ayarları</span>
+</nav>
+<h2 class="text-xl font-bold text-text-main dark:text-white tracking-tight">Şirket Yapılandırması</h2>
+</div>
+<div class="flex items-center gap-5">
+<div class="relative hidden lg:block group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="h-11 w-72 rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200" placeholder="Ayar veya modül ara..." type="text"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+<kbd class="hidden sm:inline-flex items-center rounded border border-gray-200 px-1 font-sans text-xs text-gray-400 dark:border-gray-700">⌘K</kbd>
+</div>
+</div>
+<div class="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+<button class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-card-dark animate-pulse"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-6 lg:p-10 no-scrollbar">
+<div class="mx-auto max-w-7xl space-y-8 pb-10">
+<div class="rounded-xl border border-blue-100 bg-blue-50/50 p-4 flex items-start gap-4 dark:bg-blue-900/10 dark:border-blue-800">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div class="flex-1">
+<h3 class="text-sm font-semibold text-blue-900 dark:text-blue-200">Veri Senkronizasyonu Aktif</h3>
+<p class="text-sm text-blue-700 dark:text-blue-300 mt-1">Bu sayfada yaptığınız değişiklikler React Context API üzerinden tüm sisteme (Personel, Finans, Puantaj) anlık olarak yansıtılacaktır.</p>
+</div>
+<button class="text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<section class="xl:col-span-2 flex flex-col h-full bg-white dark:bg-card-dark rounded-xl shadow-card border border-gray-200/60 dark:border-gray-700">
+<div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-indigo-50 text-primary rounded-lg dark:bg-indigo-900/20">
+<span class="material-symbols-outlined">business</span>
+</div>
+<div>
+<h3 class="text-base font-semibold text-text-main dark:text-white">Şirket Bilgileri</h3>
+<p class="text-xs text-text-secondary">Resmi fatura ve iletişim bilgileri</p>
+</div>
+</div>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 flex-1">
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Şirket Ünvanı</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">badge</span>
+<input class="form-input block w-full rounded-lg border-gray-300 bg-white pl-10 text-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="text" value="Acme Technology Anonim Şirketi"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">E-posta Adresi</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">mail</span>
+<input class="form-input block w-full rounded-lg border-gray-300 bg-white pl-10 text-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="email" value="info@acmetech.com"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Telefon Numarası</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">call</span>
+<input class="form-input block w-full rounded-lg border-gray-300 bg-white pl-10 text-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="tel" value="+90 (212) 555 0123"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Vergi Numarası</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">numbers</span>
+<input class="form-input block w-full rounded-lg border-gray-300 bg-white pl-10 text-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="10 Haneli VKN" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Vergi Dairesi</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">account_balance</span>
+<input class="form-input block w-full rounded-lg border-gray-300 bg-white pl-10 text-sm focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Bağlı bulunulan daire" type="text"/>
+</div>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Açık Adres</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-3 text-gray-400 text-[20px]">location_on</span>
+<textarea class="form-textarea block w-full rounded-lg border-gray-300 bg-white pl-10 text-sm focus:border-primary focus:ring-primary resize-none dark:bg-gray-800 dark:border-gray-600 dark:text-white" rows="3">Maslak Mah. Büyükdere Cad. No:123, Plaza 34, Kat: 5, Daire: 12
+34398 Sarıyer/İstanbul</textarea>
+</div>
+</div>
+</div>
+<div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex justify-end dark:bg-gray-800/50 dark:border-gray-700">
+<button class="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white shadow hover:bg-primary-dark focus:ring-4 focus:ring-primary/20 transition-all">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                                Değişiklikleri Kaydet
+                            </button>
+</div>
+</section>
+<section class="flex flex-col h-full bg-white dark:bg-card-dark rounded-xl shadow-card border border-gray-200/60 dark:border-gray-700">
+<div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+<div class="p-2 bg-pink-50 text-pink-600 rounded-lg dark:bg-pink-900/20">
+<span class="material-symbols-outlined">wallpaper</span>
+</div>
+<div>
+<h3 class="text-base font-semibold text-text-main dark:text-white">Logo Yönetimi</h3>
+<p class="text-xs text-text-secondary">Marka kimliği</p>
+</div>
+</div>
+<div class="p-6 flex flex-col items-center justify-center flex-1">
+<div class="w-full mb-6 flex flex-col items-center">
+<div class="relative group h-40 w-40 mb-4">
+<div class="h-full w-full rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100 relative dark:bg-gray-800 dark:border-gray-700">
+<div class="absolute inset-0 bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFzQOvc5UYBQ31-MSp5nXCouRK7pGSXtyeWPnBzNVmwYuL_5WoE73ItnfWNhTYAxV7qbNiuV2TZn687DkbRIGlUSFDfJUiH8X-jFtCuM_02xKPdbgWnAWptaQkxsYMoOdWAVZM4lL4kG0Vn76nnYOffZ3zIrRrMIjTJVeue1Q7mpQ5_t4rKwGOcvZ9hbugjvfLlT5ds__I1Jrx6s9Fj6TaH0D8Kl-aj81oCiFgUi5zMQMTwGHS6lL3MAeCeAW1A_gvDrVOlW9VN_w');"></div>
+</div>
+<button class="absolute bottom-0 right-0 h-10 w-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg hover:bg-primary-dark transition-transform hover:scale-105" title="Yeni logo seç">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<h4 class="text-sm font-medium text-gray-900 dark:text-white">Mevcut Logo</h4>
+<p class="text-xs text-gray-500 mt-1">PNG, JPG • Max 2MB</p>
+</div>
+<div class="w-full">
+<label class="flex justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-primary focus:outline-none dark:bg-gray-800 dark:border-gray-600 dark:hover:border-primary group">
+<span class="flex items-center space-x-2">
+<span class="p-2 rounded-full bg-gray-100 group-hover:bg-primary/10 transition-colors dark:bg-gray-700">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-primary dark:text-gray-400">cloud_upload</span>
+</span>
+<span class="font-medium text-gray-600 group-hover:text-primary dark:text-gray-300">
+                                            Dosya seç veya sürükle
+                                        </span>
+</span>
+<input class="hidden" name="file_upload" type="file"/>
+</label>
+</div>
+</div>
+<div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex justify-end dark:bg-gray-800/50 dark:border-gray-700">
+<button class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+<span class="material-symbols-outlined text-[18px]">upload</span>
+                                Yükle
+                            </button>
+</div>
+</section>
+<section class="flex flex-col h-full bg-white dark:bg-card-dark rounded-xl shadow-card border border-gray-200/60 dark:border-gray-700">
+<div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+<div class="p-2 bg-green-50 text-green-600 rounded-lg dark:bg-green-900/20">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<h3 class="text-base font-semibold text-text-main dark:text-white">Finansal Ayarlar</h3>
+<p class="text-xs text-text-secondary">Para birimi, katsayılar ve saatler</p>
+</div>
+</div>
+<div class="p-6 space-y-6 flex-1">
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Para Birimi</label>
+<div class="grid grid-cols-3 gap-2">
+<label class="cursor-pointer">
+<input checked="" class="peer sr-only" name="currency" type="radio"/>
+<div class="rounded-lg border border-gray-200 p-3 text-center hover:bg-gray-50 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all dark:border-gray-700 dark:hover:bg-gray-800">
+<span class="block text-lg font-bold">₺</span>
+<span class="block text-xs font-medium">TRY</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="currency" type="radio"/>
+<div class="rounded-lg border border-gray-200 p-3 text-center hover:bg-gray-50 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all dark:border-gray-700 dark:hover:bg-gray-800">
+<span class="block text-lg font-bold">$</span>
+<span class="block text-xs font-medium">USD</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="currency" type="radio"/>
+<div class="rounded-lg border border-gray-200 p-3 text-center hover:bg-gray-50 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all dark:border-gray-700 dark:hover:bg-gray-800">
+<span class="block text-lg font-bold">€</span>
+<span class="block text-xs font-medium">EUR</span>
+</div>
+</label>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Varsayılan Mesai Katsayısı</label>
+<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-400">Tüm personel</span>
+</div>
+<div class="relative flex items-center">
+<button class="absolute left-1 p-1 text-gray-400 hover:text-primary hover:bg-gray-100 rounded transition-colors dark:hover:bg-gray-700" type="button">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<input class="block w-full text-center rounded-lg border-gray-300 bg-white p-2.5 text-sm font-bold text-gray-900 focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" step="0.1" type="number" value="1.5"/>
+<button class="absolute right-1 p-1 text-gray-400 hover:text-primary hover:bg-gray-100 rounded transition-colors dark:hover:bg-gray-700" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<p class="text-xs text-gray-500 mt-2">Bu oran, normal saatlik ücret ile çarpılarak fazla mesai ücretini belirler.</p>
+</div>
+<div class="pt-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex items-center justify-between mb-3">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Haftalık Çalışma Programı</label>
+</div>
+<div class="flex items-center gap-2 mb-2 px-1">
+<span class="w-20 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Gün</span>
+<span class="flex-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider text-center">Çalışma Saatleri</span>
+<span class="w-14 text-[10px] font-semibold text-gray-400 uppercase tracking-wider text-center" title="Mola Süresi (dk)">Mola</span>
+<span class="w-14 text-[10px] font-semibold text-gray-400 uppercase tracking-wider text-center" title="Mesai Çarpanı">Çarpan</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-2">
+<span class="w-20 text-xs font-medium text-gray-600 dark:text-gray-400">Pazartesi</span>
+<div class="flex-1 flex items-center gap-1">
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="09:00"/>
+<span class="text-gray-400 text-[10px]">-</span>
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="18:00"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="60" title="Mola Süresi (dk)" type="number" value="60"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-bold text-primary focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="1.5" step="0.1" title="Mesai Çarpanı" type="number" value="1.5"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-20 text-xs font-medium text-gray-600 dark:text-gray-400">Salı</span>
+<div class="flex-1 flex items-center gap-1">
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="09:00"/>
+<span class="text-gray-400 text-[10px]">-</span>
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="18:00"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="60" title="Mola Süresi (dk)" type="number" value="60"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-bold text-primary focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="1.5" step="0.1" title="Mesai Çarpanı" type="number" value="1.5"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-20 text-xs font-medium text-gray-600 dark:text-gray-400">Çarşamba</span>
+<div class="flex-1 flex items-center gap-1">
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="09:00"/>
+<span class="text-gray-400 text-[10px]">-</span>
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="18:00"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="60" title="Mola Süresi (dk)" type="number" value="60"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-bold text-primary focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="1.5" step="0.1" title="Mesai Çarpanı" type="number" value="1.5"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-20 text-xs font-medium text-gray-600 dark:text-gray-400">Perşembe</span>
+<div class="flex-1 flex items-center gap-1">
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="09:00"/>
+<span class="text-gray-400 text-[10px]">-</span>
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="18:00"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="60" title="Mola Süresi (dk)" type="number" value="60"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-bold text-primary focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="1.5" step="0.1" title="Mesai Çarpanı" type="number" value="1.5"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-20 text-xs font-medium text-gray-600 dark:text-gray-400">Cuma</span>
+<div class="flex-1 flex items-center gap-1">
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="09:00"/>
+<span class="text-gray-400 text-[10px]">-</span>
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="18:00"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="60" title="Mola Süresi (dk)" type="number" value="60"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-bold text-primary focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="1.5" step="0.1" title="Mesai Çarpanı" type="number" value="1.5"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-20 text-xs font-medium text-gray-600 dark:text-gray-400">Cumartesi</span>
+<div class="flex-1 flex items-center gap-1">
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="10:00"/>
+<span class="text-gray-400 text-[10px]">-</span>
+<input class="form-input w-full h-8 min-w-0 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" type="time" value="14:00"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-medium focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="30" title="Mola Süresi (dk)" type="number" value="30"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-300 bg-white px-1 text-center text-xs font-bold text-primary focus:border-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="1.5" step="0.1" title="Mesai Çarpanı" type="number" value="2.0"/>
+</div>
+<div class="flex items-center gap-2 opacity-60">
+<span class="w-20 text-xs font-medium text-gray-500 dark:text-gray-500">Pazar</span>
+<div class="flex-1">
+<input class="form-input w-full h-8 text-center rounded-lg border-gray-200 bg-gray-50 text-xs text-gray-400 font-medium dark:bg-gray-800 dark:border-gray-700 dark:text-gray-500" disabled="" type="text" value="— TATİL —"/>
+</div>
+<input class="form-input w-14 h-8 rounded-lg border-gray-200 bg-gray-50 text-center text-xs dark:bg-gray-800 dark:border-gray-700" disabled="" type="text" value="-"/>
+<input class="form-input w-14 h-8 rounded-lg border-gray-200 bg-gray-50 text-center text-xs dark:bg-gray-800 dark:border-gray-700" disabled="" type="text" value="-"/>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex justify-end dark:bg-gray-800/50 dark:border-gray-700">
+<button class="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white shadow hover:bg-primary-dark focus:ring-4 focus:ring-primary/20 transition-all">
+<span class="material-symbols-outlined text-[18px]">update</span>
+                                Güncelle
+                            </button>
+</div>
+</section>
+<section class="xl:col-span-2 flex flex-col h-full bg-white dark:bg-card-dark rounded-xl shadow-card border border-gray-200/60 dark:border-gray-700">
+<div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-orange-50 text-orange-600 rounded-lg dark:bg-orange-900/20">
+<span class="material-symbols-outlined">manage_accounts</span>
+</div>
+<div>
+<h3 class="text-base font-semibold text-text-main dark:text-white">Kullanıcı ve Rol Yönetimi</h3>
+<p class="text-xs text-text-secondary">Erişim yetkileri ve kullanıcı listesi</p>
+</div>
+</div>
+<button class="inline-flex items-center gap-2 rounded-lg bg-gray-900 text-white px-3 py-1.5 text-xs font-medium hover:bg-gray-800 transition-colors shadow-sm dark:bg-gray-700 dark:hover:bg-gray-600">
+<span class="material-symbols-outlined text-[16px]">person_add</span>
+                                Yeni Kullanıcı
+                            </button>
+</div>
+<div class="p-0 flex-1 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-gray-50/50 dark:bg-gray-800/30 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
+<tr>
+<th class="px-6 py-4">Kullanıcı</th>
+<th class="px-6 py-4">Durum</th>
+<th class="px-6 py-4">Rol</th>
+<th class="px-6 py-4 text-right">İşlemler</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+<tr class="group hover:bg-gray-50 transition-colors dark:hover:bg-gray-800/50">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs ring-2 ring-white dark:ring-gray-800">AY</div>
+<div>
+<div class="font-medium text-gray-900 dark:text-white">Ali Yılmaz</div>
+<div class="text-xs text-gray-500">ali.yilmaz@erp.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400">
+<span class="h-1.5 w-1.5 rounded-full bg-green-600"></span> Aktif
+                                            </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-purple-500">verified_user</span>
+<span class="text-gray-700 dark:text-gray-300">Admin</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Rolü Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 transition-colors dark:hover:bg-gray-800/50">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs ring-2 ring-white dark:ring-gray-800">AK</div>
+<div>
+<div class="font-medium text-gray-900 dark:text-white">Ayşe Kaya</div>
+<div class="text-xs text-gray-500">ayse.kaya@erp.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400">
+<span class="h-1.5 w-1.5 rounded-full bg-green-600"></span> Aktif
+                                            </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-blue-500">calculate</span>
+<span class="text-gray-700 dark:text-gray-300">Muhasebe</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Rolü Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 transition-colors dark:hover:bg-gray-800/50">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-xs ring-2 ring-white dark:ring-gray-800">MD</div>
+<div>
+<div class="font-medium text-gray-900 dark:text-white">Mehmet Demir</div>
+<div class="text-xs text-gray-500">mehmet.demir@erp.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/20 dark:bg-gray-700 dark:text-gray-400">
+<span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span> Çevrimdışı
+                                            </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-gray-400">badge</span>
+<span class="text-gray-700 dark:text-gray-300">İK Uzmanı</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Rolü Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex justify-end dark:bg-gray-800/50 dark:border-gray-700">
+<button class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+<span class="material-symbols-outlined text-[18px]">save_as</span>
+                                Yetkileri Kaydet
+                            </button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

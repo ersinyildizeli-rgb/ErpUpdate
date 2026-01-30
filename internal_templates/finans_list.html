@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h2 class="text-slate-800 text-lg font-bold leading-tight tracking-tight">Finans Yönetimi</h2>
+    </div>
+    <div class="flex items-center gap-4">
+      <div
+        class="hidden md:flex items-center bg-slate-100 rounded-lg px-3 py-2 w-64 focus-within:ring-2 focus-within:ring-primary/20 transition-shadow">
+        <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+        <input id="financeSearchInput"
+          class="bg-transparent border-none text-sm text-slate-700 placeholder:text-slate-400 focus:ring-0 w-full h-5 p-0 ml-2"
+          placeholder="İşlem ara..." type="text">
+      </div>
+      <div class="flex gap-2">
+        <button
+          class="p-2 text-slate-600 hover:text-primary border border-slate-200 rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all">
+          <span class="material-symbols-outlined text-[20px]">download</span>
+        </button>
+        <a href="/finans/add"
+          class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm shadow-blue-500/20 transition-all">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          Yeni İşlem Ekle
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col gap-1 relative overflow-hidden">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Toplam Gelir (Aylık)</p>
+          <h3 class="text-slate-900 text-2xl font-bold mt-1 tracking-tight">
+            ₺{{ '{:,.2f}'.format(total_income or 0) }}
+          </h3>
+        </div>
+        <div class="p-2 bg-green-50 rounded-lg text-green-600">
+          <span class="material-symbols-outlined">trending_up</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col gap-1 relative overflow-hidden">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Toplam Gider (Aylık)</p>
+          <h3 class="text-slate-900 text-2xl font-bold mt-1 tracking-tight">
+            ₺{{ '{:,.2f}'.format(total_expense or 0) }}
+          </h3>
+        </div>
+        <div class="p-2 bg-red-50 rounded-lg text-red-600">
+          <span class="material-symbols-outlined">trending_down</span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="bg-white rounded-xl p-5 border border-blue-100 shadow-sm ring-1 ring-blue-500/10 flex flex-col gap-1 relative overflow-hidden">
+      <a href="/kasa" class="absolute inset-0 z-0"></a>
+      <div class="flex justify-between items-start relative z-10">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Net Kasa Bakiyesi</p>
+          <h3 class="text-primary text-3xl font-bold mt-1 tracking-tight">
+            ₺{{ '{:,.2f}'.format(cash_balance or 0) }}
+          </h3>
+        </div>
+        <div class="p-2 bg-blue-50 rounded-lg text-primary">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">İşlem Tarihi</th>
+            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Açıklama</th>
+            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Kategori</th>
+            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tür</th>
+            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Tutar</th>
+            <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">İşlem</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for f in entries %}
+          {% set is_income = (f.IslemTuru or '').lower() == 'gelir' %}
+          {% set is_expense = (f.IslemTuru or '').lower() == 'gider' %}
+          <tr class="hover:bg-slate-50/80 transition-colors group">
+            <td class="p-4 text-sm font-medium text-slate-700 whitespace-nowrap">
+              {{ f.Tarih.strftime('%d %b %Y') if f.Tarih else '' }}
+            </td>
+            <td class="p-4 text-sm text-slate-700 whitespace-nowrap max-w-xs">
+              <span class="line-clamp-1">
+                {{ f.Aciklama or '-' }}
+              </span>
+            </td>
+            <td class="p-4 text-sm text-slate-600 whitespace-nowrap">
+              {{ f.Kategori or '-' }}
+            </td>
+            <td class="p-4 whitespace-nowrap text-sm">
+              {% if is_income %}
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                <span class="size-1.5 rounded-full bg-green-500"></span>
+                Gelir
+              </span>
+              {% elif is_expense %}
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
+                <span class="size-1.5 rounded-full bg-red-500"></span>
+                Gider
+              </span>
+              {% else %}
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                {{ f.IslemTuru }}
+              </span>
+              {% endif %}
+            </td>
+            <td
+              class="p-4 text-sm font-mono text-right {% if is_income %}text-emerald-600{% elif is_expense %}text-red-600{% else %}text-slate-800{% endif %}">
+              {{ '{:,.2f}'.format(f.Tutar or 0) }} ₺
+            </td>
+            <td class="p-4 text-sm text-center">
+              <div class="flex items-center justify-center gap-1">
+                <a href="/finans/{{ f.FinansID }}/edit"
+                  class="size-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                  title="Düzenle">
+                  <span class="material-symbols-outlined text-[20px]">edit</span>
+                </a>
+                <form action="/finans/{{ f.FinansID }}/delete" method="post"
+                  onsubmit="return confirm('Bu işlemi silmek istediğinize emin misiniz?')" class="inline-block">
+                  <button type="submit"
+                    class="size-8 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-600 transition-all"
+                    title="Sil">
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="p-6 text-center text-sm text-slate-500">
+              Henüz finansal hareket bulunmuyor.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleMenu(id, event) {
+    if (event) event.stopPropagation();
+    else if (window.event) window.event.stopPropagation();
+    const menu = document.getElementById(id);
+    if (!menu) return;
+    const allMenus = document.querySelectorAll('[id^="menu-"]');
+
+    allMenus.forEach(m => {
+      if (m.id !== id) m.classList.add('hidden');
+    });
+
+    const isHidden = menu.classList.contains('hidden');
+    if (isHidden) {
+      // Reset styles to default before measuring
+      menu.style.top = '100%';
+      menu.style.bottom = 'auto';
+      menu.style.marginTop = '8px';
+      menu.style.marginBottom = '0';
+
+      menu.classList.remove('hidden');
+
+      const rect = menu.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Only open upwards if it actually hits or exceeds the viewport bottom
+      if (rect.bottom > viewportHeight - 10) {
+        menu.style.top = 'auto';
+        menu.style.bottom = '100%';
+        menu.style.marginTop = '0';
+        menu.style.marginBottom = '8px';
+      }
+    } else {
+      menu.classList.add('hidden');
+    }
+  }
+
+  window.addEventListener('click', function (e) {
+    const allMenus = document.querySelectorAll('[id^="menu-"]');
+    allMenus.forEach(m => {
+      if (!m.contains(e.target)) {
+        m.classList.add('hidden');
+      }
+    });
+  });
+
+  const financeSearchInput = document.getElementById('financeSearchInput');
+  if (financeSearchInput) {
+    financeSearchInput.addEventListener('input', function (e) {
+      const term = (e.target.value || '').toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(function (row) {
+        const text = row.innerText.toLowerCase();
+        if (!term || text.includes(term)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  }
+</script>
+{% endblock %}

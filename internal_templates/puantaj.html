@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Günlük Puantaj Kontrolü</h2>
+    <p class="text-slate-500 text-sm mt-1">Personel devam durumu ve mesai girişlerini yönetin.</p>
+  </div>
+  <div class="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+    <a href="{{ url_for('puantaj', date=prev_date) }}"
+      class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors hover:text-primary">
+      <span class="material-symbols-outlined">chevron_left</span>
+    </a>
+    <div id="puantaj-date-display"
+      class="relative flex items-center gap-2 px-4 border-x border-slate-100 min-w-[200px] justify-center cursor-pointer hover:bg-slate-50 py-1.5 rounded-md">
+      <span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+      <div class="flex flex-col items-center">
+        <span class="text-sm font-semibold text-slate-700">{{ selected_date_label }}</span>
+        {% if current_holiday %}
+        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-tight">{{ current_holiday.name }}</span>
+        {% endif %}
+      </div>
+      <input id="puantaj-date-input" type="date" value="{{ selected_date }}"
+        class="absolute inset-0 opacity-0 pointer-events-none">
+    </div>
+    <a href="{{ url_for('puantaj', date=next_date) }}"
+      class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors hover:text-primary">
+      <span class="material-symbols-outlined">chevron_right</span>
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+    <div class="size-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+      <span class="material-symbols-outlined">check_circle</span>
+    </div>
+    <div>
+      <p class="text-slate-500 text-xs font-medium uppercase">Mevcut</p>
+      <p class="text-xl font-bold text-slate-900">{{ mevcut_count }} Kişi</p>
+    </div>
+  </div>
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+    <div class="size-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+      <span class="material-symbols-outlined">beach_access</span>
+    </div>
+    <div>
+      <p class="text-slate-500 text-xs font-medium uppercase">İzinli</p>
+      <p class="text-xl font-bold text-slate-900">{{ izinli_count }} Kişi</p>
+    </div>
+  </div>
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+    <div class="size-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-600">
+      <span class="material-symbols-outlined">sick</span>
+    </div>
+    <div>
+      <p class="text-slate-500 text-xs font-medium uppercase">Raporlu</p>
+      <p class="text-xl font-bold text-slate-900">{{ raporlu_count }} Kişi</p>
+    </div>
+  </div>
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+    <div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+      <span class="material-symbols-outlined">timer</span>
+    </div>
+    <div>
+      <p class="text-slate-500 text-xs font-medium uppercase">Toplam Mesai</p>
+      <p class="text-xl font-bold text-slate-900">
+        {{ "%.1f"|format(total_overtime or 0) }} Saat
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col mt-6">
+  <form method="post">
+    <input type="hidden" name="date" value="{{ selected_date }}">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-slate-100">
+      <div class="relative max-w-sm w-full">
+        <span
+          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+        <input id="puantajSearch"
+          class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-slate-400 text-slate-700"
+          placeholder="Personel ara..." type="text">
+      </div>
+      <div class="flex items-center gap-3">
+        <button type="button"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[18px]">filter_list</span>
+          <span>Filtrele</span>
+        </button>
+        <button type="submit"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30">
+          <span class="material-symbols-outlined text-[18px]">save</span>
+          <span>Değişiklikleri Kaydet</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-slate-100 bg-slate-50/50">
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider">Personel</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider">Departman</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider w-[180px]">Durum</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider w-[120px]">Eksik Saat
+            </th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider w-[120px]">Kesinti Türü
+            </th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider">Giriş / Çıkış</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider w-[100px]">Çarpan</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider text-right">Fazla Mesai
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in rows %}
+          {% set p = row.personel %}
+          {% set durum = row.durum or 'Geldi' %}
+          {% set durum_lower = durum.lower() %}
+          <tr
+            class="group hover:bg-slate-50/80 transition-colors {% if durum_lower == 'izinli' %}bg-amber-50/30{% elif durum_lower == 'raporlu' %}bg-rose-50/30{% endif %}">
+            <td class="py-3 px-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                  {{ p.Ad[0] if p.Ad else '?' }}{{ p.Soyad[0] if p.Soyad else '' }}
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">{{ p.Ad }} {{ p.Soyad }}</p>
+                  <p class="text-xs text-slate-500">ID: #{{ p.PersonelID }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-6 text-sm text-slate-600">
+              {{ p.Departman or 'Genel' }}
+            </td>
+            <td class="py-3 px-6">
+              <div class="relative">
+                <select name="durum_{{ p.PersonelID }}" onchange="toggleDeductionFields(this, '{{ p.PersonelID }}')"
+                  class="appearance-none w-full bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
+                  <option value="Geldi" {% if durum_lower=='geldi' %}selected{% endif %}>Geldi</option>
+                  <option value="İzinli" {% if durum_lower=='izinli' %}selected{% endif %}>İzinli</option>
+                  <option value="Raporlu" {% if durum_lower=='raporlu' %}selected{% endif %}>Raporlu</option>
+                  <option value="Gelmedi" {% if durum_lower=='gelmedi' %}selected{% endif %}>Gelmedi</option>
+                  <option value="Geç Geldi" {% if durum_lower=='geç geldi' %}selected{% endif %}>Geç Geldi</option>
+                </select>
+                <span
+                  class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-[18px] pointer-events-none">expand_more</span>
+              </div>
+            </td>
+            <td class="py-3 px-6">
+              <div
+                class="eksik-saat-container-{{ p.PersonelID }} {% if durum_lower not in ['gelmedi', 'geç geldi'] %}hidden{% endif %}">
+                <input name="eksik_saat_{{ p.PersonelID }}"
+                  class="w-full text-center font-mono text-sm bg-white border border-slate-200 rounded-lg py-1.5 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none"
+                  type="number" step="0.5" value="{{ row.eksik_saat or 0 }}">
+              </div>
+            </td>
+            <td class="py-3 px-6">
+              <div
+                class="kesinti-turu-container-{{ p.PersonelID }} {% if durum_lower not in ['gelmedi', 'geç geldi'] and row.eksik_saat <= 0 %}hidden{% endif %}">
+                <select name="kesinti_turu_{{ p.PersonelID }}"
+                  class="w-full bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="Maaş" {% if row.kesinti_turu=='Maaş' %}selected{% endif %}>Maaş</option>
+                  <option value="Mesai" {% if row.kesinti_turu=='Mesai' %}selected{% endif %}>Mesai</option>
+                </select>
+              </div>
+            </td>
+            <td class="py-3 px-6 text-sm text-slate-600 font-medium font-mono">
+              {% if durum_lower == 'geldi' %}
+              {% if current_holiday %}
+              <span class="text-rose-600 font-bold">RESMİ TATİL</span>
+              {% else %}
+              {% set days_map = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] %}
+              {% set day_name = days_map[selected_date_obj.weekday()] %}
+              {% set schedule = settings.get('weekly_schedule', {}).get(day_name, {}) %}
+              {% set is_active = schedule.active if schedule.active is defined else (day_name != 'sunday') %}
+              {% if is_active %}
+              {{ schedule.start or '09:00' }} - {{ schedule.end or '18:00' }}
+              {% else %}
+              Hafta Sonu / Kapalı
+              {% endif %}
+              {% endif %}
+              {% else %}
+              -
+              {% endif %}
+            </td>
+            <td class="py-3 px-6">
+              <input name="carpan_{{ p.PersonelID }}"
+                class="w-full text-center font-bold text-sm bg-amber-50 border border-amber-200 rounded-lg py-1.5 focus:ring-2 focus:ring-amber-500/20 focus:outline-none text-amber-700"
+                type="text" value="{{ " %.1f"|format(row.carpan or 1.5) }}">
+            </td>
+            <td class="py-3 px-6">
+              <div class="flex items-center justify-end gap-1">
+                <input name="mesai_{{ p.PersonelID }}"
+                  class="w-20 text-center font-bold text-sm {% if row.mesai > 0 %}bg-indigo-50 border-indigo-200 text-indigo-700{% else %}bg-slate-50 border-slate-200 text-slate-400{% endif %} border rounded-lg py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  type="text" placeholder="0.0" value="{{ " %.1f"|format(row.mesai) if row.mesai> 0 else '' }}">
+                <span class="text-[10px] text-slate-400 font-bold">SAAT</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+
+  <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+    <p class="text-sm text-slate-500">
+      Toplam {{ personel_count }} personelden 1-{{ personel_count }} arası gösteriliyor
+    </p>
+    <div class="flex items-center gap-2">
+      <button
+        class="px-3 py-1 text-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+        disabled>Önceki</button>
+      <button
+        class="px-3 py-1 text-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50">Sonraki</button>
+    </div>
+  </div>
+</div>
+
+<div class="flex items-start gap-3 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-100 mt-4">
+  <span class="material-symbols-outlined text-blue-600 mt-0.5">info</span>
+  <div class="text-sm">
+    <p class="font-semibold">Bilgilendirme</p>
+    <p class="mt-1 opacity-90">Fazla mesai girişleri maaş hesaplamasına otomatik olarak yansıtılacaktır. Onaylanan
+      mesailer ay sonunda kilitlenir.</p>
+  </div>
+</div>
+{% block scripts %}
+<script>
+  const DAILY_SCHEDULED_HOURS = {{ daily_scheduled_hours|default (8.0) }};
+  function toggleDeductionFields(select, personelId) {
+    const durum = select.value.toLowerCase();
+    const eksikContainer = document.querySelector(`.eksik-saat-container-${personelId}`);
+    const kesintiContainer = document.querySelector(`.kesinti-turu-container-${personelId}`);
+    const eksikInput = document.querySelector(`input[name="eksik_saat_${personelId}"]`);
+
+    if (durum === 'gelmedi' || durum === 'geç geldi') {
+      eksikContainer.classList.remove('hidden');
+      kesintiContainer.classList.remove('hidden');
+
+      if (durum === 'gelmedi' && (!eksikInput.value || eksikInput.value == '0' || eksikInput.value == '0.0')) {
+        eksikInput.value = DAILY_SCHEDULED_HOURS;
+      }
+    } else {
+      eksikContainer.classList.add('hidden');
+      kesintiContainer.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const dateDisplay = document.getElementById('puantaj-date-display');
+    const dateInput = document.getElementById('puantaj-date-input');
+
+    if (dateDisplay && dateInput) {
+      dateDisplay.addEventListener('click', function () {
+        try {
+          if (typeof dateInput.showPicker === 'function') {
+            dateInput.showPicker();
+          } else {
+            dateInput.focus();
+            dateInput.click();
+          }
+        } catch (e) {
+          dateInput.focus();
+        }
+      });
+
+      dateInput.addEventListener('change', function () {
+        if (!dateInput.value) return;
+        const newDate = dateInput.value;
+
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('date', newDate);
+          window.location.href = url.toString();
+        } catch (e) {
+          window.location.href = '?date=' + encodeURIComponent(newDate);
+        }
+      });
+    }
+
+    // Arama fonksiyonu
+    const searchInput = document.getElementById('puantajSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function (e) {
+        const text = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+          const personName = row.querySelector('p.font-semibold')?.textContent.toLowerCase() || '';
+          const personId = row.querySelector('p.text-xs')?.textContent.toLowerCase() || '';
+
+          if (personName.includes(text) || personId.includes(text)) {
+            row.classList.remove('hidden');
+          } else {
+            row.classList.add('hidden');
+          }
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}
+{% endblock %}

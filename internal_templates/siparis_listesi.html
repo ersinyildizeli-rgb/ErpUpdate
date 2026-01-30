@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Sipariş Yönetimi</h1>
+            <p class="text-slate-500 text-sm">Satış ve satın alma siparişlerinizin operasyonel takibi.</p>
+        </div>
+        <div class="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+            <a href="/siparisler"
+                class="px-4 py-2 rounded-lg text-xs font-black uppercase transition-all {% if not tip %}bg-primary text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Tümü</a>
+            <a href="/siparisler?tip=Satış"
+                class="px-4 py-2 rounded-lg text-xs font-black uppercase transition-all {% if tip == 'Satış' %}bg-emerald-500 text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Satış</a>
+            <a href="/siparisler?tip=Alış"
+                class="px-4 py-2 rounded-lg text-xs font-black uppercase transition-all {% if tip == 'Alış' %}bg-rose-500 text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Alış</a>
+        </div>
+        <a href="/siparis/ekle"
+            class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95">
+            <span class="material-symbols-outlined">add_shopping_cart</span>
+            <span>Yeni Sipariş Oluştur</span>
+        </a>
+    </div>
+
+    <!-- Stats for Orders -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Toplam Sipariş</p>
+            <h3 class="text-2xl font-black text-slate-900">{{ siparisler|length }} Adet</h3>
+        </div>
+        <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100 shadow-sm text-amber-900">
+            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Hazırlanan Siparişler</p>
+            <h3 class="text-2xl font-black tabular-nums">{{ siparisler|selectattr('Durum', 'equalto',
+                'Hazırlanıyor')|list|length }}</h3>
+        </div>
+        <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 shadow-sm text-indigo-900">
+            <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Bekleyen Siparişler</p>
+            <h3 class="text-2xl font-black tabular-nums">{{ siparisler|selectattr('Durum', 'equalto',
+                'Beklemede')|list|length }}</h3>
+        </div>
+        <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 shadow-sm text-emerald-900">
+            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Tamamlanan Değer</p>
+            <h3 class="text-2xl font-black text-slate-900">₺{{ '{:,.2f}'.format(siparisler|selectattr('Durum',
+                'equalto', 'Tamamlandı')|sum(attribute='GenelToplam')) }}</h3>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Sipariş No / Tarih</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Cari Hesap</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Tür</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Durum</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-right">Genel Toplam</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-center">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for s in siparisler %}
+                    <tr class="group hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-900">{{ s.SiparisNo }}</span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">{{
+                                    s.Tarih.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-primary uppercase text-xs">{{ s.Cari.Unvan }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span
+                                class="px-2 py-1 rounded text-[10px] font-black uppercase
+                                {% if s.SiparisTuru == 'Satış' %}bg-emerald-50 text-emerald-600{% else %}bg-rose-50 text-rose-600{% endif %}">
+                                {{ s.SiparisTuru }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase
+                                {% if s.Durum == 'Beklemede' %}bg-blue-100 text-blue-700
+                                {% elif s.Durum == 'Hazırlanıyor' %}bg-amber-100 text-amber-700
+                                {% elif s.Durum == 'Sevk Edildi' %}bg-indigo-100 text-indigo-700
+                                {% elif s.Durum == 'Tamamlandı' %}bg-emerald-100 text-emerald-700
+                                {% elif s.Durum == 'Faturaya Dönüştü' %}bg-slate-700 text-white
+                                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ s.Durum }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-black text-slate-900 tabular-nums">
+                            {{ '{:,.2f}'.format(s.GenelToplam) }} ₺
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="/siparis/{{ s.SiparisID }}"
+                                    class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                    title="Görüntüle">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                </a>
+                                {% if s.Durum != 'Faturaya Dönüştü' %}
+                                <a href="/siparis/{{ s.SiparisID }}/faturaya-donustur"
+                                    onclick="return confirm('Siparişi faturaya dönüştürmek istediğinize emin misiniz? Bu işlem stokları güncelleyecektir.')"
+                                    class="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                    title="Faturaya Dönüştür">
+                                    <span class="material-symbols-outlined text-[18px]">receipt</span>
+                                </a>
+                                {% endif %}
+                                <button onclick="window.print()"
+                                    class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                                    title="Yazdır">
+                                    <span class="material-symbols-outlined text-[18px]">print</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                            <span class="material-symbols-outlined text-5xl mb-3">production_quantity_limits</span>
+                            <p class="font-bold">Henüz bir sipariş kaydı bulunmuyor.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

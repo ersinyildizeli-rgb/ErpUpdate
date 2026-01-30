@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Borç Ekle Modalı - ERP</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5048e5",
+                        "primary-dark": "#4038c5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121121",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e1c30",
+                        "text-main": "#0f0e1b",
+                        "text-secondary": "#545095",
+                        "border-color": "#d2d1e6",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                    backgroundImage: {
+                        'checkbox-tick': "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='rgb(255,255,255)' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e\")"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide scrollbar for clean modal look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main antialiased h-screen overflow-hidden relative">
+<!-- Background Context (Blurred ERP Dashboard) -->
+<div aria-hidden="true" class="absolute inset-0 z-0 flex h-full w-full opacity-40 pointer-events-none filter blur-[2px]">
+<!-- Sidebar Placeholder -->
+<div class="w-64 bg-surface-light border-r border-border-color h-full flex flex-col p-6 gap-6">
+<div class="h-8 w-32 bg-gray-200 rounded"></div>
+<div class="space-y-4">
+<div class="h-4 w-full bg-gray-100 rounded"></div>
+<div class="h-4 w-3/4 bg-gray-100 rounded"></div>
+<div class="h-4 w-5/6 bg-gray-100 rounded"></div>
+</div>
+</div>
+<!-- Main Content Placeholder -->
+<div class="flex-1 p-8 bg-background-light">
+<div class="flex justify-between items-center mb-8">
+<div class="h-8 w-48 bg-gray-200 rounded"></div>
+<div class="h-10 w-32 bg-primary rounded-lg"></div>
+</div>
+<div class="bg-surface-light rounded-xl h-96 w-full shadow-sm border border-border-color"></div>
+</div>
+</div>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 z-40 bg-[#0f0e1b]/40 backdrop-blur-sm transition-opacity"></div>
+<!-- Modal Dialog -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+<div class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-2xl transition-all flex flex-col max-h-[90vh]">
+<!-- Modal Header -->
+<div class="flex items-center justify-between border-b border-border-color px-6 py-5 bg-white dark:bg-surface-dark sticky top-0 z-10">
+<div>
+<h2 class="text-xl font-bold text-text-main dark:text-white leading-tight">Borç Ekle</h2>
+<p class="text-sm text-text-secondary mt-1">Yeni bir kurumsal borç kaydı oluşturun.</p>
+</div>
+<button class="rounded-full p-2 text-text-secondary hover:bg-background-light transition-colors focus:outline-none focus:ring-2 focus:ring-primary" type="button">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable Form) -->
+<div class="flex-1 overflow-y-auto p-6 no-scrollbar">
+<form class="space-y-6">
+<!-- Row 1: Creditor & Debt Type -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<!-- Borç Veren -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200" for="creditor">
+                                Borç Veren
+                            </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary text-xl pointer-events-none">apartment</span>
+<input class="form-input block w-full rounded-lg border-border-color bg-background-light dark:bg-background-dark dark:border-gray-700 dark:text-white pl-11 pr-4 py-3 text-base placeholder:text-text-secondary focus:border-primary focus:ring-primary transition-shadow duration-200" id="creditor" placeholder="Örn. ABC Bankası" type="text"/>
+</div>
+</div>
+<!-- Borç Türü -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200" for="debt-type">
+                                Borç Türü
+                            </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary text-xl pointer-events-none">category</span>
+<select class="form-select block w-full rounded-lg border-border-color bg-background-light dark:bg-background-dark dark:border-gray-700 dark:text-white pl-11 pr-10 py-3 text-base text-text-main focus:border-primary focus:ring-primary transition-shadow duration-200" id="debt-type">
+<option disabled="" selected="" value="">Seçiniz</option>
+<option value="credit">Banka Kredisi</option>
+<option value="supplier">Tedarikçi Borcu</option>
+<option value="tax">Vergi / SGK</option>
+<option value="advance">Personel Avansı</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Row 2: Amount & Due Date -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<!-- Ana Tutar -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200" for="amount">
+                                Ana Tutar
+                            </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary text-xl pointer-events-none">attach_money</span>
+<input class="form-input block w-full rounded-lg border-border-color bg-background-light dark:bg-background-dark dark:border-gray-700 dark:text-white pl-11 pr-4 py-3 text-base placeholder:text-text-secondary focus:border-primary focus:ring-primary transition-shadow duration-200" id="amount" placeholder="0,00" type="number"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+<span class="text-text-secondary sm:text-sm">TRY</span>
+</div>
+</div>
+</div>
+<!-- Vade Tarihi -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200" for="due-date">
+                                Vade Tarihi
+                            </label>
+<div class="relative">
+<input class="form-input block w-full rounded-lg border-border-color bg-background-light dark:bg-background-dark dark:border-gray-700 dark:text-white px-4 py-3 text-base text-text-secondary focus:border-primary focus:ring-primary transition-shadow duration-200" id="due-date" type="date"/>
+</div>
+</div>
+</div>
+<!-- Row 3: Installment Checkbox -->
+<div class="py-2">
+<label class="inline-flex items-center cursor-pointer group">
+<div class="relative flex items-center">
+<input checked="" class="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-border-color bg-transparent transition-all checked:border-primary checked:bg-primary checked:bg-checkbox-tick focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 dark:border-gray-600 dark:checked:border-primary dark:focus:ring-offset-gray-900" type="checkbox"/>
+</div>
+<span class="ml-3 text-base font-medium text-text-main dark:text-gray-200 select-none group-hover:text-primary transition-colors">
+                                Taksitli Borç mu?
+                            </span>
+</label>
+</div>
+<!-- Conditional Row: Installment Details (Visible because checked) -->
+<div class="rounded-xl bg-primary/5 p-5 border border-primary/10 animate-in fade-in slide-in-from-top-2 duration-300">
+<div class="flex items-center gap-2 mb-4 text-primary font-medium text-sm">
+<span class="material-symbols-outlined text-lg">calendar_month</span>
+                            Taksit Planı Detayları
+                        </div>
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<!-- Taksit Sayısı -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200" for="installments">
+                                    Taksit Sayısı
+                                </label>
+<input class="form-input block w-full rounded-lg border-border-color bg-white dark:bg-background-dark dark:border-gray-700 dark:text-white px-4 py-3 text-base placeholder:text-text-secondary focus:border-primary focus:ring-primary transition-shadow duration-200" id="installments" max="120" min="1" placeholder="Örn. 12" type="number" value="12"/>
+</div>
+<!-- Taksit Başlangıç -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200" for="installment-start">
+                                    İlk Taksit Tarihi
+                                </label>
+<input class="form-input block w-full rounded-lg border-border-color bg-white dark:bg-background-dark dark:border-gray-700 dark:text-white px-4 py-3 text-base text-text-secondary focus:border-primary focus:ring-primary transition-shadow duration-200" id="installment-start" type="date"/>
+</div>
+</div>
+</div>
+<!-- Row 4: Description -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200 flex justify-between" for="description">
+                            Açıklama
+                            <span class="text-text-secondary font-normal text-xs">Opsiyonel</span>
+</label>
+<textarea class="form-textarea block w-full rounded-lg border-border-color bg-background-light dark:bg-background-dark dark:border-gray-700 dark:text-white px-4 py-3 text-base placeholder:text-text-secondary focus:border-primary focus:ring-primary resize-none transition-shadow duration-200" id="description" placeholder="Borç ile ilgili notlar, açıklama veya referans numarası..." rows="3"></textarea>
+</div>
+</form>
+</div>
+<!-- Modal Footer -->
+<div class="bg-background-light dark:bg-surface-dark border-t border-border-color px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sticky bottom-0">
+<button class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-border-color bg-white dark:bg-surface-dark dark:border-gray-600 dark:text-white px-6 py-3 text-sm font-semibold text-text-main shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all" type="button">
+                    İptal
+                </button>
+<button class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-transparent bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all" type="button">
+<span class="material-symbols-outlined mr-2 text-lg">save</span>
+                    Kaydet
+                </button>
+</div>
+</div>
+</div>
+</body></html>

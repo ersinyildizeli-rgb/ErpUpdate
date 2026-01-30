@@ -1,0 +1,697 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="text-slate-800 dark:text-white text-lg md:text-2xl font-bold leading-tight tracking-tight">Vergiler
+      </h2>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">KDV hesaplamaları, vergi ödemeleri ve beyanname takibi.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/vergiler/add"
+        class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95 group">
+        <span class="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
+        <span>Vergi Ekle</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div
+      class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col gap-4 relative overflow-hidden group">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-primary">payments</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <span class="text-slate-500 dark:text-slate-400 font-medium text-sm">Toplam Ödenen</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          ₺{{ '{:,.2f}'.format(total_paid or 0) }}
+        </h3>
+        <p class="text-green-600 dark:text-green-400 text-sm font-medium mt-1 flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">trending_up</span>
+          Son dönem ödemeleri
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col gap-4 relative overflow-hidden group">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-yellow-500">pending</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+          <span class="material-symbols-outlined">hourglass_top</span>
+        </div>
+        <span class="text-slate-500 dark:text-slate-400 font-medium text-sm">Bekleyen Ödemeler</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          ₺{{ '{:,.2f}'.format(pending_amount or 0) }}
+        </h3>
+        <p class="text-slate-400 dark:text-slate-500 text-sm font-medium mt-1">
+          {{ entries|length }} vergi kaydı listeleniyor
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col gap-4 relative overflow-hidden group">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-primary">calendar_month</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+          <span class="material-symbols-outlined">event</span>
+        </div>
+        <span class="text-slate-500 dark:text-slate-400 font-medium text-sm">Gelecek Ay Tahmini</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          ₺{{ '{:,.2f}'.format(next_month_estimate or 0) }}
+        </h3>
+        <p class="text-slate-400 dark:text-slate-500 text-sm font-medium mt-1">Öngörülen vergi yükümlülüğü</p>
+      </div>
+    </div>
+  </div>
+
+  {% set net = kdv_net or 0 %}
+  {% if net > 0 %}
+  {% set net_class = 'text-rose-600 dark:text-rose-400' %}
+  {% elif net < 0 %} {% set net_class='text-emerald-600 dark:text-emerald-400' %} {% else %} {% set
+    net_class='text-slate-900 dark:text-white' %} {% endif %} <div
+    class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-indigo-100 dark:border-indigo-700/60 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="p-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">
+        <span class="material-symbols-outlined">percent</span>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase text-indigo-600 dark:text-indigo-300">KDV Net Durumu</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Hesaplanan KDV: ₺{{ '{:,.2f}'.format(kdv_hesaplanan or 0) }}
+          •
+          İndirilecek KDV: ₺{{ '{:,.2f}'.format(kdv_indirilecek or 0) }}
+        </p>
+      </div>
+    </div>
+    <div class="text-right">
+      <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Net KDV</p>
+      <p class="text-2xl font-bold {{ net_class }}">
+        ₺{{ '{:,.2f}'.format((net if net >= 0 else -net)) }}
+      </p>
+      {% if net > 0 %}
+      <div class="mt-2 flex items-center justify-end gap-2">
+        <span
+          class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-full">
+          <span class="material-symbols-outlined text-sm">warning</span>
+          Ödenecek KDV
+        </span>
+        <button type="button" onclick="openVergiPaymentModal(this)" data-mode="kdv-net" data-amount="{{ net }}"
+          data-title="Net KDV Ödemesi" data-subtitle="{{ period_label }}" data-period="{{ selected_period or '' }}"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">payments</span>
+          Öde
+        </button>
+      </div>
+      {% elif net < 0 %} <span
+        class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-full">
+        <span class="material-symbols-outlined text-sm">payments</span>
+        İndirilecek (İçerde) KDV
+        </span>
+        {% else %}
+        <span
+          class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 px-2 py-1 rounded-full">
+          <span class="material-symbols-outlined text-sm">task_alt</span>
+          KDV dengede
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+{% if category_totals %}
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+  {% for ct in category_totals %}
+  <div
+    class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 flex flex-col gap-2">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {{ ct.name }}
+      </span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="text-sm text-slate-500 dark:text-slate-400">Toplam</span>
+      <span class="text-xl font-bold text-slate-900 dark:text-white">
+        ₺{{ '{:,.2f}'.format(ct.total or 0) }}
+      </span>
+    </div>
+    <div class="flex items-center justify-between text-xs mt-1">
+      <span class="text-emerald-600 dark:text-emerald-400">
+        Ödendi: ₺{{ '{:,.2f}'.format(ct.paid or 0) }}
+      </span>
+      <span class="text-amber-600 dark:text-amber-400">
+        Bekleyen: ₺{{ '{:,.2f}'.format(ct.pending or 0) }}
+      </span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div
+  class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+  <div class="relative w-full md:w-96 group">
+    <span
+      class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+    <input id="vergiSearch"
+      class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border-none rounded-xl text-sm font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/50 transition-all"
+      placeholder="Vergi tipi, tutar veya açıklama ara..." type="text">
+  </div>
+  <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+    <form method="get" class="flex items-center gap-2 w-full md:w-auto">
+      <input type="month" name="period" value="{{ selected_period or '' }}"
+        class="h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700 px-3 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+      <button type="submit"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+        <span class="material-symbols-outlined text-base">event</span>
+        Dönemi Uygula
+      </button>
+      {% if selected_period %}
+      <a href="{{ url_for('vergiler') }}"
+        class="inline-flex items-center justify-center px-3 py-2 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+        Tüm Dönemler
+      </a>
+      {% endif %}
+    </form>
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <button id="vergiFilterBtn"
+        class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+        <span class="material-symbols-outlined text-base">filter_list</span>
+        Filtrele
+      </button>
+      <button id="vergiExportBtn"
+        class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all">
+        <span class="material-symbols-outlined text-base">download</span>
+        Dışa Aktar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse min-w-[900px]">
+      <thead>
+        <tr class="bg-slate-50/50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
+          <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Vergi
+            Tipi</th>
+          <th
+            class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right whitespace-nowrap">
+            Hesaplanan KDV</th>
+          <th
+            class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right whitespace-nowrap">
+            İndirilecek KDV</th>
+          <th
+            class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right whitespace-nowrap">
+            Ödenecek Tutar</th>
+          <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ödeme
+            Tarihi</th>
+          <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Açıklama</th>
+          <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Durum
+          </th>
+          <th
+            class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+            İşlemler</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for e in entries %}
+        {% set name = e.Kategori or 'Vergi' %}
+        {% set code = (name[:3] or '').upper() %}
+        {% set cat_lower = (name or '').lower() %}
+        {% set is_paid = (e.IslemTuru or '').lower() == 'gider' %}
+        {% if 'kdv' in cat_lower %}
+        {% set badge_bg = 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' %}
+        {% elif 'sgk' in cat_lower %}
+        {% set badge_bg = 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' %}
+        {% elif 'muh' in cat_lower %}
+        {% set badge_bg = 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' %}
+        {% elif 'mtv' in cat_lower %}
+        {% set badge_bg = 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' %}
+        {% else %}
+        {% set badge_bg = 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' %}
+        {% endif %}
+        <tr class="group hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          <td class="py-4 px-6">
+            <div class="flex items-center gap-3">
+              <div class="size-8 rounded-lg flex items-center justify-center shrink-0 {{ badge_bg }}">
+                <span class="font-bold text-xs">{{ code }}</span>
+              </div>
+              <span class="font-medium text-slate-900 dark:text-white text-sm">{{ name }}</span>
+            </div>
+          </td>
+          <td class="py-4 px-6 text-right">
+            {% if 'hesaplanan' in cat_lower %}
+            <span class="font-semibold text-rose-600 dark:text-rose-400 text-sm">{{ '{:,.2f}'.format(e.Tutar or 0) }}
+              ₺</span>
+            {% else %}
+            <span class="font-medium text-slate-300 dark:text-slate-600 text-sm">-</span>
+            {% endif %}
+          </td>
+          <td class="py-4 px-6 text-right">
+            {% if 'indirilecek' in cat_lower or 'i̇ndirilecek' in cat_lower %}
+            <span class="font-semibold text-emerald-600 dark:text-emerald-400 text-sm">{{ '{:,.2f}'.format(e.Tutar or 0)
+              }} ₺</span>
+            {% else %}
+            <span class="font-medium text-slate-300 dark:text-slate-600 text-sm">-</span>
+            {% endif %}
+          </td>
+          <td class="py-4 px-6 text-right">
+            <span class="font-bold text-slate-900 dark:text-white">
+              {{ '{:,.2f}'.format(e.Tutar or 0) }} ₺
+            </span>
+          </td>
+          <td class="py-4 px-6">
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {{ e.Tarih.strftime('%d %b %Y') if e.Tarih else '' }}
+              </span>
+            </div>
+          </td>
+          <td class="py-4 px-6">
+            <span class="text-sm text-slate-600 dark:text-slate-400 truncate max-w-[220px] block">
+              {{ e.Aciklama or '-' }}
+            </span>
+          </td>
+          <td class="py-4 px-6">
+            {% if is_paid %}
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-500/20">
+              <span class="size-1.5 rounded-full bg-green-500"></span>
+              Ödendi
+            </span>
+            {% else %}
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-100 dark:border-yellow-500/20">
+              <span class="size-1.5 rounded-full bg-yellow-500"></span>
+              Bekliyor
+            </span>
+            {% endif %}
+          </td>
+          <td class="py-4 px-6 text-right">
+            <div class="flex items-center justify-end gap-1">
+              {% if (not is_paid) and ('kdv' not in cat_lower) %}
+              <button type="button"
+                class="size-8 inline-flex items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all"
+                onclick="openVergiPaymentModal(this)" data-vergi-id="{{ e.FinansID }}" data-vergi-name="{{ name }}"
+                data-vergi-amount="{{ e.Tutar or 0 }}" title="Öde">
+                <span class="material-symbols-outlined text-lg">payments</span>
+              </button>
+              {% endif %}
+
+              <a href="{{ url_for('vergiler_edit', vid=e.FinansID) }}"
+                class="size-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all"
+                title="Düzenle">
+                <span class="material-symbols-outlined text-lg">edit</span>
+              </a>
+
+              <a href="{{ url_for('vergiler_delete', vid=e.FinansID) }}"
+                class="size-8 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 transition-all"
+                onclick="return confirm('Bu vergi kaydını silmek istediğinizden emin misiniz?')" title="Sil">
+                <span class="material-symbols-outlined text-lg">delete</span>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr class="empty-row">
+          <td colspan="8" class="py-6 px-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            Henüz vergi kaydı bulunmuyor.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div
+    class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-800">
+    <span class="text-sm text-slate-500 dark:text-slate-400">
+      Toplam
+      <span class="font-semibold text-slate-900 dark:text-white">{{ entries|length }}</span>
+      kayıt görüntüleniyor
+    </span>
+    <div class="flex items-center gap-2">
+      <button
+        class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
+        <span class="material-symbols-outlined text-sm">chevron_left</span>
+      </button>
+      <button class="size-9 flex items-center justify-center rounded-lg bg-primary text-white font-medium text-sm">
+        1
+      </button>
+      <button
+        class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm">
+        2
+      </button>
+      <button
+        class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm">
+        3
+      </button>
+      <button
+        class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+{% set has_banks = banks is defined and banks %}
+<div id="vergiPaymentModal"
+  class="fixed inset-0 bg-gray-900/60 dark:bg-black/60 backdrop-blur-[2px] z-[120] hidden items-center justify-center p-4">
+  <div
+    class="relative w-full max-w-[520px] flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden">
+    <div
+      class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-900">
+      <div class="flex flex-col gap-0.5">
+        <h3 id="vergiPaymentTitle" class="text-slate-900 dark:text-white text-lg font-bold tracking-tight">
+          Vergi Ödemesi
+        </h3>
+        <p id="vergiPaymentSubtitle" class="text-xs text-slate-500 dark:text-slate-400"></p>
+      </div>
+      <button type="button"
+        class="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        onclick="closeVergiPaymentModal()">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <form id="vergiPaymentForm" method="POST" class="flex flex-col">
+      <input type="hidden" name="payment_method" id="vergiPaymentMethod" value="cash">
+      <input type="hidden" name="bank_id" id="vergiPaymentBankId">
+      <input type="hidden" name="period" id="vergiPaymentPeriod" value="{{ selected_period or '' }}">
+      <div class="p-6 flex flex-col gap-5">
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">request_quote</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Ödenecek Vergi</span>
+              <span id="vergiPaymentSummary" class="text-sm font-semibold text-slate-900 dark:text-white"></span>
+            </div>
+          </div>
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ period_label }}</span>
+        </div>
+        <div class="flex flex-col gap-3">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+            Ödeme yöntemi
+          </span>
+          <div class="flex w-full rounded-xl bg-slate-100 dark:bg-slate-800 p-1">
+            <label class="flex-1 cursor-pointer">
+              <input class="sr-only" type="radio" name="payment_method_choice" value="cash" checked>
+              <div
+                class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-600 dark:text-slate-300 transition-all bg-white dark:bg-slate-900 shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                Nakit (Kasa)
+              </div>
+            </label>
+            <label class="flex-1 cursor-pointer">
+              <input class="sr-only" type="radio" name="payment_method_choice" value="bank" {% if not has_banks
+                %}disabled{% endif %}>
+              <div
+                class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium {% if has_banks %}text-slate-600 dark:text-slate-300{% else %}text-slate-400 dark:text-slate-500{% endif %} transition-all">
+                <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                Banka
+              </div>
+            </label>
+          </div>
+          <div id="vergiPaymentBankWrapper"
+            class="mt-2 flex flex-col gap-2 {% if not has_banks %}hidden{% else %}hidden{% endif %}">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Banka hesabı
+            </span>
+            {% if has_banks %}
+            <select id="vergiPaymentBankSelect"
+              class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="">Banka hesabı seçin...</option>
+              {% for b in banks %}
+              <option value="{{ b.BankaID }}">
+                {{ b.BankaAdi }} - {{ b.HesapAdi }}
+              </option>
+              {% endfor %}
+            </select>
+            {% else %}
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Tanımlı banka hesabı bulunmuyor. Bankadan ödeme yapabilmek için önce banka hesabı ekleyin.
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div
+        class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/60 dark:bg-slate-900">
+        <button type="button"
+          class="h-10 px-4 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          onclick="closeVergiPaymentModal()">
+          İptal
+        </button>
+        <button type="submit"
+          class="h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-primary/90 hover:shadow-lg transition-all">
+          <span class="material-symbols-outlined text-[18px]">payments</span>
+          Ödemeyi Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Filtreleme fonksiyonu
+  const vergiSearch = document.getElementById('vergiSearch');
+  if (vergiSearch) {
+    vergiSearch.addEventListener('input', function () {
+      const searchValue = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr:not(.empty-row)');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchValue) ? '' : 'none';
+      });
+    });
+  }
+
+  const vergiFilterBtn = document.getElementById('vergiFilterBtn');
+  if (vergiFilterBtn && vergiSearch) {
+    vergiFilterBtn.addEventListener('click', function () {
+      vergiSearch.focus();
+    });
+  }
+
+  // Dışa Aktar fonksiyonu
+  const vergiExportBtn = document.getElementById('vergiExportBtn');
+  if (vergiExportBtn) {
+    vergiExportBtn.addEventListener('click', function () {
+      const table = document.querySelector('table');
+      if (!table) return;
+      const rows = Array.from(table.querySelectorAll('thead tr, tbody tr:not(.empty-row)'));
+
+      const csvContent = rows.map(row => {
+        const cells = Array.from(row.querySelectorAll('th, td'));
+        const rowData = cells.slice(0, -1).map(cell => {
+          let text = (cell.innerText || '').replace(/[\n\r]+/g, ' ').trim();
+          text = text.replace(/"/g, '""');
+          return `"${text}"`;
+        });
+        return rowData.join(',');
+      }).join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'vergi_listesi.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
+
+  // İşlemler üç nokta menüsü
+  function toggleVergiMenu(id, event) {
+    if (event) event.stopPropagation();
+    else if (window.event) window.event.stopPropagation();
+    const menu = document.getElementById(id);
+    if (!menu) return;
+
+    const allMenus = document.querySelectorAll('[id^="vergi-menu-"]');
+    allMenus.forEach(m => {
+      if (m.id !== id) {
+        m.classList.add('hidden');
+      }
+    });
+
+    const isHidden = menu.classList.contains('hidden');
+    if (isHidden) {
+      // Reset styles to default before measuring
+      menu.style.top = '100%';
+      menu.style.bottom = 'auto';
+      menu.style.marginTop = '8px';
+      menu.style.marginBottom = '0';
+
+      menu.classList.remove('hidden');
+
+      const rect = menu.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Only open upwards if it actually hits or exceeds the viewport bottom
+      if (rect.bottom > viewportHeight - 10) {
+        menu.style.top = 'auto';
+        menu.style.bottom = '100%';
+        menu.style.marginTop = '0';
+        menu.style.marginBottom = '8px';
+      }
+    } else {
+      menu.classList.add('hidden');
+    }
+  }
+
+  window.addEventListener('click', function (e) {
+    const allMenus = document.querySelectorAll('[id^="vergi-menu-"]');
+    allMenus.forEach(m => {
+      if (!m.contains(e.target)) {
+        m.classList.add('hidden');
+      }
+    });
+  });
+
+  function openVergiPaymentModal(trigger) {
+    const modal = document.getElementById('vergiPaymentModal');
+    if (!modal || !trigger) return;
+
+    const mode = trigger.getAttribute('data-mode') || 'entry';
+
+    const titleEl = document.getElementById('vergiPaymentTitle');
+    const subtitleEl = document.getElementById('vergiPaymentSubtitle');
+    const summaryEl = document.getElementById('vergiPaymentSummary');
+    const form = document.getElementById('vergiPaymentForm');
+    const periodInput = document.getElementById('vergiPaymentPeriod');
+
+    let amountNum = 0;
+    let titleText = 'Vergi Ödemesi';
+    let subtitleText = '';
+    let actionUrl = '';
+
+    if (mode === 'kdv-net') {
+      const amountRaw = trigger.getAttribute('data-amount') || '';
+      const customTitle = trigger.getAttribute('data-title') || '';
+      const customSubtitle = trigger.getAttribute('data-subtitle') || '';
+      const periodValue = trigger.getAttribute('data-period') || '';
+
+      amountNum = parseFloat(amountRaw || '0') || 0;
+      titleText = customTitle || 'Net KDV Ödemesi';
+      subtitleText = customSubtitle || '';
+      actionUrl = '/vergiler/kdv/pay';
+
+      if (periodInput) {
+        periodInput.value = periodValue;
+      }
+    } else {
+      const vid = trigger.getAttribute('data-vergi-id');
+      const name = trigger.getAttribute('data-vergi-name') || '';
+      const amountRaw = trigger.getAttribute('data-vergi-amount') || '';
+
+      amountNum = parseFloat(amountRaw || '0') || 0;
+      titleText = 'Vergi Ödemesi';
+      subtitleText = name;
+      if (vid) {
+        actionUrl = '/vergiler/' + vid + '/pay';
+      }
+    }
+
+    if (titleEl) {
+      titleEl.textContent = titleText;
+    }
+    if (subtitleEl) {
+      subtitleEl.textContent = subtitleText;
+    }
+
+    if (summaryEl) {
+      summaryEl.textContent = 'Tutar: ₺' + amountNum.toLocaleString('tr-TR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    if (form && actionUrl) {
+      form.action = actionUrl;
+    }
+
+    const methodInputs = document.querySelectorAll('input[name="payment_method_choice"]');
+    methodInputs.forEach(function (input) {
+      input.checked = input.value === 'cash';
+    });
+
+    const methodHidden = document.getElementById('vergiPaymentMethod');
+    if (methodHidden) {
+      methodHidden.value = 'cash';
+    }
+
+    const bankWrapper = document.getElementById('vergiPaymentBankWrapper');
+    const bankSelect = document.getElementById('vergiPaymentBankSelect');
+    if (bankWrapper) {
+      bankWrapper.classList.add('hidden');
+    }
+    if (bankSelect) {
+      bankSelect.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeVergiPaymentModal() {
+    const modal = document.getElementById('vergiPaymentModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  const paymentMethodInputs = document.querySelectorAll('input[name="payment_method_choice"]');
+  if (paymentMethodInputs && paymentMethodInputs.length > 0) {
+    paymentMethodInputs.forEach(function (input) {
+      input.addEventListener('change', function () {
+        const methodHidden = document.getElementById('vergiPaymentMethod');
+        const bankWrapper = document.getElementById('vergiPaymentBankWrapper');
+        if (methodHidden) {
+          methodHidden.value = this.value;
+        }
+        if (bankWrapper) {
+          if (this.value === 'bank') {
+            bankWrapper.classList.remove('hidden');
+          } else {
+            bankWrapper.classList.add('hidden');
+          }
+        }
+      });
+    });
+  }
+
+  const vergiPaymentForm = document.getElementById('vergiPaymentForm');
+  if (vergiPaymentForm) {
+    vergiPaymentForm.addEventListener('submit', function () {
+      const methodHidden = document.getElementById('vergiPaymentMethod');
+      const bankSelect = document.getElementById('vergiPaymentBankSelect');
+      const bankIdInput = document.getElementById('vergiPaymentBankId');
+      if (methodHidden && methodHidden.value === 'bank' && bankSelect && bankIdInput) {
+        bankIdInput.value = bankSelect.value || '';
+      }
+    });
+  }
+</script>
+{% endblock %}

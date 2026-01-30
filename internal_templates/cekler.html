@@ -1,0 +1,960 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Çekler</h1>
+      <p class="text-slate-500 text-sm">
+        Gelen ve giden çeklerinizi takip edin, portföy ve ödeme durumlarını yönetin.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/cekler/add"
+        class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95 group">
+        <span class="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
+        <span>Çek Ekle</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
+    <button type="button" id="portfolioChecksCard"
+      class="text-left bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:shadow-md hover:border-blue-200 transition-all">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-primary">move_to_inbox</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-blue-50 text-blue-600">
+          <span class="material-symbols-outlined">input</span>
+        </div>
+        <span class="text-slate-500 font-medium text-sm">Portföydeki Çekler</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 tracking-tight">
+          {{ '{:,.2f}'.format(portfolio_total or 0) }} ₺
+        </h3>
+        <p class="text-blue-600 text-sm font-medium mt-1 flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">arrow_upward</span>
+          {{ incoming_count }} Adet Gelen Çek
+        </p>
+      </div>
+    </button>
+
+    <button type="button" id="payableChecksCard"
+      class="text-left bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:shadow-md hover:border-orange-200 transition-all">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-orange-500">outbox</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-orange-50 text-orange-600">
+          <span class="material-symbols-outlined">output</span>
+        </div>
+        <span class="text-slate-500 font-medium text-sm">Ödenecek Çekler</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 tracking-tight">
+          {{ '{:,.2f}'.format(payable_total or 0) }} ₺
+        </h3>
+        <p class="text-slate-400 text-sm font-medium mt-1">
+          {{ outgoing_count }} adet ödenecek çek
+        </p>
+      </div>
+    </button>
+
+    <button type="button" id="bankChecksCard"
+      class="text-left bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:shadow-md hover:border-purple-200 transition-all">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-purple-600">account_balance</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-purple-50 text-purple-600">
+          <span class="material-symbols-outlined">account_balance</span>
+        </div>
+        <span class="text-slate-500 font-medium text-sm">Bankaya Verilen</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 tracking-tight">
+          {{ '{:,.2f}'.format(bank_total or 0) }} ₺
+        </h3>
+        <p class="text-slate-400 text-sm font-medium mt-1">
+          Tahsil bekleyen çekler
+        </p>
+      </div>
+    </button>
+
+    <button type="button" id="collectedChecksCard"
+      class="text-left bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:shadow-md hover:border-green-200 transition-all">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-green-500">done_all</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-green-50 text-green-600">
+          <span class="material-symbols-outlined">task_alt</span>
+        </div>
+        <span class="text-slate-500 font-medium text-sm">Tahsil Edilen Çekler</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 tracking-tight">
+          {{ '{:,.2f}'.format(collected_total or 0) }} ₺
+        </h3>
+        <p class="text-slate-400 text-sm font-medium mt-1">
+          {{ collected_count }} adet tahsil edilen çek
+        </p>
+      </div>
+    </button>
+
+    <button type="button" id="customerChecksCard"
+      class="text-left bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:shadow-md hover:border-slate-200 transition-all">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-slate-500">redo</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-slate-100 text-slate-700">
+          <span class="material-symbols-outlined">redo</span>
+        </div>
+        <span class="text-slate-500 font-medium text-sm">Müşterideki Çekler</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 tracking-tight">
+          {{ '{:,.2f}'.format(customer_total or 0) }} ₺
+        </h3>
+        <p class="text-slate-400 text-sm font-medium mt-1">
+          {{ customer_count }} adet müşteride olan çek
+        </p>
+      </div>
+    </button>
+
+    <button type="button" id="badChecksCard"
+      class="text-left bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-4 relative overflow-hidden group hover:shadow-md hover:border-red-200 transition-all">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-red-500">dangerous</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-lg bg-red-50 text-red-600">
+          <span class="material-symbols-outlined">dangerous</span>
+        </div>
+        <span class="text-slate-500 font-medium text-sm">Karşılıksız Çekler</span>
+      </div>
+      <div>
+        <h3 class="text-3xl font-bold text-slate-900 tracking-tight">
+          {{ '{:,.2f}'.format(bad_total or 0) }} ₺
+        </h3>
+        <p class="text-red-600 text-sm font-medium mt-1">
+          {{ bad_count }} Adet Karşılıksız
+        </p>
+      </div>
+    </button>
+  </div>
+
+  <div
+    class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+    <div class="relative w-full md:w-96 group">
+      <span
+        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+      <input type="text"
+        class="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/50 transition-all"
+        placeholder="Çek no, firma veya tutar ara...">
+    </div>
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <button
+        class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium text-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
+        type="button">
+        <span class="material-symbols-outlined text-base">filter_list</span>
+        Filtrele
+      </button>
+      <button
+        class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium text-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
+        type="button">
+        <span class="material-symbols-outlined text-base">download</span>
+        Dışa Aktar
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+    <div class="overflow-x-auto custom-scrollbar">
+      <table class="w-full text-left border-collapse min-w-[900px]">
+        <thead>
+          <tr class="bg-slate-50/50 border-b border-slate-200">
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500">Çek Numarası</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500">Lehtar / Keşideci</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">Tutar</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500">Vade Tarihi</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500">Durum</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500">Açıklama</th>
+            <th class="py-4 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500 text-right">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for c in checks %}
+          {% set is_income = (c.IslemTuru or '').lower() == 'gelir' %}
+          {% set is_expense = (c.IslemTuru or '').lower() == 'gider' %}
+          {% set category_lower = (c.Kategori or '')|lower %}
+          {% set desc_lower = (c.Aciklama or '')|lower %}
+          {% set group = 'portfolio' %}
+          {% if 'karşılıksız' in category_lower or 'karşılıksız' in desc_lower or 'karsiliksiz' in category_lower or
+          'karsiliksiz' in desc_lower %}
+          {% set group = 'bad' %}
+          {% elif 'tahsil edildi' in category_lower or 'tahsil edildi' in desc_lower %}
+          {% set group = 'collected' %}
+          {% elif is_expense and 'bankaya verilen çek' in desc_lower %}
+          {% set group = 'bank' %}
+          {% elif is_income and ('bankaya verildi' in category_lower or 'bankaya verildi' in desc_lower) %}
+          {% set group = 'bank' %}
+          {% elif is_income and ('verildi' in category_lower or 'ciro' in desc_lower or 'ciro' in category_lower) %}
+          {% set group = 'customer' %}
+          {% elif is_expense and ('ciro' in category_lower or 'ciro' in desc_lower) %}
+          {% set group = 'customer' %}
+          {% elif is_expense %}
+          {% set group = 'payable' %}
+          {% endif %}
+          <tr class="group hover:bg-slate-50 transition-colors" data-check-group="{{ group }}">
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="size-8 rounded-lg flex items-center justify-center shrink-0
+                  {% if is_income %}bg-blue-50 text-blue-600{% elif is_expense %}bg-orange-50 text-orange-600{% else %}bg-slate-100 text-slate-500{% endif %}">
+                  <span class="material-symbols-outlined text-lg">
+                    {% if is_income %}arrow_downward{% elif is_expense %}arrow_upward{% else %}swap_vert{% endif %}
+                  </span>
+                </div>
+                <div>
+                  <span class="font-bold text-slate-900 text-sm block">
+                    {{ c.FinansID }}
+                  </span>
+                  <span class="text-xs text-slate-500">
+                    {% if is_income %}
+                    Gelen Çek
+                    {% elif is_expense %}
+                    Giden Çek
+                    {% else %}
+                    Çek
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-2">
+                <span
+                  class="size-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-600">
+                  {{ (c.Kategori or 'ÇK')[:2] }}
+                </span>
+                <span class="font-medium text-slate-900 text-sm">
+                  {{ c.Kategori or '-' }}
+                </span>
+              </div>
+            </td>
+            <td class="py-4 px-6 text-right">
+              <span class="font-bold text-slate-900">
+                {{ '{:,.2f}'.format(c.Tutar or 0) }} ₺
+              </span>
+            </td>
+            <td class="py-4 px-6">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-slate-700">
+                  {{ c.Tarih.strftime('%d %b %Y') if c.Tarih else '-' }}
+                </span>
+                {% if c.Tarih %}
+                {% set diff = (c.Tarih - today).days %}
+                <span class="text-xs {% if diff < 0 %}text-red-500{% else %}text-slate-400{% endif %}">
+                  {% if diff > 0 %}
+                  {{ diff }} Gün Kaldı
+                  {% elif diff == 0 %}
+                  Bugün
+                  {% else %}
+                  {{ (-diff) }} Gün Geçti
+                  {% endif %}
+                </span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              {% if 'karşılıksız' in category_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
+                <span class="size-1.5 rounded-full bg-red-500"></span>
+                Karşılıksız
+              </span>
+              {% elif 'tahsil edildi' in category_lower or 'tahsil edildi' in desc_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
+                <span class="size-1.5 rounded-full bg-green-500"></span>
+                Tahsil Edildi
+              </span>
+              {% elif ('verildi' in category_lower and 'bankaya verildi' not in category_lower) or ('ciro' in
+              category_lower) or ('ciro' in desc_lower) %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                <span class="size-1.5 rounded-full bg-indigo-500"></span>
+                {% if is_expense %}Ciro Edildi{% else %}Müşteride{% endif %}
+              </span>
+              {% elif 'ödendi' in category_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
+                <span class="size-1.5 rounded-full bg-green-500"></span>
+                Ödendi
+              </span>
+              {% elif is_expense and 'bankaya verilen çek' in desc_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">
+                <span class="size-1.5 rounded-full bg-purple-500"></span>
+                Bankada / Takasta
+              </span>
+              {% elif is_income and ('bankaya verildi' in category_lower or 'bankaya verildi' in desc_lower) %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">
+                <span class="size-1.5 rounded-full bg-purple-500"></span>
+                Bankaya Verildi
+              </span>
+              {% elif is_expense %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-100">
+                <span class="size-1.5 rounded-full bg-yellow-500"></span>
+                Ödenecek
+              </span>
+              {% else %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                <span class="size-1.5 rounded-full bg-blue-500"></span>
+                Portföyde
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-4 px-6">
+              <span class="text-sm text-slate-600 truncate max-w-[220px] block">
+                {{ c.Aciklama or '-' }}
+              </span>
+            </td>
+            <td class="py-4 px-6 text-right">
+              <div class="flex items-center justify-end gap-1">
+                <button onclick="openDocViewer('Cek', {{ c.FinansID }})"
+                  class="size-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-primary transition-all"
+                  title="Belgeler">
+                  <span class="material-symbols-outlined text-lg">folder_open</span>
+                </button>
+                <a href="{{ url_for('cekler_edit', fid=c.FinansID) }}"
+                  class="size-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                  title="Düzenle">
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </a>
+
+                {% if is_expense and group == 'payable' and 'ödendi' not in category_lower %}
+                <button type="button"
+                  class="size-8 inline-flex items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
+                  onclick="openCheckPaymentModal({{ c.FinansID }}, '{{ '{:,.2f}'.format(c.Tutar or 0) }}', '{{ c.Kategori or '-' }}')"
+                  title="Öde">
+                  <span class="material-symbols-outlined text-lg">payments</span>
+                </button>
+                {% endif %}
+
+                {% if is_income and group == 'portfolio' %}
+                <button type="button"
+                  class="size-8 inline-flex items-center justify-center rounded-lg text-purple-500 hover:bg-purple-50 hover:text-purple-700 transition-all"
+                  onclick="openCheckToBankModal({{ c.FinansID }}, '{{ '{:,.2f}'.format(c.Tutar or 0) }}', '{{ c.Kategori or '-' }}')"
+                  title="Bankaya Ver">
+                  <span class="material-symbols-outlined text-lg">account_balance</span>
+                </button>
+                <button type="button"
+                  class="size-8 inline-flex items-center justify-center rounded-lg text-orange-500 hover:bg-orange-50 hover:text-orange-700 transition-all"
+                  onclick="openCheckToCustomerModal({{ c.FinansID }}, '{{ '{:,.2f}'.format(c.Tutar or 0) }}', '{{ c.Kategori or '-' }}')"
+                  title="Müşteriye Ver (Ciro Et)">
+                  <span class="material-symbols-outlined text-lg">redo</span>
+                </button>
+                {% endif %}
+
+                {% if is_income and group == 'bank' and 'tahsil edildi' not in category_lower and 'tahsil edildi' not in
+                desc_lower and group != 'bad' %}
+                <form action="{{ url_for('cekler_tahsil', fid=c.FinansID) }}" method="post"
+                  onsubmit="return confirm('Bu çeki tahsil etmek istediğinize emin misiniz?')" class="inline-block">
+                  <button type="submit"
+                    class="size-8 inline-flex items-center justify-center rounded-lg text-green-500 hover:bg-green-50 hover:text-green-700 transition-all"
+                    title="Tahsil Et">
+                    <span class="material-symbols-outlined text-lg">task_alt</span>
+                  </button>
+                </form>
+                <form action="{{ url_for('cekler_bad', fid=c.FinansID) }}" method="post"
+                  onsubmit="return confirm('Bu çeki karşılıksız olarak işaretlemek istediğinize emin misiniz?')"
+                  class="inline-block">
+                  <button type="submit"
+                    class="size-8 inline-flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all"
+                    title="Karşılıksız İşle">
+                    <span class="material-symbols-outlined text-lg">dangerous</span>
+                  </button>
+                </form>
+                {% endif %}
+
+                {% if is_income and group == 'portfolio' and group != 'bad' %}
+                <form action="{{ url_for('cekler_bad', fid=c.FinansID) }}" method="post"
+                  onsubmit="return confirm('Bu çeki karşılıksız olarak işaretlemek istediğinize emin misiniz?')"
+                  class="inline-block">
+                  <button type="submit"
+                    class="size-8 inline-flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all"
+                    title="Karşılıksız İşle">
+                    <span class="material-symbols-outlined text-lg">dangerous</span>
+                  </button>
+                </form>
+                {% endif %}
+
+                <form action="{{ url_for('finans_delete', fid=c.FinansID, next=url_for('cekler')) }}" method="post"
+                  onsubmit="return confirm('Bu çeki silmek istediğinize emin misiniz?')" class="inline-block">
+                  <button type="submit"
+                    class="size-8 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-600 transition-all"
+                    title="Sil">
+                    <span class="material-symbols-outlined text-lg">delete</span>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="py-6 px-6 text-center text-sm text-slate-500">
+              Henüz çek kaydı bulunmuyor. Yeni bir çek eklemek için sağ üstteki
+              <span class="font-semibold">"Çek Ekle"</span> butonunu kullanabilirsiniz.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="p-4 border-t border-slate-200 bg-white flex items-center justify-between">
+      <span class="text-sm text-slate-500">
+        Toplam
+        <span class="font-semibold text-slate-900">{{ checks|length }}</span>
+        çek gösteriliyor
+      </span>
+      <div class="flex items-center gap-2">
+        <button
+          class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+          type="button" disabled>
+          <span class="material-symbols-outlined text-sm">chevron_left</span>
+        </button>
+        <button class="size-9 flex items-center justify-center rounded-lg bg-primary text-white font-medium text-sm"
+          type="button">
+          1
+        </button>
+        <button
+          class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm"
+          type="button">
+          2
+        </button>
+        <button
+          class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm"
+          type="button">
+          3
+        </button>
+        <button
+          class="size-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+          type="button">
+          <span class="material-symbols-outlined text-sm">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% set has_banks = banks is defined and banks %}
+<div id="checkToBankModal"
+  class="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+  <div class="relative w-full max-w-md bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div
+      class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a1a2e]">
+      <div class="flex flex-col gap-0.5">
+        <h3 class="text-slate-900 dark:text-white text-lg font-bold tracking-tight">
+          Çeki Bankaya Ver
+        </h3>
+        <p id="checkToBankSubtitle" class="text-xs text-slate-500 dark:text-slate-400"></p>
+      </div>
+      <button type="button"
+        class="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        onclick="closeCheckToBankModal()">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <form id="checkToBankForm" method="POST" class="flex flex-col">
+      <div class="p-6 flex flex-col gap-4">
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="size-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">checkbook</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Çek Bilgisi</span>
+              <span id="checkToBankSummary" class="text-sm font-semibold text-slate-900 dark:text-white"></span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Banka hesabı
+          </span>
+          {% if has_banks %}
+          <select id="checkToBankSelect" name="bank_id"
+            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+            <option value="">Banka hesabı seçin...</option>
+            {% for b in banks %}
+            <option value="{{ b.BankaID }}">
+              {{ b.BankaAdi }} - {{ b.HesapAdi }}
+            </option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Tanımlı banka hesabı bulunmuyor. Önce banka hesabı ekleyin.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+      <div
+        class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/60 dark:bg-[#151424]">
+        <button type="button"
+          class="h-10 px-4 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          onclick="closeCheckToBankModal()">
+          İptal
+        </button>
+        <button type="submit"
+          class="h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-primary/90 hover:shadow-lg transition-all"
+          {% if not has_banks %}disabled{% endif %}>
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          Bankaya Ver
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="checkToCustomerModal"
+  class="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+  <div class="relative w-full max-w-md bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div
+      class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a1a2e]">
+      <div class="flex flex-col gap-0.5">
+        <h3 class="text-slate-900 dark:text-white text-lg font-bold tracking-tight">
+          Çeki Müşteriye Ver (Ciro)
+        </h3>
+        <p id="checkToCustomerSubtitle" class="text-xs text-slate-500 dark:text-slate-400"></p>
+      </div>
+      <button type="button"
+        class="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        onclick="closeCheckToCustomerModal()">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <form id="checkToCustomerForm" method="POST" class="flex flex-col">
+      <div class="p-6 flex flex-col gap-4">
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="size-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">redo</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Çek Bilgisi</span>
+              <span id="checkToCustomerSummary" class="text-sm font-semibold text-slate-900 dark:text-white"></span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Cari Hesap (Müşteri/Tedarikçi)
+          </span>
+          <select id="checkToCustomerSelect" name="cari_id" required
+            class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+            <option value="">Cari seçin...</option>
+            {% for c in cariler %}
+            <option value="{{ c.CariID }}">
+              {{ c.Unvan }} ({{ c.CariTipi }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div
+        class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/60 dark:bg-[#151424]">
+        <button type="button"
+          class="h-10 px-4 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          onclick="closeCheckToCustomerModal()">
+          İptal
+        </button>
+        <button type="submit"
+          class="h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-primary/90 hover:shadow-lg transition-all">
+          <span class="material-symbols-outlined text-[18px]">forward</span>
+          Ciro Et
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="checkPaymentModal"
+  class="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+  <div class="relative w-full max-w-md bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div
+      class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a1a2e]">
+      <div class="flex flex-col gap-0.5">
+        <h3 class="text-slate-900 dark:text-white text-lg font-bold tracking-tight">
+          Çek Ödemesi
+        </h3>
+        <p id="checkPaymentSubtitle" class="text-xs text-slate-500 dark:text-slate-400"></p>
+      </div>
+      <button type="button"
+        class="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        onclick="closeCheckPaymentModal()">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <form id="checkPaymentForm" method="POST" class="flex flex-col">
+      <input type="hidden" name="payment_method" id="checkPaymentMethod" value="cash">
+      <input type="hidden" name="bank_id" id="checkPaymentBankId">
+      <div class="p-6 flex flex-col gap-4">
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="size-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">payments</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Çek Bilgisi</span>
+              <span id="checkPaymentSummary" class="text-sm font-semibold text-slate-900 dark:text-white"></span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+            Ödeme yöntemi
+          </span>
+          <div class="flex w-full rounded-xl bg-slate-100 dark:bg-slate-900/60 p-1">
+            <label class="flex-1 cursor-pointer">
+              <input class="sr-only" type="radio" name="check_payment_method_choice" value="cash" checked>
+              <div
+                class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-600 dark:text-slate-300">
+                <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                Nakit (Kasa)
+              </div>
+            </label>
+            <label class="flex-1 cursor-pointer">
+              <input class="sr-only" type="radio" name="check_payment_method_choice" value="bank" {% if not has_banks
+                %}disabled{% endif %}>
+              <div
+                class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium {% if has_banks %}text-slate-600 dark:text-slate-300{% else %}text-slate-400 dark:text-slate-500{% endif %}">
+                <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                Banka
+              </div>
+            </label>
+          </div>
+          <div id="checkPaymentBankWrapper" class="mt-2 flex flex-col gap-2 hidden">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Banka hesabı
+            </span>
+            {% if has_banks %}
+            <select id="checkPaymentBankSelect"
+              class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="">Banka hesabı seçin...</option>
+              {% for b in banks %}
+              <option value="{{ b.BankaID }}">
+                {{ b.BankaAdi }} - {{ b.HesapAdi }}
+              </option>
+              {% endfor %}
+            </select>
+            {% else %}
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Tanımlı banka hesabı bulunmuyor. Bankadan ödeme yapabilmek için önce banka hesabı ekleyin.
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div
+        class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/60 dark:bg-[#151424]">
+        <button type="button"
+          class="h-10 px-4 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          onclick="closeCheckPaymentModal()">
+          İptal
+        </button>
+        <button type="submit"
+          class="h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-primary/90 hover:shadow-lg transition-all">
+          <span class="material-symbols-outlined text-[18px]">payments</span>
+          Ödemeyi Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleCheckMenu(id, event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    var menu = document.getElementById(id);
+    if (!menu) return;
+
+    var allMenus = document.querySelectorAll('[id^="check-menu-"]');
+    allMenus.forEach(function (m) {
+      if (m.id !== id) {
+        m.classList.add('hidden');
+      }
+    });
+
+    const isHidden = menu.classList.contains('hidden');
+    if (isHidden) {
+      // Reset styles to default before measuring
+      menu.style.top = '100%';
+      menu.style.bottom = 'auto';
+      menu.style.marginTop = '8px';
+      menu.style.marginBottom = '0';
+
+      menu.classList.remove('hidden');
+
+      const rect = menu.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Only open upwards if it actually hits or exceeds the viewport bottom
+      if (rect.bottom > viewportHeight - 10) {
+        menu.style.top = 'auto';
+        menu.style.bottom = '100%';
+        menu.style.marginTop = '0';
+        menu.style.marginBottom = '8px';
+      }
+    } else {
+      menu.classList.add('hidden');
+    }
+  }
+
+  window.addEventListener('click', function (e) {
+    var allMenus = document.querySelectorAll('[id^="check-menu-"]');
+    allMenus.forEach(function (m) {
+      if (!m.contains(e.target)) {
+        m.classList.add('hidden');
+      }
+    });
+  });
+
+  function filterChecksByGroup(group) {
+    var rows = document.querySelectorAll('tbody tr');
+    if (!rows.length) return;
+    rows.forEach(function (row) {
+      var rowGroup = row.getAttribute('data-check-group');
+      if (!group || group === 'all') {
+        row.classList.remove('hidden');
+      } else {
+        if (rowGroup === group) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  var portfolioCard = document.getElementById('portfolioChecksCard');
+  if (portfolioCard) {
+    portfolioCard.addEventListener('click', function () {
+      filterChecksByGroup('portfolio');
+    });
+  }
+
+  var payableCard = document.getElementById('payableChecksCard');
+  if (payableCard) {
+    payableCard.addEventListener('click', function () {
+      filterChecksByGroup('payable');
+    });
+  }
+
+  var bankCard = document.getElementById('bankChecksCard');
+  if (bankCard) {
+    bankCard.addEventListener('click', function () {
+      filterChecksByGroup('bank');
+    });
+  }
+
+  var customerCard = document.getElementById('customerChecksCard');
+  if (customerCard) {
+    customerCard.addEventListener('click', function () {
+      filterChecksByGroup('customer');
+    });
+  }
+
+  var collectedCard = document.getElementById('collectedChecksCard');
+  if (collectedCard) {
+    collectedCard.addEventListener('click', function () {
+      filterChecksByGroup('collected');
+    });
+  }
+
+  var badCard = document.getElementById('badChecksCard');
+  if (badCard) {
+    badCard.addEventListener('click', function () {
+      filterChecksByGroup('bad');
+    });
+  }
+
+  var checkPaymentMethodRadios = document.querySelectorAll('input[name="check_payment_method_choice"]');
+  if (checkPaymentMethodRadios.length > 0) {
+    checkPaymentMethodRadios.forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        var methodInput = document.getElementById('checkPaymentMethod');
+        var bankWrapper = document.getElementById('checkPaymentBankWrapper');
+        if (methodInput) {
+          methodInput.value = this.value;
+        }
+        if (bankWrapper) {
+          if (this.value === 'bank') {
+            bankWrapper.classList.remove('hidden');
+          } else {
+            bankWrapper.classList.add('hidden');
+          }
+        }
+
+        // Update UI styles
+        checkMethodRadios.forEach(function (r) {
+          const div = r.nextElementSibling;
+          if (r.checked) {
+            div.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+          } else {
+            div.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+          }
+        });
+      });
+    });
+  }
+
+  var checkPaymentBankSelect = document.getElementById('checkPaymentBankSelect');
+  if (checkPaymentBankSelect) {
+    checkPaymentBankSelect.addEventListener('change', function () {
+      var bankIdInput = document.getElementById('checkPaymentBankId');
+      if (bankIdInput) {
+        bankIdInput.value = this.value;
+      }
+    });
+  }
+
+  function openCheckToBankModal(finansId, amount, category) {
+    var modal = document.getElementById('checkToBankModal');
+    if (!modal) return;
+    var summary = document.getElementById('checkToBankSummary');
+    var subtitle = document.getElementById('checkToBankSubtitle');
+    var form = document.getElementById('checkToBankForm');
+    var select = document.getElementById('checkToBankSelect');
+
+    if (summary) {
+      summary.textContent = (category || '-') + ' • ' + (amount || '0,00') + ' ₺';
+    }
+    if (subtitle) {
+      subtitle.textContent = 'Bu çeki bankaya devretmek için bir hesap seçin.';
+    }
+    if (form) {
+      form.action = '/cekler/' + finansId + '/to_bank';
+    }
+    if (select) {
+      select.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeCheckToBankModal() {
+    var modal = document.getElementById('checkToBankModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function openCheckToCustomerModal(finansId, amount, category) {
+    var modal = document.getElementById('checkToCustomerModal');
+    if (!modal) return;
+    var summary = document.getElementById('checkToCustomerSummary');
+    var subtitle = document.getElementById('checkToCustomerSubtitle');
+    var form = document.getElementById('checkToCustomerForm');
+    var select = document.getElementById('checkToCustomerSelect');
+
+    if (summary) {
+      summary.textContent = (category || '-') + ' • ' + (amount || '0,00') + ' ₺';
+    }
+    if (subtitle) {
+      subtitle.textContent = 'Bu çeki ciro etmek (başka birine vermek) için cari seçin.';
+    }
+    if (form) {
+      form.action = '/cekler/' + finansId + '/to_customer';
+    }
+    if (select) {
+      select.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeCheckToCustomerModal() {
+    var modal = document.getElementById('checkToCustomerModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function openCheckPaymentModal(finansId, amount, category) {
+    var modal = document.getElementById('checkPaymentModal');
+    if (!modal) return;
+    var summary = document.getElementById('checkPaymentSummary');
+    var subtitle = document.getElementById('checkPaymentSubtitle');
+    var form = document.getElementById('checkPaymentForm');
+    var methodInput = document.getElementById('checkPaymentMethod');
+    var bankWrapper = document.getElementById('checkPaymentBankWrapper');
+    var bankSelect = document.getElementById('checkPaymentBankSelect');
+    var bankIdInput = document.getElementById('checkPaymentBankId');
+
+    if (summary) {
+      summary.textContent = (category || '-') + ' • ' + (amount || '0,00') + ' ₺';
+    }
+    if (subtitle) {
+      subtitle.textContent = 'Bu çeki ödemek için bir yöntem seçin.';
+    }
+    if (form) {
+      form.action = '/cekler/' + finansId + '/pay';
+    }
+    if (methodInput) {
+      methodInput.value = 'cash';
+    }
+    var methodRadios = document.querySelectorAll('input[name="check_payment_method_choice"]');
+    if (methodRadios.length > 0) {
+      methodRadios.forEach(function (radio) {
+        radio.checked = radio.value === 'cash';
+      });
+    }
+    if (bankWrapper) {
+      bankWrapper.classList.add('hidden');
+    }
+    if (bankSelect) {
+      bankSelect.value = '';
+    }
+    if (bankIdInput) {
+      bankIdInput.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // Initial UI Update
+    document.querySelectorAll('input[name="check_payment_method_choice"]').forEach(function (r) {
+      const div = r.nextElementSibling;
+      if (r.checked) {
+        div.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+      } else {
+        div.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+      }
+    });
+
+    if (bankSelect) {
+      bankSelect.focus();
+    }
+  }
+
+  function closeCheckPaymentModal() {
+    var modal = document.getElementById('checkPaymentModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

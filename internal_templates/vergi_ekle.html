@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto flex flex-col gap-8 pb-20">
+    <!-- Breadcrumbs -->
+    <div class="flex flex-wrap items-center gap-2">
+        <a class="text-[#545095] dark:text-slate-400 hover:text-primary hover:underline text-sm font-medium leading-normal transition-colors"
+            href="/">Dashboard</a>
+        <span class="material-symbols-outlined text-[#545095] dark:text-slate-500 text-sm">chevron_right</span>
+        <a class="text-[#545095] dark:text-slate-400 hover:text-primary hover:underline text-sm font-medium leading-normal transition-colors"
+            href="/vergiler">Vergiler</a>
+        <span class="material-symbols-outlined text-[#545095] dark:text-slate-500 text-sm">chevron_right</span>
+        <span
+            class="text-[#0f0e1b] dark:text-white text-sm font-semibold leading-normal bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md shadow-sm border border-slate-200 dark:border-slate-700">Vergi
+            Ekle</span>
+    </div>
+
+    <!-- Page Heading -->
+    <div class="flex flex-col gap-2">
+        <h1 class="text-[#0f0e1b] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
+            {% if entry %}Vergi Kaydını Düzenle{% else %}Yeni Vergi Kaydı Oluştur{% endif %}
+        </h1>
+        <p class="text-[#545095] dark:text-slate-400 text-base font-normal leading-normal max-w-2xl">Lütfen vergi
+            detaylarını aşağıya giriniz. Girdiğiniz bilgiler finansal raporlara otomatik olarak yansıtılacaktır.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div
+        class="bg-white dark:bg-slate-800 rounded-xl shadow-[0_2px_12px_-4px_rgba(6,8,24,0.08)] border border-[#e8e8f3] dark:border-slate-700 overflow-hidden">
+        <form
+            action="{% if entry %}{{ url_for('vergiler_edit', vid=entry.FinansID) }}{% else %}{{ url_for('vergiler_add') }}{% endif %}"
+            method="POST">
+            <!-- Form Content -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <!-- Vergi Tipi -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[#0f0e1b] dark:text-slate-300 text-sm font-medium leading-normal">Vergi
+                            Tipi</label>
+                        <div class="relative">
+                            {% set cat_parts = (entry.Kategori or '').split(' - ') if entry else [] %}
+                            {% set main_cat = cat_parts[0] if cat_parts else '' %}
+                            {% set sub_cat = cat_parts[1] if cat_parts|length > 1 else '' %}
+                            <select id="vergi_tipi" name="vergi_tipi" required
+                                class="form-select w-full rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 h-12 px-4 text-[#0f0e1b] dark:text-white text-base focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer transition-shadow hover:bg-[#f0f0f5] dark:hover:bg-slate-600">
+                                <option disabled {% if not entry %}selected{% endif %} value="">Seçiniz (KDV, SGK, Damga
+                                    vb.)</option>
+                                <option value="KDV" {% if main_cat=='KDV' %}selected{% endif %}>Katma Değer Vergisi
+                                    (KDV)</option>
+                                <option value="SGK" {% if main_cat=='SGK' %}selected{% endif %}>SGK Primi</option>
+                                <option value="Muhtasar (Stopaj)" {% if main_cat=='Muhtasar (Stopaj)' or
+                                    main_cat=='Stopaj' %}selected{% endif %}>Muhtasar ve Prim Hizmet (Stopaj)</option>
+                                <option value="Kurumlar Vergisi" {% if main_cat=='Kurumlar Vergisi' %}selected{% endif
+                                    %}>Kurumlar Vergisi</option>
+                                <option value="Damga Vergisi" {% if main_cat=='Damga Vergisi' %}selected{% endif %}>
+                                    Damga Vergisi</option>
+                                <option value="Diğer Vergi" {% if main_cat=='Diğer Vergi' %}selected{% endif %}>Diğer
+                                    Vergi</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- KDV Türü (Conditional) -->
+                    <div id="kdv_turu_container" class="flex flex-col gap-2 hidden">
+                        <label class="text-[#0f0e1b] dark:text-slate-300 text-sm font-medium leading-normal">KDV
+                            Türü</label>
+                        <div class="relative">
+                            <select name="kdv_turu"
+                                class="form-select w-full rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 h-12 px-4 text-[#0f0e1b] dark:text-white text-base focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer transition-shadow hover:bg-[#f0f0f5] dark:hover:bg-slate-600">
+                                <option value="İndirilecek" {% if sub_cat=='İndirilecek' %}selected{% endif %}>
+                                    İndirilecek KDV</option>
+                                <option value="Hesaplanan" {% if sub_cat=='Hesaplanan' %}selected{% endif %}>Hesaplanan
+                                    KDV</option>
+                                <option value="Ödenecek" {% if sub_cat=='Ödenecek' %}selected{% endif %}>Ödenecek KDV
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tutar -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-[#0f0e1b] dark:text-slate-300 text-sm font-medium leading-normal">Tutar</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="text-[#545095] dark:text-slate-400 font-semibold">₺</span>
+                            </div>
+                            <input name="tutar" required step="0.01" value="{{ entry.Tutar if entry else '' }}"
+                                class="w-full rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 h-12 pl-10 pr-4 text-[#0f0e1b] dark:text-white text-base focus:border-primary focus:ring-1 focus:ring-primary transition-shadow placeholder:text-[#545095]/50 hover:bg-[#f0f0f5] dark:hover:bg-slate-600"
+                                placeholder="0.00" type="number" />
+                        </div>
+                    </div>
+
+                    <!-- Ödeme Tarihi -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[#0f0e1b] dark:text-slate-300 text-sm font-medium leading-normal">Kayıt
+                            Tarihi</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span
+                                    class="material-symbols-outlined text-[#545095] dark:text-slate-400 text-[20px]">calendar_today</span>
+                            </div>
+                            <input name="tarih" required
+                                class="w-full rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 h-12 pl-11 pr-4 text-[#0f0e1b] dark:text-white text-base focus:border-primary focus:ring-1 focus:ring-primary transition-shadow hover:bg-[#f0f0f5] dark:hover:bg-slate-600"
+                                type="date"
+                                value="{{ entry.Tarih.strftime('%Y-%m-%d') if entry and entry.Tarih else today }}"
+                                onclick="this.showPicker()" />
+                        </div>
+                    </div>
+
+                    <!-- Ödeme Durumu -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[#0f0e1b] dark:text-slate-300 text-sm font-medium leading-normal">Ödeme
+                            Durumu</label>
+                        <div class="grid grid-cols-2 gap-3 h-12">
+                            <label class="cursor-pointer relative group">
+                                <input class="peer sr-only" name="durum" type="radio" value="Ödendi" {% if entry and
+                                    entry.IslemTuru=='Gider' %}checked{% endif %} />
+                                <div
+                                    class="w-full h-full flex items-center justify-center rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 text-[#545095] dark:text-slate-400 peer-checked:bg-green-500/10 peer-checked:border-green-500 peer-checked:text-green-600 dark:peer-checked:text-green-400 transition-all font-medium text-sm gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                                    Ödendi
+                                </div>
+                            </label>
+                            <label class="cursor-pointer relative group">
+                                <input class="peer sr-only" name="durum" type="radio" value="Bekliyor" {% if not entry
+                                    or entry.IslemTuru=='Bekleyen' %}checked{% endif %} />
+                                <div
+                                    class="w-full h-full flex items-center justify-center rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 text-[#545095] dark:text-slate-400 peer-checked:bg-orange-500/10 peer-checked:border-orange-500 peer-checked:text-orange-600 dark:peer-checked:text-orange-400 transition-all font-medium text-sm gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">pending</span>
+                                    Bekliyor
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Açıklama -->
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <label
+                            class="text-[#0f0e1b] dark:text-slate-300 text-sm font-medium leading-normal flex justify-between">
+                            Açıklama
+                            <span class="text-[#545095] dark:text-slate-500 font-normal text-xs">Opsiyonel</span>
+                        </label>
+                        <textarea name="aciklama"
+                            class="w-full rounded-xl border border-[#d2d1e6] dark:border-slate-600 bg-[#f9f8fb] dark:bg-slate-700 p-4 text-[#0f0e1b] dark:text-white text-base focus:border-primary focus:ring-1 focus:ring-primary transition-shadow resize-y placeholder:text-[#545095]/50 hover:bg-[#f0f0f5] dark:hover:bg-slate-600"
+                            placeholder="Vergi ile ilgili notlar, fatura numarası vb..."
+                            rows="4">{{ entry.Aciklama if entry else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- Footer Actions -->
+            <div
+                class="px-8 py-5 bg-[#f6f6f8] dark:bg-slate-900/50 border-t border-[#e8e8f3] dark:border-slate-700 flex flex-col-reverse sm:flex-row items-center justify-end gap-4">
+                <a href="/vergiler"
+                    class="w-full sm:w-auto h-12 px-6 rounded-xl flex items-center justify-center text-[#545095] dark:text-slate-400 font-bold text-sm hover:bg-[#e8e8f3] dark:hover:bg-slate-800 transition-colors">
+                    İptal
+                </a>
+                <button type="submit"
+                    class="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/30 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">save</span>
+                    {% if entry %}Güncelle{% else %}Kaydet{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Helper Info -->
+    <div
+        class="flex items-start gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+        <div class="text-blue-600 dark:text-blue-400 mt-0.5">
+            <span class="material-symbols-outlined">info</span>
+        </div>
+        <div>
+            <h4 class="text-blue-900 dark:text-blue-300 font-semibold text-sm mb-1">Bilgilendirme</h4>
+            <p class="text-blue-800 dark:text-blue-400 text-sm leading-relaxed">
+                Eklediğiniz vergi kaydı, "Vergi Özeti" ve finansal raporlara otomatik olarak işlenecektir. Bu işlem kasa
+                bakiyenizi etkileyecektir.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const vergiTipiSelect = document.getElementById('vergi_tipi');
+        const kdvTuruContainer = document.getElementById('kdv_turu_container');
+        const kdvTuruSelect = kdvTuruContainer.querySelector('select');
+
+        function toggleKdvTuru() {
+            if (vergiTipiSelect.value === 'KDV') {
+                kdvTuruContainer.classList.remove('hidden');
+                kdvTuruSelect.setAttribute('required', 'required');
+            } else {
+                kdvTuruContainer.classList.add('hidden');
+                kdvTuruSelect.removeAttribute('required');
+                kdvTuruSelect.value = '';
+            }
+        }
+
+        vergiTipiSelect.addEventListener('change', toggleKdvTuru);
+
+        // Initial check
+        toggleKdvTuru();
+    });
+</script>
+{% endblock %}

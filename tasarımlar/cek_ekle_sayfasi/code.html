@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Çek Ekle Modalı</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5048e5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121121",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e1c2e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 overflow-hidden">
+<!-- Main Dashboard Background (Simulated) -->
+<div class="relative min-h-screen w-full flex flex-col items-center justify-start pt-10" style="background-image: radial-gradient(circle at 50% 0%, rgba(80, 72, 229, 0.1) 0%, transparent 50%);">
+<!-- Simulated Header to add context -->
+<div aria-hidden="true" class="w-full max-w-[1200px] px-6 mb-8 flex items-center justify-between opacity-50 pointer-events-none">
+<div class="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+<div class="flex gap-4">
+<div class="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+<div class="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300">
+<!-- Modal Container -->
+<div class="w-full max-w-[800px] max-h-[90vh] flex flex-col bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in zoom-in-95 duration-200">
+<!-- Modal Header -->
+<div class="flex items-center justify-between px-8 py-6 border-b border-gray-100 dark:border-gray-700">
+<div>
+<h2 class="text-xl font-bold text-gray-900 dark:text-white leading-tight">Yeni Çek Ekle</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sisteme yeni bir çek kaydı oluşturun.</p>
+</div>
+<button class="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+<form class="flex flex-col gap-8" onsubmit="event.preventDefault();">
+<!-- Section: Status (Radio List) -->
+<div class="flex flex-col gap-3">
+<label class="text-sm font-medium text-gray-900 dark:text-gray-200">Çek Durumu</label>
+<div class="flex flex-wrap gap-3">
+<label class="group relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/50 px-5 py-3 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary dark:has-[:checked]:text-primary-400 has-[:checked]:ring-1 has-[:checked]:ring-primary">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-gray-400 group-has-[:checked]:text-primary">arrow_downward</span>
+                                        Gelen Çek
+                                    </span>
+<input checked="" class="sr-only" name="check-status" type="radio"/>
+</label>
+<label class="group relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/50 px-5 py-3 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary dark:has-[:checked]:text-primary-400 has-[:checked]:ring-1 has-[:checked]:ring-primary">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-gray-400 group-has-[:checked]:text-primary">arrow_upward</span>
+                                        Giden Çek
+                                    </span>
+<input class="sr-only" name="check-status" type="radio"/>
+</label>
+<label class="group relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/50 px-5 py-3 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary dark:has-[:checked]:text-primary-400 has-[:checked]:ring-1 has-[:checked]:ring-primary">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-gray-400 group-has-[:checked]:text-primary">account_balance</span>
+                                        Bankaya Verilen
+                                    </span>
+<input class="sr-only" name="check-status" type="radio"/>
+</label>
+</div>
+</div>
+<!-- Section: Basic Info -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Çek Numarası -->
+<label class="flex flex-col gap-2">
+<span class="text-sm font-medium text-gray-900 dark:text-gray-200">Çek Numarası</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-background-light dark:bg-gray-800/50 px-4 py-3.5 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow" placeholder="Örn: 1234567" type="text"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[20px]">tag</span>
+</div>
+</label>
+<!-- Lehtar/Keşideci -->
+<label class="flex flex-col gap-2">
+<span class="text-sm font-medium text-gray-900 dark:text-gray-200">Lehtar / Keşideci</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-background-light dark:bg-gray-800/50 px-4 py-3.5 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow" placeholder="Firma veya Kişi Adı" type="text"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[20px]">person</span>
+</div>
+</label>
+</div>
+<!-- Section: Financials -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+<!-- Tutar -->
+<label class="flex flex-col gap-2">
+<span class="text-sm font-medium text-gray-900 dark:text-gray-200">Tutar</span>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₺</span>
+<input class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-background-light dark:bg-gray-800/50 pl-10 pr-4 py-3.5 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow" placeholder="0.00" type="text"/>
+</div>
+</label>
+<!-- Vade Tarihi with Popover Visualization -->
+<div class="relative group/calendar">
+<label class="flex flex-col gap-2">
+<span class="text-sm font-medium text-gray-900 dark:text-gray-200">Vade Tarihi</span>
+<div class="relative cursor-pointer">
+<input class="w-full cursor-pointer rounded-xl border border-primary ring-1 ring-primary dark:border-primary bg-background-light dark:bg-gray-800/50 px-4 py-3.5 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none" readonly="" type="text" value="05 Kasım 2023"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+</label>
+<!-- Floating Calendar Component (Simulating Open State) -->
+<div class="absolute top-full right-0 mt-2 z-50 w-[320px] rounded-2xl bg-white dark:bg-[#252339] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-gray-700 p-4">
+<div class="flex flex-col gap-2">
+<!-- Calendar Header -->
+<div class="flex items-center justify-between p-1">
+<button class="flex items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<span class="text-sm font-bold text-gray-900 dark:text-white">Kasım 2023</span>
+<button class="flex items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Calendar Grid -->
+<div class="grid grid-cols-7 text-center">
+<!-- Week Days -->
+<div class="text-xs font-semibold text-gray-400 py-2">Pt</div>
+<div class="text-xs font-semibold text-gray-400 py-2">Sa</div>
+<div class="text-xs font-semibold text-gray-400 py-2">Ça</div>
+<div class="text-xs font-semibold text-gray-400 py-2">Pe</div>
+<div class="text-xs font-semibold text-gray-400 py-2">Cu</div>
+<div class="text-xs font-semibold text-gray-400 py-2">Ct</div>
+<div class="text-xs font-semibold text-gray-400 py-2">Pa</div>
+<!-- Days -->
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50">30</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50">31</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">1</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">2</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">3</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">4</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm bg-primary text-white shadow-md shadow-primary/30">5</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">6</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">7</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">8</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">9</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">10</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">11</button>
+<button class="h-9 w-9 mx-auto flex items-center justify-center rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">12</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Description -->
+<label class="flex flex-col gap-2">
+<span class="flex items-center justify-between">
+<span class="text-sm font-medium text-gray-900 dark:text-gray-200">Açıklama</span>
+<span class="text-xs text-gray-400">Opsiyonel</span>
+</span>
+<textarea class="w-full resize-none rounded-xl border border-gray-200 dark:border-gray-600 bg-background-light dark:bg-gray-800/50 px-4 py-3 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow" placeholder="Ek notlar veya detaylar..." rows="3"></textarea>
+</label>
+</form>
+</div>
+<!-- Modal Footer -->
+<div class="flex items-center justify-end gap-3 px-8 py-5 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20">
+<button class="rounded-xl px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                        İptal
+                    </button>
+<button class="rounded-xl bg-primary hover:bg-primary/90 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition-all hover:shadow-primary/40 active:scale-95">
+                        Kaydet
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

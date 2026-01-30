@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Dijital Arşiv</h1>
+            <p class="text-slate-500 text-sm">Kurumsal dökümanların ve belgelerin merkezi yönetimi.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm flex items-center gap-1">
+                <a href="/belgeler"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all {% if not kategori %}bg-primary text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Tümü</a>
+                <a href="/belgeler?kategori=Fatura"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all {% if kategori == 'Fatura' %}bg-primary text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Fatura</a>
+                <a href="/belgeler?kategori=Sözleşme"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all {% if kategori == 'Sözleşme' %}bg-primary text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Sözleşme</a>
+                <a href="/belgeler?kategori=Personel"
+                    class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all {% if kategori == 'Personel' %}bg-primary text-white{% else %}text-slate-500 hover:bg-slate-50{% endif %}">Personel</a>
+            </div>
+            <a href="/belge/yukle"
+                class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95">
+                <span class="material-symbols-outlined">upload_file</span>
+                <span>Belge Yükle</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        {% for b in belgeler %}
+        <div
+            class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden group hover:shadow-md transition-all">
+            <div
+                class="aspect-[4/3] bg-slate-50 border-b border-slate-100 flex items-center justify-center relative overflow-hidden">
+                <span
+                    class="material-symbols-outlined text-6xl text-slate-200 group-hover:scale-110 transition-transform">
+                    {% if b.DosyaTuru in ['jpg', 'jpeg', 'png', 'svg'] %}image
+                    {% elif b.DosyaTuru == 'pdf' %}picture_as_pdf
+                    {% elif b.DosyaTuru in ['doc', 'docx'] %}description
+                    {% elif b.DosyaTuru in ['xls', 'xlsx'] %}table_chart
+                    {% else %}draft{% endif %}
+                </span>
+                <div class="absolute top-3 right-3">
+                    <span
+                        class="px-2 py-1 rounded bg-white/80 backdrop-blur font-black text-[9px] uppercase text-slate-600 border border-slate-200 shadow-sm">
+                        {{ b.DosyaTuru }}
+                    </span>
+                </div>
+            </div>
+            <div class="p-4 flex flex-col gap-2">
+                <div class="flex flex-col">
+                    <h3 class="font-bold text-slate-800 text-xs truncate uppercase tracking-tight"
+                        title="{{ b.DosyaAdi }}">{{ b.DosyaAdi }}</h3>
+                    <p class="text-[9px] font-black text-primary uppercase mt-0.5">{{ b.Kategori }}</p>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    {% if b.Cari %}
+                    <div class="flex items-center gap-1.5 text-[9px] text-slate-500 font-bold uppercase truncate">
+                        <span class="material-symbols-outlined text-[12px]">store</span>
+                        {{ b.Cari.Unvan }}
+                    </div>
+                    {% endif %}
+                    {% if b.Personel %}
+                    <div class="flex items-center gap-1.5 text-[9px] text-slate-500 font-bold uppercase truncate">
+                        <span class="material-symbols-outlined text-[12px]">badge</span>
+                        {{ b.Personel.Ad }} {{ b.Personel.Soyad }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+                    <span class="text-[9px] font-black text-slate-400 tabular-nums">
+                        {{ '{:,.1f}'.format((b.DosyaBoyutu or 0) / 1024) }} KB
+                    </span>
+                    <div class="flex gap-2">
+                        <a href="/uploads/{{ b.DosyaYolu }}" target="_blank"
+                            class="text-slate-400 hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                        </a>
+                        {% if session.get('user_role') == 'admin' %}
+                        <a href="/belge/sil/{{ b.BelgeID }}"
+                            onclick="return confirm('Bu belgeyi tamamen silmek istediğinize emin misiniz?')"
+                            class="text-slate-400 hover:text-rose-500 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div
+            class="col-span-full bg-white p-20 rounded-3xl border border-dashed border-slate-200 flex flex-col items-center text-slate-400">
+            <span class="material-symbols-outlined text-6xl mb-4">folder_off</span>
+            <p class="text-lg font-bold">Henüz belge yüklenmemiş.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

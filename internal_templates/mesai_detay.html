@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  @media print {
+
+    /* SCORCHED EARTH - Hide everything from parent template */
+    html,
+    body,
+    aside,
+    header,
+    nav,
+    .lg\:static,
+    .fixed,
+    .no-print,
+    #docViewerModal {
+      display: none !important;
+    }
+
+    /* Reset core containers to avoid whitespace */
+    html,
+    body {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+      background: white !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Reset all Tailwind wrappers leading to content */
+    .flex,
+    .h-screen,
+    .h-full,
+    .overflow-y-auto,
+    main,
+    .max-w-7xl,
+    .bg-background-light {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+      position: static !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      max-width: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      border: none !important;
+    }
+
+    /* The target printable area */
+    #mesai-detay-print-area {
+      display: block !important;
+      padding: 5mm !important;
+      width: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+
+    .print-only {
+      display: block !important;
+      visibility: visible !important;
+      margin-bottom: 25px !important;
+    }
+
+    /* Print Header */
+    .print-only h2 {
+      font-size: 24pt !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+    }
+
+    .print-only p {
+      font-size: 14pt !important;
+      margin: 5pt 0 !important;
+    }
+
+    /* Summary Row for Print */
+    .summary-grid-print {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 10px !important;
+      margin-bottom: 30px !important;
+    }
+
+    .summary-card-print {
+      border: 1.5px solid #000 !important;
+      padding: 12px !important;
+      background: #fcfcfc !important;
+      text-align: center !important;
+      border-radius: 8px !important;
+    }
+
+    .summary-card-print p {
+      font-size: 8pt !important;
+      font-weight: 800 !important;
+      color: #555 !important;
+      margin-bottom: 4px !important;
+    }
+
+    .summary-card-print div {
+      font-size: 13pt !important;
+      font-weight: 900 !important;
+      color: #000 !important;
+    }
+
+    /* Table for Print */
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin-top: 10px !important;
+    }
+
+    th,
+    td {
+      border: 1px solid #000 !important;
+      padding: 6px 3px !important;
+      font-size: 9px !important;
+      text-align: center !important;
+      color: black !important;
+    }
+
+    thead {
+      display: table-header-group !important;
+    }
+
+    tr {
+      page-break-inside: avoid !important;
+    }
+
+    input,
+    select {
+      border: none !important;
+      background: transparent !important;
+      font-size: inherit !important;
+      width: 100% !important;
+      text-align: center !important;
+    }
+  }
+
+  .mesai-input:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+  }
+</style>
+
+<div id="mesai-detay-print-area">
+  <!-- PRE-HEADER FOR PRINT -->
+  <div class="print-only hidden mb-10 text-center border-b-[3px] border-slate-900 pb-8">
+    <h2 class="text-3xl font-black uppercase text-slate-900">{{ company_name }}</h2>
+    <p class="text-lg font-bold text-slate-700 mt-2">FAZLA MESAİ VE PUANTAJ ÖZETİ</p>
+    <div class="flex justify-between mt-6 px-4 text-xs font-black text-slate-600">
+      <span>DÖNEM: {{ "%02d"|format(selected_month) }}/{{ selected_year }}</span>
+      <span>HESAPLAMA TARİHİ: {{ datetime.now().strftime('%d.%m.%Y') }}</span>
+      <span>PERSONEL: {{ person.Ad|upper }} {{ person.Soyad|upper }}</span>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <!-- WEB HEADER -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Mesai Yönetim Paneli</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          {{ person.Ad }} {{ person.Soyad }} · {{ "%02d"|format(selected_month) }}/{{ selected_year }}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ url_for('mesailer', year=selected_year, month=selected_month) }}"
+          class="inline-flex items-center gap-2 px-4 h-10 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span>Listeye Dön</span>
+        </a>
+        <button id="mesaiDetayExcelBtn" type="button"
+          class="inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-lg shadow-emerald-500/25 transition-all">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          <span>Excel</span>
+        </button>
+        <button onclick="window.print()"
+          class="inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-sm font-semibold shadow-lg shadow-slate-700/25 transition-all">
+          <span class="material-symbols-outlined text-[18px]">print</span>
+          <span>Yazdır / PDF</span>
+        </button>
+        {% set wa_msg = "Sayın " ~ person.Ad ~ " " ~ person.Soyad ~ ",\n" ~ selected_month ~ "/" ~ selected_year ~ "
+        dönemi mesai özeti:\n\n" ~ "--------------------------\n" ~ "Toplam Mesai: " ~
+        "%.1f"|format(stats.toplam_mesai_saat) ~ " Saat\n" ~ "Brüt Hakediş: ₺ " ~
+        "{:,.2f}".format(stats.tahmini_odeme).replace(',', '.') ~ "\n" ~ (("Eksik Saat/Mesai Kesintisi: ₺ " ~
+        "{:,.2f}".format(stats.total_deduction).replace(',', '.')) if stats.total_deduction > 0 else "") ~ "\n" ~ "Net
+        Mesai Alacağı: ₺ " ~ "{:,.2f}".format(stats.net_mesai_odeme).replace(',', '.') ~ "\n" ~
+        "--------------------------\n" ~ (("Not: " ~ "Yaptığınız mesai eksik saatleri karşılamadığı için kalan kesinti
+        maaşınızdan düşülecektir.\n") if stats.is_negative else "") ~ "\nİyi çalışmalar dileriz." %}
+        <a href="{{ url_for('bordro_whatsapp', phone=person.Telefon, message=wa_msg) }}" target="_blank"
+          class="inline-flex items-center gap-2 px-4 h-10 rounded-lg bg-[#25D366] hover:bg-[#128C7E] text-white text-sm font-semibold shadow-lg shadow-green-500/25 transition-all no-print">
+          <span class="material-symbols-outlined text-[18px]">chat</span>
+          <span>WhatsApp</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS ROW -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 summary-grid-print">
+      <!-- Total Hours -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm summary-card-print">
+        <p class="text-slate-500 dark:text-slate-400 text-[10px] font-bold mb-1 uppercase tracking-wider">Top. Mesai
+          Saati</p>
+        <div class="flex items-baseline justify-center gap-1">
+          <span class="text-xl font-bold text-slate-900 dark:text-white">{{ "%.1f"|format(stats.toplam_mesai_saat)
+            }}</span>
+          <span class="text-[10px] text-slate-400">saat</span>
+        </div>
+      </div>
+
+      <!-- Gross Pay -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm summary-card-print">
+        <p class="text-slate-500 dark:text-slate-400 text-[10px] font-bold mb-1 uppercase tracking-wider">Bürüt Mesai
+          Ücreti</p>
+        <div class="flex items-baseline justify-center gap-1">
+          <span class="text-xl font-bold text-slate-900 dark:text-white">₺ {{
+            "{:,.2f}".format(stats.tahmini_odeme).replace(',', '.') }}</span>
+        </div>
+      </div>
+
+      <!-- Net Pay -->
+      <div
+        class="bg-indigo-50 dark:bg-indigo-900/10 rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/30 shadow-sm relative overflow-hidden summary-card-print">
+        <p class="text-indigo-600 dark:text-indigo-400 text-[10px] font-bold mb-1 uppercase tracking-wider">Net Mesai
+          Alacağı</p>
+        <div class="flex items-baseline justify-center gap-1">
+          {% if stats.is_negative %}
+          <span class="text-[10px] font-bold text-rose-600 leading-tight">Mesaiden Karşılanmayan Kesinti Mevcut</span>
+          {% else %}
+          <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">₺ {{
+            "{:,.2f}".format(stats.net_mesai_odeme).replace(',', '.') }}</span>
+          {% endif %}
+        </div>
+        <p
+          class="text-[8px] text-slate-400 mt-1 {% if stats.total_deduction > 0 %}opacity-100{% else %}opacity-0{% endif %} no-print">
+          * Mesaiden düşülen: ₺ {{ "{:,.2f}".format(stats.total_deduction).replace(',', '.') }}
+        </p>
+      </div>
+
+      <!-- Hourly Rate -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm summary-card-print">
+        <p class="text-slate-500 dark:text-slate-400 text-[10px] font-bold mb-1 uppercase tracking-wider">Saatlik Ücret
+          (Mesai)</p>
+        <div class="flex items-baseline justify-center gap-1">
+          <span class="text-xl font-bold text-slate-900 dark:text-white">₺ {{
+            "{:,.2f}".format(saatlik_mesai_ucreti).replace(',', '.') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN FORM AND TABLE -->
+    <form id="mesaiUpdateForm" action="{{ url_for('mesailer_detay_update', personel_id=person.PersonelID) }}"
+      method="POST"
+      class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+      <input type="hidden" name="year" value="{{ selected_year }}">
+      <input type="hidden" name="month" value="{{ selected_month }}">
+
+      <div
+        class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 no-print">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Günlük Puantaj ve Mesai Çizelgesi</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Mesai ve eksik saatleri kaydediniz. Virgül veya nokta
+            kullanılabilir.</p>
+        </div>
+        <button type="submit"
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all active:scale-95">
+          <span class="material-symbols-outlined text-[20px]">save</span>
+          <span>Kaydet</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-900/40">
+            <tr>
+              <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tarih</th>
+              <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Durum</th>
+              <th class="px-3 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider w-28">Mesai
+                (Sa)</th>
+              <th class="px-3 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider w-28">Eksik
+                (Sa)</th>
+              <th class="px-3 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hedef</th>
+              <th class="px-3 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider w-24">
+                Çarpan</th>
+              <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hakediş
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-colors">
+              <td class="px-6 py-3 text-slate-700 dark:text-slate-200 whitespace-nowrap font-medium">
+                <input type="hidden" name="day[]" value="{{ row.day }}">
+                {{ row.date.strftime('%d.%m.%Y') }}
+                {% if row.date.weekday() >= 5 %}
+                <span
+                  class="ml-1 text-[8px] px-1 py-0.5 rounded-full bg-orange-100 text-orange-600 font-bold uppercase no-print">HS</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-3 whitespace-nowrap">
+                <select name="durum_{{ row.day }}"
+                  class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md text-xs font-semibold py-1 px-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <option value="Geldi" {% if row.durum=='Geldi' %}selected{% endif %}>Geldi</option>
+                  <option value="İzinli" {% if row.durum=='İzinli' %}selected{% endif %}>İzinli</option>
+                  <option value="Raporlu" {% if row.durum=='Raporlu' %}selected{% endif %}>Raporlu</option>
+                  <option value="Gelmedi" {% if row.durum=='Gelmedi' %}selected{% endif %}>Gelmedi</option>
+                  <option value="Geç Geldi" {% if row.durum=='Geç Geldi' %}selected{% endif %}>Geç</option>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <input name="mesai_{{ row.day }}" type="text" value="{{ row.mesai_saat if row.mesai_saat > 0 else '' }}"
+                  placeholder="0.0"
+                  class="mesai-input w-full text-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md py-1 px-2 text-sm font-bold text-indigo-700 dark:text-indigo-400">
+              </td>
+              <td class="px-3 py-3">
+                <input name="eksik_{{ row.day }}" type="text" value="{{ row.eksik_saat if row.eksik_saat > 0 else '' }}"
+                  placeholder="0.0"
+                  class="mesai-input w-full text-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md py-1 px-2 text-sm font-bold text-rose-600 dark:text-rose-400">
+              </td>
+              <td class="px-3 py-3">
+                <select name="kesinti_turu_{{ row.day }}"
+                  class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md text-[10px] font-bold py-1 px-1 cursor-pointer">
+                  <option value="Maaş" {% if row.kesinti_turu=='Maaş' %}selected{% endif %}>Maaş</option>
+                  <option value="Mesai" {% if row.kesinti_turu=='Mesai' %}selected{% endif %}>Mesai</option>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <input name="carpan_{{ row.day }}" type="text" value="{{ row.display_carpan }}"
+                  class="mesai-input w-full text-center bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md py-1 px-2 text-xs font-bold text-amber-600 dark:text-amber-400">
+              </td>
+              <td class="px-6 py-3 text-right font-mono text-slate-800 dark:text-white whitespace-nowrap font-bold">
+                ₺ {{ "{:,.2f}".format(row.mesai_ucreti).replace(',', '.') }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var excelBtn = document.getElementById('mesaiDetayExcelBtn');
+    if (excelBtn) {
+      excelBtn.addEventListener('click', function () {
+        var table = document.querySelector('table');
+        if (!table) return;
+        var rows = Array.prototype.slice.call(table.querySelectorAll('thead tr, tbody tr'));
+        var csvContent = rows.map(function (row) {
+          var cells = Array.prototype.slice.call(row.querySelectorAll('th, td'));
+          var rowData = cells.map(function (cell) {
+            var text = (cell.innerText || '').replace(/[\n\r]+/g, ' ').trim();
+            var input = cell.querySelector('input, select');
+            if (input) text = input.value;
+            text = text.replace(/"/g, '""');
+            return '"' + text + '"';
+          });
+          return rowData.join(',');
+        }).join('\n');
+        var blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'mesai_{{ person.PersonelID }}_{{ selected_year }}_CSV.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+  })();
+</script>
+{% endblock %}

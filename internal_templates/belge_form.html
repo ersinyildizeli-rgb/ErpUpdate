@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto pb-20">
+    <form action="/belge/yukle" method="POST" enctype="multipart/form-data" class="flex flex-col gap-8">
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Belge Yükle</h1>
+            <div class="flex gap-3">
+                <a href="/belgeler"
+                    class="px-6 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-all">İptal</a>
+                <button type="submit"
+                    class="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all active:scale-95">
+                    Yüklemeyi Başlat
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-6"
+            x-data="{ fileName: '' }">
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dosya Seçimi</label>
+                <div class="relative group">
+                    <input type="file" name="dosya" id="dosya" required @change="fileName = $event.target.files[0].name"
+                        class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer">
+                    <div
+                        class="w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 group-hover:border-primary group-hover:bg-primary/5 transition-all">
+                        <span
+                            class="material-symbols-outlined text-4xl text-slate-300 group-hover:text-primary transition-colors">upload_file</span>
+                        <p class="text-xs font-bold text-slate-500"
+                            x-text="fileName || 'Dosyayı sürükleyin veya tıklayın'"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori</label>
+                    <select name="kategori" required
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                        <option value="Diğer">Diğer</option>
+                        <option value="Fatura">Fatura</option>
+                        <option value="Sözleşme">Sözleşme</option>
+                        <option value="Personel">Personel</option>
+                        <option value="Resmi Evrak">Resmi Evrak</option>
+                        <option value="Ürün Görseli">Ürün Görseli</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">İlişkili Cari
+                        (Opsiyonel)</label>
+                    <select name="cari_id"
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                        <option value="">Seçilmedi</option>
+                        {% for c in cariler %}
+                        <option value="{{ c.CariID }}">{{ c.Unvan }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">İlişkili Fatura
+                        (Opsiyonel)</label>
+                    <select name="fatura_id"
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                        <option value="">Seçilmedi</option>
+                        {% for f in faturalar %}
+                        <option value="{{ f.FaturaID }}">No: {{ f.FaturaNo }} ({{ f.Cari.Unvan }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">İlişkili Personel
+                        (Opsiyonel)</label>
+                    <select name="personel_id"
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                        <option value="">Seçilmedi</option>
+                        {% for p in personeller %}
+                        <option value="{{ p.PersonelID }}">{{ p.Ad }} {{ p.Soyad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Açıklama</label>
+                <textarea name="aciklama" rows="3" placeholder="Belge hakkında kısa bir not..."
+                    class="w-full p-4 rounded-xl border-slate-200 font-medium text-sm focus:ring-primary"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-40 transition-opacity duration-300"></div>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+  <div
+    class="w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-[#1a1929] text-left align-middle shadow-2xl transition-all flex flex-col max-h-[90vh]">
+    <div
+      class="flex items-start justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5 bg-white dark:bg-[#1a1929]">
+      <div>
+        <h3 class="text-xl font-bold leading-6 text-gray-900 dark:text-white">
+          {% if entry %}Kesinti Düzenle{% else %}Kesinti Ekle{% endif %}
+        </h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {% if entry %}Mevcut kesinti kaydını güncelleyin.{% else %}Personel hesabına yansıtılacak yeni bir finansal
+          kesinti oluşturun.{% endif %}
+        </p>
+      </div>
+      <a href="/kesintiler"
+        class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </a>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar space-y-6">
+      <form method="post" id="deduction-form" class="space-y-6">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+            Personel Seçimi
+          </label>
+          <div class="relative">
+            <select name="personel_id"
+              class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4 pr-10">
+              <option value="">Personel seçiniz...</option>
+              {% for p in people %}
+              <option value="{{ p.PersonelID }}" {% if p_id|string==p.PersonelID|string %}selected{% endif %}>
+                {{ p.Ad }} {{ p.Soyad }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Kesinti Tipi
+            </label>
+            <select name="type"
+              class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4">
+              <option value="">Seçiniz</option>
+              <option value="Avans" {% if d_type=='Avans' %}selected{% endif %}>Avans</option>
+              <option value="İcra" {% if d_type=='İcra' %}selected{% endif %}>İcra Dosyası</option>
+              <option value="BES" {% if d_type=='BES' %}selected{% endif %}>BES Kesintisi</option>
+              <option value="Özel Sigorta" {% if d_type=='Özel Sigorta' %}selected{% endif %}>Özel Sağlık Sigortası
+              </option>
+              <option value="Diğer" {% if d_type=='Diğer' %}selected{% endif %}>Diğer</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Tutar (TL)
+            </label>
+            <div class="relative rounded-lg shadow-sm">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                <span class="text-gray-500 dark:text-gray-400 sm:text-sm font-semibold">₺</span>
+              </div>
+              <input type="text" name="amount" placeholder="0.00" value="{{ entry.Tutar if entry else '' }}"
+                class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 pl-9 text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary h-12 sm:text-sm font-medium">
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+            Kesinti Tarihi
+          </label>
+          <div class="relative">
+            <input type="date" name="date"
+              value="{{ entry.Tarih.strftime('%Y-%m-%d') if entry and entry.Tarih else '' }}"
+              class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4">
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 dark:text-gray-400">
+              <span class="material-symbols-outlined text-lg">calendar_month</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 pt-1">
+          <div class="space-y-3">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Ödeme Yöntemi
+            </label>
+            <div class="flex items-center gap-6">
+              <div class="flex items-center">
+                <input
+                  class="h-4 w-4 border-gray-300 text-primary focus:ring-primary dark:bg-[#232236] dark:border-gray-600 cursor-pointer"
+                  id="payment_cash" name="payment_method" type="radio" value="cash" {% if entry and not entry.BankaID
+                  %}checked{% endif %} {% if not entry %}checked{% endif %}>
+                <label class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+                  for="payment_cash">
+                  Nakit
+                </label>
+              </div>
+              <div class="flex items-center">
+                <input
+                  class="h-4 w-4 border-gray-300 text-primary focus:ring-primary dark:bg-[#232236] dark:border-gray-600 cursor-pointer"
+                  id="payment_bank" name="payment_method" type="radio" value="bank" {% if entry and entry.BankaID
+                  %}checked{% endif %}>
+                <label class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+                  for="payment_bank">
+                  Banka
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Banka Seçimi
+            </label>
+            {% set has_banks = banks is defined and banks|length > 0 %}
+            {% if has_banks %}
+            <select name="bank_id" id="deduction_bank_id"
+              class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4">
+              <option value="">Banka hesabı seçiniz...</option>
+              {% for b in banks %}
+              <option value="{{ b.BankaID }}" {% if entry and entry.BankaID==b.BankaID %}selected{% endif %}>
+                {{ b.BankaAdi }} - {{ b.HesapAdi }}
+              </option>
+              {% endfor %}
+            </select>
+            {% else %}
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Tanımlı banka hesabı bulunmuyor. Bankadan ödeme için önce banka hesabı ekleyin.
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-primary/20 bg-primary/5 p-4 dark:bg-primary/10 dark:border-primary/30">
+          <div class="flex items-start">
+            <div class="flex h-6 items-center">
+              <input type="checkbox" name="installment_enabled" value="1" {% if i_count %}checked{% endif %}
+                class="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary transition-colors cursor-pointer"
+                id="installment">
+            </div>
+            <div class="ml-3 text-sm leading-6">
+              <label class="font-medium text-gray-900 dark:text-white cursor-pointer select-none" for="installment">
+                Taksitli Kesinti mi?
+              </label>
+              <p class="text-gray-500 dark:text-gray-400 text-xs">
+                İşaretlendiğinde kesinti tutarı belirtilen ay sayısına bölünerek raporlanır.
+              </p>
+            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Taksit Sayısı
+              </label>
+              <input type="number" name="installment_count" min="1" max="24" placeholder="Örn: 3" value="{{ i_count }}"
+                class="block w-full rounded-lg border-gray-300 bg-white dark:bg-[#232236] dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-11 sm:text-sm pl-4">
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Taksit Başlangıç Tarihi
+              </label>
+              <input type="date" name="installment_start" value="{{ i_start }}"
+                class="block w-full rounded-lg border-gray-300 bg-white dark:bg-[#232236] dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-11 sm:text-sm pl-4">
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              Açıklama
+            </label>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Opsiyonel</span>
+          </div>
+          <textarea name="description" rows="3"
+            class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-4 resize-none"
+            placeholder="Kesinti hakkında ek bilgi giriniz...">{{ entry.Aciklama if entry else '' }}</textarea>
+        </div>
+      </form>
+    </div>
+
+    <div
+      class="bg-gray-50 dark:bg-[#232236]/50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-gray-100 dark:border-gray-800">
+      <a href="/kesintiler"
+        class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-0 transition-all">
+        İptal
+      </a>
+      <button type="submit" form="deduction-form"
+        class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-transparent bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-primary/25 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
+        {% if entry %}Güncelle{% else %}Kaydet{% endif %}
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

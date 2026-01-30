@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Ürün Reçeteleri</h1>
+            <p class="text-slate-500 text-sm">Üretim kalemleri ve malzeme sarfiyat tanımları.</p>
+        </div>
+        <a href="/recete/ekle"
+            class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95">
+            <span class="material-symbols-outlined">add_task</span>
+            <span>Yeni Reçete Tanımla</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for r in receteler %}
+        <div
+            class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-start">
+                <div>
+                    <h3 class="font-black text-slate-900 uppercase leading-tight">{{ r.ReceteAdi }}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Üretilecek: {{
+                        r.Mamul.UrunAdi }}</p>
+                </div>
+                <div
+                    class="size-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-col gap-3">
+                    <p class="text-xs text-slate-500 font-medium italic min-h-[3rem]">"{{ r.Aciklama or 'Reçete
+                        açıklaması bulunmuyor.' }}"</p>
+                    <div class="h-px bg-slate-100"></div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-400 font-bold uppercase tracking-tighter">İçerik Sayısı</span>
+                        <span class="font-black text-slate-900">{{ r.Kalemler|length }} Kalem</span>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-2 text-xs">
+                <a href="/recete/{{r.ReceteID}}/duzenle"
+                    class="font-bold text-slate-500 hover:text-slate-900 transition-colors">Düzenle</a>
+            </div>
+        </div>
+        {% else %}
+        <div
+            class="md:col-span-3 bg-white p-20 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center text-slate-400">
+            <span class="material-symbols-outlined text-6xl mb-4">manufacturing</span>
+            <p class="text-lg font-bold">Henüz bir ürün reçetesi tanımlanmamış.</p>
+            <p class="text-sm">Üretime başlamak için önce içerik reçetelerini tanımlamalısınız.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

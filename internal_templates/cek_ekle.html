@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="relative min-h-[calc(100vh-4rem)] w-full flex flex-col items-center justify-start pt-10"
+  style="background-image: radial-gradient(circle at 50% 0%, rgba(80, 72, 229, 0.1) 0%, transparent 50%);">
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300">
+    <!-- Modal Container: Width reduced to max-w-3xl for better aesthetics -->
+    <div
+      class="w-full max-w-3xl max-h-[90vh] flex flex-col bg-white dark:bg-[#1e1c2e] rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-8 py-5 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-[#1e1c2e] shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">payments</span>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+              {% if entry %}Çek Kaydını Düzenle{% else %}Yeni Çek Ekle{% endif %}
+            </h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sistemdeki çek kayıtlarını yönetin.</p>
+          </div>
+        </div>
+        <a href="/cekler"
+          class="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <span class="material-symbols-outlined text-[22px]">close</span>
+        </a>
+      </div>
+
+      <!-- Content -->
+      <div class="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
+        <form id="cekForm" class="flex flex-col gap-6" method="post" enctype="multipart/form-data">
+          <!-- Status Selector -->
+          <div class="flex flex-col gap-3">
+            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Çek Durumu</label>
+            <div class="grid grid-cols-3 gap-3">
+              <label
+                class="relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/50 p-3 text-sm font-medium hover:bg-gray-50 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary has-[:checked]:ring-1 has-[:checked]:ring-primary">
+                Gelen Çek
+                <input class="sr-only" type="radio" name="status" value="gelen" {% if status=='gelen' or not entry
+                  %}checked{% endif %}>
+              </label>
+              <label
+                class="relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/50 p-3 text-sm font-medium hover:bg-gray-50 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary has-[:checked]:ring-1 has-[:checked]:ring-primary">
+                Giden Çek
+                <input class="sr-only" type="radio" name="status" value="giden" {% if status=='giden' %}checked{% endif
+                  %}>
+              </label>
+              <label
+                class="relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800/50 p-3 text-sm font-medium hover:bg-gray-50 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary has-[:checked]:ring-1 has-[:checked]:ring-primary">
+                Bankaya Verilen
+                <input class="sr-only" type="radio" name="status" value="banka" {% if status=='banka' %}checked{% endif
+                  %}>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">İlgili Cari (Opsiyonel)</label>
+              <select name="cari_id"
+                class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
+                <option value="">Cari Seçilmedi</option>
+                {% for c in cariler %}
+                <option value="{{ c.CariID }}" {% if entry and entry.CariID==c.CariID %}selected{% endif %}>{{ c.Unvan
+                  }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">İşlem Yapan Firma/Kişi</label>
+              <input type="text" name="party_name" value="{{ payee or '' }}"
+                class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                placeholder="Firma veya Kişi">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Banka Adı</label>
+              <input type="text" name="check_bank" value="{{ bank_name or '' }}"
+                class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                placeholder="Banka">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Çek Numarası</label>
+              <input type="text" name="cek_no" value="{{ cek_no or '' }}"
+                class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                placeholder="123456...">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Lehtar / Keşideci</label>
+              <input type="text" name="payee" value="{{ payee or '' }}"
+                class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                placeholder="İsim">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tutar</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₺</span>
+                <input type="number" step="0.01" name="amount" value="{{ amount }}"
+                  class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 pl-9 pr-4 text-sm font-bold focus:border-primary outline-none transition px-4 py-3"
+                  placeholder="0.00">
+              </div>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Vade Tarihi</label>
+              <input type="date" name="due_date" value="{{ due_date_str or '' }}"
+                class="w-full h-11 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 text-sm focus:border-primary outline-none transition">
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Açıklama</label>
+            <textarea name="description" rows="2"
+              class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 px-4 py-3 text-sm focus:border-primary outline-none transition resize-none">{{ desc_extra or '' }}</textarea>
+          </div>
+
+          <!-- Documents Area -->
+          <div class="border-t border-gray-100 dark:border-gray-700 pt-5 mt-2">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[20px]">attach_file</span>
+              Çek Görselleri / Belgeler
+            </h4>
+
+            {% if entry %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="p-4 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col gap-2">
+                <input type="file" onchange="uploadDirectDoc(this)" accept="image/*"
+                  class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:bg-primary/10 file:text-primary file:border-0 hover:file:bg-primary/20 cursor-pointer" />
+                <p class="text-[10px] text-gray-400 italic">* Dosya seçildiğinde otomatik yüklenecektir.</p>
+              </div>
+              <div class="flex flex-col gap-2 max-h-[120px] overflow-y-auto custom-scrollbar">
+                {% for doc in documents %}
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100 group">
+                  <div class="flex items-center gap-2 overflow-hidden">
+                    <span class="material-symbols-outlined text-gray-400 text-[18px]">image</span>
+                    <span class="text-xs font-medium text-gray-700 truncate max-w-[120px]">{{ doc.DosyaAdi }}</span>
+                  </div>
+                  <div class="flex gap-1">
+                    <a href="/view_document/{{ doc.BelgeID }}" target="_blank"
+                      class="p-1 text-primary hover:bg-white rounded transition"><span
+                        class="material-symbols-outlined text-sm">visibility</span></a>
+                    <button type="button" onclick="deleteDoc({{ doc.BelgeID }})"
+                      class="p-1 text-red-500 hover:bg-white rounded transition"><span
+                        class="material-symbols-outlined text-sm">delete</span></button>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% else %}
+            <div class="p-4 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col gap-3">
+              <input type="file" name="files[]" multiple onchange="handleCekFiles(event)" accept="image/*"
+                class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:bg-primary/10 file:text-primary file:border-0 cursor-pointer" />
+              <div id="cek-preview-list" class="flex flex-wrap gap-2 mt-1"></div>
+            </div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer: Fixed at bottom within modal -->
+      <div
+        class="px-8 py-5 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20 flex justify-end gap-3 shrink-0">
+        <a href="/cekler"
+          class="px-6 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-200 transition">İptal</a>
+        <button type="submit" form="cekForm"
+          class="px-10 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/30 transition active:scale-95">Kaydet</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function handleCekFiles(e) {
+    const list = document.getElementById('cek-preview-list');
+    list.innerHTML = '';
+    const files = e.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const div = document.createElement('div');
+      div.className = 'text-[9px] font-bold bg-white text-primary px-2 py-1 rounded-md border border-primary/20 shadow-sm';
+      div.innerText = files[i].name;
+      list.appendChild(div);
+    }
+  }
+  function uploadDirectDoc(input) {
+    if (!input.files || !input.files[0]) return;
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    formData.append('aciklama', 'Çek Görseli');
+    const fid = "{{ entry.FinansID if entry else '' }}";
+    fetch(`/upload_document/Cek/${fid}`, { method: 'POST', body: formData }).then(() => window.location.reload());
+  }
+  function deleteDoc(id) {
+    if (!confirm('Silmek istediğinize emin misiniz?')) return;
+    fetch(`/delete_document/${id}`, { method: 'POST' }).then(() => window.location.reload());
+  }
+</script>
+{% endblock %}

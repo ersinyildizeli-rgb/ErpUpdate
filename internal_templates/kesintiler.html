@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900 tracking-tight mb-1">TEST - Kesintiler Yönetimi</h1>
+      <p class="text-slate-500 text-sm">Personel maaş kesintilerini görüntüleyin, filtreleyin ve yönetin.</p>
+    </div>
+    <a href="/kesintiler/add"
+      class="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-medium shadow-lg shadow-primary/25 transition-all active:scale-95">
+      <span class="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
+      <span>Yeni Kesinti Ekle</span>
+    </a>
+  </div>
+
+  <div
+    class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col xl:flex-row gap-4 items-center justify-between">
+    <div class="flex flex-col md:flex-row w-full xl:w-auto gap-4 items-center flex-1">
+      <div class="relative w-full md:w-64">
+        <span
+          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+        <input type="text"
+          class="w-full h-11 pl-10 pr-4 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm focus:border-primary focus:ring-primary/20"
+          placeholder="Personel adı ile ara...">
+      </div>
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <div class="relative w-full md:w-40">
+          <span
+            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">calendar_month</span>
+          <input type="date"
+            class="w-full h-11 pl-10 pr-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-sm focus:border-primary focus:ring-primary/20">
+        </div>
+        <span class="text-slate-300 hidden md:block">-</span>
+        <div class="relative w-full md:w-40">
+          <span
+            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">calendar_month</span>
+          <input type="date"
+            class="w-full h-11 pl-10 pr-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-sm focus:border-primary focus:ring-primary/20">
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-2 w-full xl:w-auto justify-end">
+      <button id="detailedFilterBtn"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors active:bg-slate-100">
+        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+        <span>Detaylı Filtre</span>
+      </button>
+      <button
+        class="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        <span>Dışa Aktar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Detailed Filter Section (Hidden by default) -->
+  <div id="detailedFilterSection"
+    class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition-all duration-300">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-slate-700 mb-1">Kesinti Tipi</label>
+        <select
+          class="w-full h-10 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm focus:border-primary focus:ring-primary/20">
+          <option value="">Tümü</option>
+          <option value="avans">Avans</option>
+          <option value="icra">İcra</option>
+          <option value="bes">BES</option>
+          <option value="sigorta">Özel Sigorta</option>
+          <option value="diger">Diğer</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-700 mb-1">Minimum Tutar</label>
+        <input type="number" placeholder="0.00"
+          class="w-full h-10 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm focus:border-primary focus:ring-primary/20">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-700 mb-1">Maksimum Tutar</label>
+        <input type="number" placeholder="0.00"
+          class="w-full h-10 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm focus:border-primary focus:ring-primary/20">
+      </div>
+      <div class="flex items-end">
+        <button
+          class="w-full h-10 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25">Uygula</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('detailedFilterBtn').addEventListener('click', function () {
+      const section = document.getElementById('detailedFilterSection');
+      section.classList.toggle('hidden');
+      this.classList.toggle('bg-slate-100');
+      this.classList.toggle('border-slate-300');
+    });
+  </script>
+
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto custom-scrollbar">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/50 border-b border-slate-200">
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Personel</th>
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Kesinti Tipi</th>
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Tutar</th>
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Taksit
+              Durumu</th>
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Kesinti Tarihi</th>
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Açıklama</th>
+            <th class="py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for item in deductions %}
+          {% set amount = item.record.Tutar or 0 %}
+          <tr class="group hover:bg-blue-50/30 transition-colors">
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="size-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                  {{ item.initials }}
+                </div>
+                <div>
+                  <p class="font-semibold text-slate-900 text-sm">{{ item.full_name }}</p>
+                  <p class="text-xs text-slate-500">ID: #{{ '%03d' % item.personel_id if item.personel_id else '000' }}
+                  </p>
+                </div>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              {% set type_lower = (item.type or '')|lower %}
+              {% if 'avans' in type_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                <span class="size-1.5 rounded-full bg-blue-500"></span>
+                Avans
+              </span>
+              {% elif 'icra' in type_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200">
+                <span class="size-1.5 rounded-full bg-red-500"></span>
+                İcra
+              </span>
+              {% elif 'bes' in type_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200">
+                <span class="size-1.5 rounded-full bg-orange-500"></span>
+                BES
+              </span>
+              {% elif 'sigorta' in type_lower %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                Özel Sigorta
+              </span>
+              {% else %}
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                <span class="size-1.5 rounded-full bg-slate-500"></span>
+                {{ item.type or 'Diğer' }}
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-4 px-6 text-right">
+              <span class="font-bold text-slate-800 tabular-nums">₺{{ '{:,.2f}'.format(amount) }}</span>
+            </td>
+            <td class="py-4 px-6 text-center">
+              {% if item.installment_count and item.installment_count > 1 %}
+              <span class="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-1 rounded">
+                {{ item.current_installment or 1 }} / {{ item.installment_count }}
+              </span>
+              {% else %}
+              <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                Tek Çekim
+              </span>
+              {% endif %}
+            </td>
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-2 text-slate-600 text-sm">
+                <span class="material-symbols-outlined text-[18px] text-slate-400">calendar_today</span>
+                <span>{{ item.record.Tarih.strftime('%d %b %Y') if item.record.Tarih else '-' }}</span>
+              </div>
+            </td>
+            <td class="py-4 px-6">
+              <p class="text-sm text-slate-600 truncate max-w-[220px]">
+                {{ item.record.Aciklama or '-' }}
+              </p>
+            </td>
+            <td class="py-4 px-6 text-right">
+              <a href="/kesintiler/{{ item.record.FinansID }}/edit"
+                class="inline-flex p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-[20px]">edit</span>
+              </a>
+              <button
+                onclick="if(confirm('Bu kesinti kaydını silmek istediğinize emin misiniz?')) { document.getElementById('delete-form-{{ item.record.FinansID }}').submit(); }"
+                class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-[20px]">delete</span>
+              </button>
+              <form id="delete-form-{{ item.record.FinansID }}"
+                action="/finans/{{ item.record.FinansID }}/delete?next={{ url_for('kesintiler') }}" method="POST"
+                class="hidden"></form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="py-6 px-6 text-center text-sm text-slate-500">
+              Henüz kesinti kaydı bulunmuyor. Sağ üstten
+              <span class="font-semibold">"Yeni Kesinti Ekle"</span> butonunu kullanarak ekleyebilirsiniz.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="border-t border-slate-200 p-4 flex items-center justify-between">
+      <p class="text-sm text-slate-500">
+        Toplam <span class="font-medium text-slate-900">{{ deductions|length }}</span> kayıttan
+        <span class="font-medium text-slate-900">1-{{ deductions|length if deductions|length < 10 else 10 }}</span>
+            arası gösteriliyor
+      </p>
+      <div class="flex items-center gap-1">
+        <button
+          class="size-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors disabled:opacity-50"
+          disabled>
+          <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+        </button>
+        <button
+          class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-medium text-sm shadow-md shadow-primary/20">
+          1
+        </button>
+        <button
+          class="size-8 flex items-center justify-center rounded-lg border border-transparent text-slate-600 hover:bg-slate-100 text-sm font-medium transition-colors">
+          2
+        </button>
+        <button
+          class="size-8 flex items-center justify-center rounded-lg border border-transparent text-slate-600 hover:bg-slate-100 text-sm font-medium transition-colors">
+          3
+        </button>
+        <span class="px-1 text-slate-400 text-sm">...</span>
+        <button
+          class="size-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

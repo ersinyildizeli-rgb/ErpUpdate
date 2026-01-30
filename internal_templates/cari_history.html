@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex-1 flex flex-col min-w-0 bg-[#f9f8fb] dark:bg-background-dark relative overflow-hidden">
+    <!-- Header -->
+    <div
+        class="px-6 py-8 bg-white dark:bg-[#1e1c30] border-b border-[#d2d1e6] dark:border-gray-800 sticky top-0 z-20 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-3xl">history</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f0e1b] dark:text-white leading-tight">{{ cari.Unvan }}</h1>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        <span
+                            class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary uppercase tracking-wider">
+                            {{ cari.CariTipi }}
+                        </span>
+                        <div class="flex items-center gap-1.5 text-xs text-[#545095] dark:text-slate-400">
+                            <span class="material-symbols-outlined text-sm">id_card</span>
+                            ID: #{{ cari.CariID }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end">
+                    <span
+                        class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider">Güncel
+                        Bakiye</span>
+                    <span
+                        class="text-xl font-bold {% if (cari.Bakiye or 0) > 0 %}text-emerald-600{% elif (cari.Bakiye or 0) < 0 %}text-rose-600{% else %}text-[#0f0e1b] dark:text-white{% endif %}">
+                        {{ '{:,.2f}'.format(cari.Bakiye or 0) }} ₺
+                    </span>
+                </div>
+                <a href="/cari"
+                    class="size-11 rounded-xl bg-[#f6f6f8] dark:bg-gray-800 text-[#545095] hover:bg-[#e8e8f3] dark:hover:bg-gray-700 flex items-center justify-center transition-all">
+                    <span class="material-symbols-outlined">close</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Content -->
+    <div class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="relative">
+                <!-- Vertical Line -->
+                <div
+                    class="absolute left-[21px] md:left-1/2 md:-ml-0.5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-[#d2d1e6] to-transparent dark:via-gray-800">
+                </div>
+
+                <div class="space-y-8 relative">
+                    {% for action in actions %}
+                    <div
+                        class="relative flex flex-col md:flex-row items-start md:items-center {% if loop.index is odd %}md:justify-start{% else %}md:justify-end{% endif %}">
+                        <!-- Date Marker (Desktop) -->
+                        <div
+                            class="hidden md:absolute md:flex items-center justify-center left-1/2 -ml-12 top-0 size-24 z-10">
+                            <div
+                                class="px-3 py-1.5 rounded-lg bg-white dark:bg-[#1e1c30] border border-[#d2d1e6] dark:border-gray-800 shadow-sm">
+                                <span
+                                    class="text-[10px] font-bold text-primary uppercase leading-none block text-center mb-0.5">{{
+                                    action.tarih.strftime('%b') }}</span>
+                                <span
+                                    class="text-lg font-black text-[#0f0e1b] dark:text-white leading-none block text-center">{{
+                                    action.tarih.strftime('%d') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Dot -->
+                        <div class="absolute left-0 md:left-1/2 md:-ml-2.5 top-2 size-5 rounded-full border-4 border-[#f9f8fb] dark:border-background-dark 
+                                    {% if action.tip == 'Finans' %} 
+                                        {% if action.islem == 'Gelir' %} bg-emerald-500 {% else %} bg-amber-500 {% endif %}
+                                    {% elif action.tip == 'Alacak' %} bg-primary
+                                    {% else %} bg-rose-500
+                                    {% endif %} 
+                                    z-10 shadow-sm animate-pulse"></div>
+
+                        <!-- Card -->
+                        <div class="ml-10 md:ml-0 w-full md:w-[45%]">
+                            <div
+                                class="group bg-white dark:bg-[#1e1c30] rounded-2xl p-5 border border-transparent hover:border-primary/20 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter
+                                            {% if action.tip == 'Finans' %} bg-emerald-100/50 text-emerald-600 dark:bg-emerald-500/10 
+                                            {% elif action.tip == 'Alacak' %} bg-indigo-100/50 text-indigo-600 dark:bg-indigo-500/10
+                                            {% else %} bg-rose-100/50 text-rose-600 dark:bg-rose-500/10 {% endif %}">
+                                            {{ action.tip }}
+                                        </span>
+                                        <span class="text-[10px] font-medium text-[#545095] dark:text-slate-400">
+                                            {{ action.tarih.strftime('%d.%m.%Y') }}
+                                        </span>
+                                    </div>
+                                    <span
+                                        class="text-sm font-black {% if action.islem == 'Gider' or action.tip == 'Borç' %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                                        {% if action.islem == 'Gider' or action.tip == 'Borç' %}-{% else %}+{% endif
+                                        %}{{ '{:,.2f}'.format(action.tutar) }} ₺
+                                    </span>
+                                </div>
+
+                                <h3
+                                    class="text-sm font-bold text-[#0f0e1b] dark:text-white group-hover:text-primary transition-colors">
+                                    {{ action.aciklama or action.kategori }}
+                                </h3>
+
+                                <div
+                                    class="mt-3 pt-3 border-t border-slate-50 dark:border-gray-800 flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-1 text-[10px] text-[#545095] dark:text-slate-500">
+                                        <span class="material-symbols-outlined text-xs">label</span>
+                                        {{ action.kategori }}
+                                    </div>
+                                    {% if action.durum %}
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium 
+                                        {% if action.durum == 'Tahsil Edildi' or action.durum == 'Ödendi' %} bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 
+                                        {% else %} bg-amber-100 text-amber-600 dark:bg-amber-500/10 {% endif %}">
+                                        {{ action.durum }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not actions %}
+                    <div
+                        class="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1e1c30] rounded-3xl border-2 border-dashed border-[#d2d1e6] dark:border-gray-800">
+                        <div
+                            class="size-20 rounded-full bg-[#f6f6f8] dark:bg-gray-800 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-4xl text-[#545095]">hourglass_empty</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-[#0f0e1b] dark:text-white">Henüz işlem geçmişi yok</h3>
+                        <p class="text-sm text-[#545095] dark:text-slate-400 mt-1">Bu cariye ait herhangi bir finansal
+                            hareket bulunamadı.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+    }
+
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+</style>
+{% endblock %}

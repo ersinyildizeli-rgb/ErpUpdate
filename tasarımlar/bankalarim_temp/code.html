@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html class="light" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bankalarım Yönetimi</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3931e3",
+                        "primary-hover": "#2f28b5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121121",
+                        "sidebar-dark": "#0f172a", // Deep Navy for Sidebar
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<aside class="hidden w-72 flex-col bg-sidebar-dark text-white lg:flex border-r border-gray-800 shrink-0">
+<div class="flex h-20 items-center gap-3 px-6 border-b border-gray-800">
+<div class="flex items-center justify-center size-10 rounded-xl bg-primary text-white">
+<span class="material-symbols-outlined">grid_view</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-lg font-bold leading-tight tracking-tight">ERP Sistemi</h1>
+<p class="text-gray-400 text-xs font-normal">Kurumsal Yönetim</p>
+</div>
+</div>
+<div class="flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-6">
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Personel</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg bg-primary px-4 py-3 text-white shadow-lg shadow-primary/30" href="#">
+<span class="material-symbols-outlined fill-1">account_balance_wallet</span>
+<span class="text-sm font-medium">Finans</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-sm font-medium">Puantaj</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Ayarlar</span>
+</a>
+</div>
+<div class="p-4 border-t border-gray-800">
+<div class="flex items-center gap-3 rounded-lg bg-gray-800/50 p-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="User Avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDhiLtX0fFcEUQCVhJydKtvqfyKUZAbp0z-KTiSLNxBBBQY93Wxldsi3COOLfW4WhcvIEYvpcryetskjPTaF1mchrgUHnptNzE_dcybmXLGYAEh28MAPJqXFY-4qT6ZsuDgErBzbvsEUi-E9LP1OCwj-gMLnVvqtraPrFzBwMMKD_fO6tJaf9R_vvbQQORrOjIg5fNneIJM-L78tLFyDkIinImwL605YihDjysJ3vpIGeN1r7idh7msZtfH1nIlX3Jpjg8ijDxonvA");'></div>
+<div class="flex flex-col overflow-hidden">
+<p class="truncate text-sm font-medium text-white">Ahmet Yılmaz</p>
+<p class="truncate text-xs text-gray-400">Finans Müdürü</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex flex-1 flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<header class="flex h-20 items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1a2e] px-8 shrink-0">
+<div class="flex items-center gap-4">
+<nav class="flex text-sm font-medium text-gray-500 dark:text-gray-400">
+<a class="hover:text-primary transition-colors" href="#">Ana Sayfa</a>
+<span class="mx-2">/</span>
+<a class="hover:text-primary transition-colors" href="#">Finans</a>
+<span class="mx-2">/</span>
+<span class="text-gray-900 dark:text-white">Bankalarım</span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden sm:block">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[20px]">search</span>
+<input class="h-10 w-64 rounded-xl border-none bg-gray-100 dark:bg-gray-800 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 placeholder:text-gray-400" placeholder="Hesaplarda ara..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex size-10 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 rounded-full bg-red-500 border-2 border-white dark:border-gray-800"></span>
+</button>
+<button class="lg:hidden flex size-10 items-center justify-center rounded-xl bg-gray-100 text-gray-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-8">
+<div class="mx-auto flex max-w-6xl flex-col gap-8">
+<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Bankalarım</h1>
+<p class="mt-2 text-gray-500 dark:text-gray-400">Şirket banka hesaplarını, bakiyelerini ve hareketlerini buradan yönetebilirsiniz.</p>
+</div>
+<button class="group flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary-hover active:scale-95" onclick="document.getElementById('addBankModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Banka Hesabı Ekle</span>
+</button>
+</div>
+<div class="grid gap-4 md:grid-cols-3">
+<div class="flex flex-col gap-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] p-6 shadow-sm">
+<div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+<span class="text-sm font-medium">Toplam Varlık</span>
+</div>
+<div class="flex items-end justify-between">
+<p class="text-2xl font-bold text-gray-900 dark:text-white">₺ 3.450.000,00</p>
+<span class="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +12%
+                            </span>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] p-6 shadow-sm">
+<div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">currency_lira</span>
+<span class="text-sm font-medium">TL Bakiyesi</span>
+</div>
+<div class="flex items-end justify-between">
+<p class="text-2xl font-bold text-gray-900 dark:text-white">₺ 1.850.000,00</p>
+<span class="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +5%
+                            </span>
+</div>
+</div>
+<div class="flex flex-col gap-1 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] p-6 shadow-sm">
+<div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[20px]">currency_exchange</span>
+<span class="text-sm font-medium">Döviz (USD)</span>
+</div>
+<div class="flex items-end justify-between">
+<p class="text-2xl font-bold text-gray-900 dark:text-white">$ 50.000,00</p>
+<span class="flex items-center text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1">remove</span> 0%
+                            </span>
+</div>
+</div>
+</div>
+<div class="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e2d] shadow-sm overflow-hidden">
+<div class="flex flex-wrap items-center justify-between gap-4 p-5 border-b border-gray-200 dark:border-gray-700">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Hesap Listesi</h2>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                                Filtrele
+                            </button>
+<button class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Dışa Aktar
+                            </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full min-w-[800px] text-left text-sm">
+<thead class="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
+<tr>
+<th class="px-6 py-4 font-medium">Banka Adı</th>
+<th class="px-6 py-4 font-medium">Hesap Bilgileri</th>
+<th class="px-6 py-4 font-medium">Şube</th>
+<th class="px-6 py-4 font-medium">Hesap Tipi</th>
+<th class="px-6 py-4 font-medium text-right">Bakiye</th>
+<th class="px-6 py-4 font-medium text-center">İşlemler</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700" data-alt="Garanti BBVA Logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC1e9QwYuvhJbh9HIyYrHQOUu037cPc0ZMNHCX5nEIwFXhMrVK0Rsmuh9vHs5SXMMCPe4XB_qcv6WDPI52vF8w3U3Woma5CduZgo95NFNU8-NkvkFaLwbvgcIaVIm3NwIZKHVQp2x0HIgxOCpwBiwspzTCbBYL90CoNRY6bXHQuGSIJEl-06AElwsbxyYPDzukJnEjkWxnmmQC3bn4GQVDIvFmBnwBJJ_6U68q6y3CPsa55XwFa8HUwmdM3SE-CyN6fBslgpM6iPk0");'></div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Garanti BBVA</p>
+<p class="text-xs text-gray-500">TR12 0006 ... 5678</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-gray-900 dark:text-white font-medium">1234-56789</span>
+<span class="text-xs text-gray-500">Ana Şirket Hesabı</span>
+</div>
+</td>
+<td class="px-6 py-4 text-gray-600 dark:text-gray-300">Levent Çarşı</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-400/30">Vadesiz TL</span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">₺ 1.250.000,00</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white" onclick="document.getElementById('addTransactionModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+                                            İşlem Yap
+                                        </button>
+<div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-3">
+<button class="p-1 text-gray-400 hover:text-primary transition-colors" title="Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Sil">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700" data-alt="Akbank Logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQFZq_mP3iR6VpC3_ejGtOVqCnJqhNc7gdivQI8wredVlgPqQzK6jWr5WroO3NEs_kIINJrI7Kee8eOJraBc_Yh8Bki1IuG4rgkPtytfflkKxneOf3ob1degGoAgpIBJlN6n3J8ke-7cjXmEfQBCJXiw9KTU1YgPYuXofStKqQ0pIvFAszSRNiCKFq7DJd5E1qlvvncdrE5KvKGQMggdMHTu1UdQ2-CvNNxa5C73sE-PcfD0KECQDiO_K3Ax31WuGsM-wx5kv-vzQ");'></div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Akbank</p>
+<p class="text-xs text-gray-500">TR98 0004 ... 4321</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-gray-900 dark:text-white font-medium">9876-54321</span>
+<span class="text-xs text-gray-500">Döviz Hesabı</span>
+</div>
+</td>
+<td class="px-6 py-4 text-gray-600 dark:text-gray-300">Kadıköy Rıhtım</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-400 ring-1 ring-inset ring-purple-700/10 dark:ring-purple-400/30">Vadeli USD</span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">$ 50.000,00</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white" onclick="document.getElementById('addTransactionModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+                                            İşlem Yap
+                                        </button>
+<div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-3">
+<button class="p-1 text-gray-400 hover:text-primary transition-colors" title="Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Sil">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700" data-alt="İş Bankası Logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCLt4aB7ZYObBiGgHeqQDQDNwmsTTqY5WSu9F-iMsC_MbTk4z20bxxTjOijNmLc4IsLermugOvaGfedmFtnTbHRbt6dzvOBLaT1FN-vv_j7NQFvtxevhiRgqb3Y6iLMkdvmqarmMqjqEZk4qTWuwtHlE7bsPVoTTIysWKXIfEK-5ocVDCg1avE1Fzceiy--40apVOm3656QoLJI71HMGel73HRSGATjV5Qy6o9Ogu7yeCXF5_N88AjLokGg4K9xBZrCmXrhs9sQbgQ");'></div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">İş Bankası</p>
+<p class="text-xs text-gray-500">TR45 0001 ... 1234</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-gray-900 dark:text-white font-medium">1122-33445</span>
+<span class="text-xs text-gray-500">Kredi Kartı</span>
+</div>
+</td>
+<td class="px-6 py-4 text-gray-600 dark:text-gray-300">Merkez Şube</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-orange-50 dark:bg-orange-900/30 px-2 py-1 text-xs font-medium text-orange-700 dark:text-orange-400 ring-1 ring-inset ring-orange-700/10 dark:ring-orange-400/30">Ticari Kredi</span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-red-600 dark:text-red-400">-25.400,00 ₺</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white" onclick="document.getElementById('addTransactionModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+                                            İşlem Yap
+                                        </button>
+<div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-3">
+<button class="p-1 text-gray-400 hover:text-primary transition-colors" title="Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Sil">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700" data-alt="Yapı Kredi Logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC_1O-QGMGQnBLNSmxHQYFi94jcL2zmlC7-XNToY1Z2E8Mr1l2t2KmlsAJXGr4F9RhrWFzdLKwuf8CkJSFF33ehxzl9ZX4DppcOeHnZhZEDUIaJrmGJvy3No2G1K2mNGfxF_nwHEQTno9lkWJki_6vknu3_813A5PutfCPdTgosiW9HBP7DjEJ2XZK9GDES4deq4SMxtCoz-esqHri7n1UlRbMuRKpRubfSmw2styC7nEAUFdKb6gs6DAO28wcfyqFeLxkFXXavpwE");'></div>
+<div>
+<p class="font-semibold text-gray-900 dark:text-white">Yapı Kredi</p>
+<p class="text-xs text-gray-500">TR33 0067 ... 9988</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-gray-900 dark:text-white font-medium">6677-88990</span>
+<span class="text-xs text-gray-500">Maaş Hesabı</span>
+</div>
+</td>
+<td class="px-6 py-4 text-gray-600 dark:text-gray-300">Maslak Plaza</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-400/30">Vadesiz TL</span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">₺ 600.000,00</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-white" onclick="document.getElementById('addTransactionModal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+                                            İşlem Yap
+                                        </button>
+<div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-3">
+<button class="p-1 text-gray-400 hover:text-primary transition-colors" title="Düzenle">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Sil">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+<p class="text-sm text-gray-500 dark:text-gray-400">
+                            Toplam <span class="font-medium text-gray-900 dark:text-white">12</span> hesaptan <span class="font-medium text-gray-900 dark:text-white">1-4</span> arası gösteriliyor
+                        </p>
+<div class="flex gap-2">
+<button class="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">Önceki</button>
+<button class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Sonraki</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div aria-labelledby="modal-title" aria-modal="true" class="hidden relative z-50" id="addBankModal" role="dialog">
+<div class="fixed inset-0 bg-gray-900/75 transition-opacity backdrop-blur-sm"></div>
+<div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+<div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-[#1e1e2d] text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-200 dark:border-gray-700">
+<div class="bg-white dark:bg-[#1e1e2d] px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+<div class="sm:flex sm:items-start">
+<div class="mt-3 w-full text-center sm:ml-4 sm:mt-0 sm:text-left">
+<h3 class="text-xl font-bold leading-6 text-gray-900 dark:text-white" id="modal-title">Yeni Banka Hesabı Ekle</h3>
+<div class="mt-6 flex flex-col gap-4">
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="bank">Banka</label>
+<div class="mt-2 relative">
+<select class="block w-full rounded-xl border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="bank" name="bank">
+<option>Garanti BBVA</option>
+<option>Akbank</option>
+<option>İş Bankası</option>
+<option>Yapı Kredi</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="branch">Şube Adı</label>
+<div class="mt-2">
+<input class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="branch" name="branch" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="currency">Döviz Cinsi</label>
+<div class="mt-2">
+<select class="block w-full rounded-xl border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="currency" name="currency">
+<option>TL (₺)</option>
+<option>USD ($)</option>
+<option>EUR (€)</option>
+</select>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="iban">IBAN</label>
+<div class="mt-2 relative rounded-md shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="text-gray-500 sm:text-sm">TR</span>
+</div>
+<input class="block w-full rounded-xl border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="iban" name="iban" placeholder="00 0000 0000 0000 0000 0000 00" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white mb-2">Hesap Tipi</label>
+<div class="flex gap-4">
+<div class="flex items-center">
+<input checked="" class="h-4 w-4 border-gray-300 text-primary focus:ring-primary" id="vadesiz" name="account-type" type="radio"/>
+<label class="ml-2 block text-sm font-medium text-gray-900 dark:text-gray-300" for="vadesiz">Vadesiz</label>
+</div>
+<div class="flex items-center">
+<input class="h-4 w-4 border-gray-300 text-primary focus:ring-primary" id="vadeli" name="account-type" type="radio"/>
+<label class="ml-2 block text-sm font-medium text-gray-900 dark:text-gray-300" for="vadeli">Vadeli</label>
+</div>
+<div class="flex items-center">
+<input class="h-4 w-4 border-gray-300 text-primary focus:ring-primary" id="kredi" name="account-type" type="radio"/>
+<label class="ml-2 block text-sm font-medium text-gray-900 dark:text-gray-300" for="kredi">Kredi Kartı</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-gray-800/50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+<button class="inline-flex w-full justify-center rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-hover sm:ml-3 sm:w-auto" onclick="document.getElementById('addBankModal').classList.add('hidden')" type="button">Kaydet</button>
+<button class="mt-3 inline-flex w-full justify-center rounded-xl bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto" onclick="document.getElementById('addBankModal').classList.add('hidden')" type="button">İptal</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-labelledby="modal-title-transaction" aria-modal="true" class="hidden relative z-50" id="addTransactionModal" role="dialog">
+<div class="fixed inset-0 bg-gray-900/75 transition-opacity backdrop-blur-sm"></div>
+<div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+<div class="relative transform overflow-visible rounded-2xl bg-white dark:bg-[#1e1e2d] text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-200 dark:border-gray-700">
+<div class="bg-white dark:bg-[#1e1e2d] px-4 pb-4 pt-5 sm:p-6 sm:pb-4 rounded-t-2xl">
+<div class="sm:flex sm:items-start">
+<div class="mt-3 w-full text-center sm:ml-4 sm:mt-0 sm:text-left">
+<h3 class="text-xl font-bold leading-6 text-gray-900 dark:text-white" id="modal-title-transaction">Banka İşlemi Ekle</h3>
+<div class="mt-6 flex flex-col gap-5">
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">İşlem Türü</label>
+<div class="grid grid-cols-2 gap-4 mt-2">
+<label class="group relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-white p-3 text-sm font-medium hover:bg-gray-50 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 has-[:checked]:border-green-500 has-[:checked]:bg-green-50 has-[:checked]:text-green-900 dark:has-[:checked]:bg-green-900/20 dark:has-[:checked]:text-green-300">
+<input class="sr-only" name="trx-type" type="radio" value="income"/>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-green-600 dark:text-green-400 text-[20px]">arrow_downward</span>
+<span>Giriş / Gelir</span>
+</span>
+</label>
+<label class="group relative flex cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-white p-3 text-sm font-medium hover:bg-gray-50 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 has-[:checked]:border-red-500 has-[:checked]:bg-red-50 has-[:checked]:text-red-900 dark:has-[:checked]:bg-red-900/20 dark:has-[:checked]:text-red-300">
+<input class="sr-only" name="trx-type" type="radio" value="expense"/>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-red-600 dark:text-red-400 text-[20px]">arrow_upward</span>
+<span>Çıkış / Gider</span>
+</span>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="trx-amount">Tutar</label>
+<div class="mt-2 relative">
+<input class="block w-full rounded-xl border-0 py-2.5 pl-4 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="trx-amount" placeholder="0,00" type="text"/>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+<span class="text-gray-500 sm:text-sm">₺</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="trx-date">Tarih</label>
+<div class="mt-2">
+<input class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="trx-date" type="date"/>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="trx-category">Kategori</label>
+<div class="mt-2">
+<select class="block w-full rounded-xl border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="trx-category">
+<option>Genel</option>
+<option>Maaş Ödemesi</option>
+<option>Kira</option>
+<option>Fatura</option>
+<option>Satış Geliri</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-white" for="trx-desc">Açıklama</label>
+<div class="mt-2">
+<input class="block w-full rounded-xl border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 dark:bg-gray-800 dark:text-white dark:ring-gray-700" id="trx-desc" placeholder="İşlem açıklaması giriniz..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 dark:bg-gray-800/50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-2xl">
+<button class="inline-flex w-full justify-center rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-hover sm:ml-3 sm:w-auto" onclick="document.getElementById('addTransactionModal').classList.add('hidden')" type="button">İşlemi Kaydet</button>
+<button class="mt-3 inline-flex w-full justify-center rounded-xl bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto" onclick="document.getElementById('addTransactionModal').classList.add('hidden')" type="button">İptal</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

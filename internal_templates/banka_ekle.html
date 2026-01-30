@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex-1 flex flex-col min-w-0 bg-[#f9f8fb] dark:bg-background-dark relative">
+    <!-- Modal Overlay (Simulated as a page) -->
+    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <!-- Modal Content -->
+        <div
+            class="relative w-full max-w-[840px] max-h-[90vh] flex flex-col bg-white dark:bg-[#13141f] rounded-xl shadow-2xl ring-1 ring-black/5 overflow-hidden font-display transform transition-all">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+                <div>
+                    <h2 class="text-[#0e0f1b] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+                        {% if bank %}Banka Hesabı Düzenle{% else %}Banka Hesabı Ekle{% endif %}</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">{% if bank %}Mevcut banka hesabını
+                        güncelleyin.{% else %}Şirket hesaplarınız için yeni bir banka kartı oluşturun.{% endif %}</p>
+                </div>
+                <a href="/bankalar"
+                    class="group p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-slate-500 dark:text-slate-400">
+                    <span class="material-symbols-outlined group-hover:text-red-500 transition-colors">close</span>
+                </a>
+            </div>
+
+            <!-- Modal Body (Form) -->
+            <div class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+                <form action="{% if bank %}/bankalar/{{ bank.BankaID }}/edit{% else %}/bankalar/ekle{% endif %}"
+                    method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    <!-- Bank Name -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="flex flex-col flex-1">
+                            <span
+                                class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Banka
+                                Adı</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">account_balance</span>
+                                <input name="BankaAdi" required value="{{ bank.BankaAdi if bank else '' }}"
+                                    class="form-input flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 placeholder:text-[#505495] dark:placeholder:text-gray-500 pl-[48px] pr-[15px] text-base font-normal transition-all"
+                                    placeholder="Örn: Ziraat Bankası" type="text" />
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Account Name -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="flex flex-col flex-1">
+                            <span
+                                class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Hesap
+                                Adı</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">badge</span>
+                                <input name="HesapAdi" required value="{{ bank.HesapAdi if bank else '' }}"
+                                    class="form-input flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 placeholder:text-[#505495] dark:placeholder:text-gray-500 pl-[48px] pr-[15px] text-base font-normal transition-all"
+                                    placeholder="Örn: Ana Ticari Hesap" type="text" />
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Account Type -->
+                    <div class="col-span-1">
+                        <label class="flex flex-col flex-1">
+                            <span
+                                class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Hesap
+                                Tipi</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">account_balance_wallet</span>
+                                <select name="HesapTipi" required
+                                    class="form-select flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 pl-[48px] pr-10 text-base font-normal appearance-none cursor-pointer transition-all">
+                                    <option value="" disabled {% if not bank %}selected{% endif %}>Seçiniz</option>
+                                    <option value="vadesiz" {% if bank and bank.HesapTipi=='vadesiz' %}selected{% endif
+                                        %}>Vadesiz Mevduat</option>
+                                    <option value="vadeli" {% if bank and bank.HesapTipi=='vadeli' %}selected{% endif
+                                        %}>Vadeli Mevduat</option>
+                                    <option value="doviz" {% if bank and bank.HesapTipi=='doviz' %}selected{% endif %}>
+                                        Döviz Hesabı</option>
+                                    <option value="kredi" {% if bank and bank.HesapTipi=='kredi' %}selected{% endif %}>
+                                        Kredi Kartı Hesabı</option>
+                                    <option value="pos" {% if bank and bank.HesapTipi=='pos' %}selected{% endif %}>POS
+                                        Hesabı</option>
+                                </select>
+                                <span
+                                    class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none">expand_more</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Branch Name -->
+                    <div class="col-span-1">
+                        <label class="flex flex-col flex-1">
+                            <span
+                                class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Şube</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">location_on</span>
+                                <input name="Sube" value="{{ bank.Sube if bank else '' }}"
+                                    class="form-input flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 placeholder:text-[#505495] dark:placeholder:text-gray-500 pl-[48px] pr-[15px] text-base font-normal transition-all"
+                                    placeholder="Örn: Kadıköy Şubesi" type="text" />
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Account Number -->
+                    <div class="col-span-1">
+                        <label class="flex flex-col flex-1">
+                            <span
+                                class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Hesap
+                                Numarası</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">numbers</span>
+                                <input name="HesapNo" value="{{ bank.HesapNo if bank else '' }}"
+                                    class="form-input flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 placeholder:text-[#505495] dark:placeholder:text-gray-500 pl-[48px] pr-[15px] text-base font-normal transition-all"
+                                    placeholder="Hesap no giriniz" type="text" />
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Starting Balance -->
+                    <div class="col-span-1">
+                        <label class="flex flex-col flex-1">
+                            <span class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">{%
+                                if bank %}Mevcut Bakiye{% else %}Başlangıç Bakiyesi{% endif %}</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">payments</span>
+                                <input name="Bakiye" required value="{{ bank.Bakiye if bank else '' }}"
+                                    class="form-input flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 placeholder:text-[#505495] dark:placeholder:text-gray-500 pl-[48px] pr-[100px] text-base font-normal transition-all"
+                                    placeholder="0.00" step="0.01" type="number" />
+                                <div class="absolute right-1 top-1 bottom-1 w-24">
+                                    <select name="ParaBirimi"
+                                        class="w-full h-full bg-transparent border-0 text-sm font-medium text-slate-500 focus:ring-0 text-right pr-8 cursor-pointer">
+                                        <option value="TRY" {% if not bank or bank.ParaBirimi=='TRY' %}selected{% endif
+                                            %}>TRY</option>
+                                        <option value="USD" {% if bank and bank.ParaBirimi=='USD' %}selected{% endif %}>
+                                            USD</option>
+                                        <option value="EUR" {% if bank and bank.ParaBirimi=='EUR' %}selected{% endif %}>
+                                            EUR</option>
+                                        <option value="GBP" {% if bank and bank.ParaBirimi=='GBP' %}selected{% endif %}>
+                                            GBP</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- IBAN -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="flex flex-col flex-1">
+                            <span
+                                class="text-[#0e0f1b] dark:text-gray-200 text-sm font-medium leading-normal pb-2">IBAN</span>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#505495] dark:text-slate-500 pointer-events-none text-[20px]">credit_card</span>
+                                <input name="IBAN" value="{{ bank.IBAN if bank else '' }}"
+                                    class="form-input flex w-full rounded-xl text-[#0e0f1b] dark:text-white border border-[#d1d2e6] dark:border-gray-700 bg-[#f8f9fb] dark:bg-[#1a1b26] focus:border-primary focus:ring-1 focus:ring-primary h-12 md:h-14 placeholder:text-[#505495] dark:placeholder:text-gray-500 pl-[48px] pr-[15px] text-base font-normal font-mono tracking-wide transition-all"
+                                    placeholder="TR__ ____ ____ ____ ____ ____ __" type="text" />
+                            </div>
+                            <p class="text-xs text-[#505495] dark:text-slate-500 mt-2 pl-1">IBAN numarasını TR kodu ile
+                                birlikte 26 hane olarak giriniz.</p>
+                        </label>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div
+                        class="col-span-1 md:col-span-2 flex items-center justify-end gap-3 mt-4 pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <a href="/bankalar"
+                            class="px-6 h-11 flex items-center justify-center rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all focus:ring-2 focus:ring-slate-200">
+                            İptal
+                        </a>
+                        <button type="submit"
+                            class="px-8 h-11 flex items-center justify-center rounded-lg text-sm font-medium text-white bg-primary hover:bg-[#3d44c9] active:bg-[#3238a8] shadow-sm shadow-primary/30 transition-all focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                            <span class="material-symbols-outlined text-[18px] mr-2">save</span>
+                            Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

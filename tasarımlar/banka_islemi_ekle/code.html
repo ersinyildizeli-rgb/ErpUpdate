@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html class="light" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Banka İşlemi Ekle Modalı</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5048e5",
+                        "primary-dark": "#3f38b3",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121121",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Smooth fade-in for conditional fields */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden p-4 sm:p-6 bg-black/40 backdrop-blur-sm transition-all">
+<!-- Modal Container -->
+<div class="relative w-full max-w-2xl transform rounded-xl bg-white dark:bg-[#1a192b] shadow-2xl transition-all flex flex-col max-h-[90vh]">
+<!-- Modal Header -->
+<div class="flex items-start justify-between border-b border-gray-100 dark:border-gray-800 p-6">
+<div class="flex flex-col gap-1">
+<h2 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+                        Banka İşlemi Ekle
+                    </h2>
+<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+<span>Garanti BBVA - TR12 3456 7890 1234 5678 90</span>
+</div>
+</div>
+<button class="group flex items-center justify-center rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable if needed) -->
+<div class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+<form action="#" class="flex flex-col gap-6" onsubmit="event.preventDefault();">
+<!-- Transaction Type Segmented Control -->
+<div class="flex flex-col gap-2">
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300">İşlem Tipi</span>
+<div class="flex w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="transactionType" type="radio" value="deposit"/>
+<div class="flex items-center justify-center rounded-md py-2 px-3 text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-white">
+<span class="material-symbols-outlined mr-2 text-[18px]">arrow_downward</span>
+                                    Para Yatırma
+                                </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="transactionType" type="radio" value="withdraw"/>
+<div class="flex items-center justify-center rounded-md py-2 px-3 text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-white">
+<span class="material-symbols-outlined mr-2 text-[18px]">arrow_upward</span>
+                                    Para Çekme
+                                </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="transactionType" type="radio" value="transfer"/>
+<div class="flex items-center justify-center rounded-md py-2 px-3 text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-white">
+<span class="material-symbols-outlined mr-2 text-[18px]">sync_alt</span>
+                                    Havale/EFT
+                                </div>
+</label>
+</div>
+</div>
+<!-- Amount & Date Row -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<!-- Amount -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="amount">Tutar</label>
+<div class="relative rounded-lg shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="text-gray-500 sm:text-sm">₺</span>
+</div>
+<input class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 pl-8 py-3 text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm" id="amount" name="amount" placeholder="0.00" type="number"/>
+</div>
+</div>
+<!-- Date -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="date">İşlem Tarihi</label>
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3 px-4 text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm" id="date" name="date" type="date" value="2023-10-27"/>
+</div>
+</div>
+</div>
+<!-- Conditional Field: Target Account (Visually represented as if Havale/EFT is selected or could be selected) -->
+<!-- In a real React app, this would be conditionally rendered. Here we show it for the design demonstration, perhaps implying "Havale/EFT" state or hiding it with CSS if we had JS logic. Let's assume the user just clicked "Havale/EFT" to show the full potential of the modal. -->
+<div class="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-sm">info</span>
+<span class="text-xs font-semibold text-primary uppercase tracking-wider">Transfer Detayları</span>
+</div>
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="target-account">Hedef Banka Hesabı</label>
+<select class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-3 px-4 text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm" id="target-account" name="target-account">
+<option value="">Alıcı hesap seçiniz...</option>
+<option value="1">Akbank - TR99 0000...</option>
+<option value="2">İş Bankası - TR33 1111...</option>
+<option value="3">Diğer (Manuel IBAN Girişi)</option>
+</select>
+</div>
+<!-- Description -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="description">
+                            Açıklama <span class="text-gray-400 font-normal">(Opsiyonel)</span>
+</label>
+<textarea class="block w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3 px-4 text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary sm:text-sm resize-none" id="description" name="description" placeholder="İşlem hakkında not ekleyin..." rows="3"></textarea>
+</div>
+</form>
+</div>
+<!-- Modal Footer -->
+<div class="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 p-6 bg-gray-50/50 dark:bg-gray-800/30 rounded-b-xl">
+<button class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900" type="button">
+                    İptal
+                </button>
+<button class="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 gap-2" type="submit">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                    Kaydet
+                </button>
+</div>
+</div>
+</div>
+</body></html>

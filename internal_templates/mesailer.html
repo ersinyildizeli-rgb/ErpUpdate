@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+  <form id="mesai-filter-form" method="get" class="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="flex flex-wrap items-end gap-4 w-full lg:w-auto">
+      <div class="flex flex-col gap-1.5 min-w-[140px] flex-1 lg:flex-none">
+        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dönem</label>
+        <div class="relative">
+          <select name="month" class="w-full h-11 pl-4 pr-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none">
+            {% for m_value, m_label in month_choices %}
+            <option value="{{ m_value }}" {% if m_value == selected_month %}selected{% endif %}>{{ m_label }}</option>
+            {% endfor %}
+          </select>
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+          </span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1.5 min-w-[100px] flex-1 lg:flex-none">
+        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Yıl</label>
+        <div class="relative">
+          <select name="year" class="w-full h-11 pl-4 pr-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none">
+            {% for y in year_choices %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+          </select>
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <span class="material-symbols-outlined text-[20px]">expand_more</span>
+          </span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1.5 min-w-[180px] flex-1 lg:flex-none">
+        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Departman</label>
+        <div class="relative">
+          <select name="department" class="w-full h-11 pl-4 pr-10 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none">
+            <option value="">Tümü</option>
+            {% for dep in department_choices %}
+            <option value="{{ dep }}" {% if dep == selected_department %}selected{% endif %}>{{ dep }}</option>
+            {% endfor %}
+          </select>
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <span class="material-symbols-outlined text-[20px]">filter_list</span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 w-full lg:w-auto">
+      <div class="relative flex-1 lg:flex-none">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <span class="material-symbols-outlined text-[20px]">search</span>
+        </span>
+        <input name="q" value="{{ search_query or '' }}" class="h-11 w-full lg:w-64 pl-10 pr-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Personel ara..." type="text" />
+      </div>
+      <button class="h-11 px-4 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-semibold shadow-lg shadow-primary/25 transition-all flex items-center gap-2 whitespace-nowrap" type="submit">
+        <span class="material-symbols-outlined text-[20px]">tune</span>
+        <span class="hidden sm:inline">Filtrele</span>
+      </button>
+      <button id="mesaiExportExcelBtn" class="h-11 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 whitespace-nowrap" type="button">
+        <span class="material-symbols-outlined text-[20px]">download</span>
+        <span class="hidden sm:inline">Excel</span>
+      </button>
+      <button id="mesaiExportPdfBtn" class="h-11 px-4 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-lg shadow-slate-700/25 transition-all flex items-center gap-2 whitespace-nowrap" type="button">
+        <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+        <span class="hidden sm:inline">PDF</span>
+      </button>
+    </div>
+  </form>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-primary">groups</span>
+      </div>
+      <div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Mesai Yapan Personel</p>
+        <div class="flex items-baseline gap-3">
+          <h3 class="text-3xl font-bold text-slate-800 dark:text-white">{{ stats.mesai_personel_sayisi }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-primary">schedule</span>
+      </div>
+      <div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Toplam Mesai Saati</p>
+        <div class="flex items-baseline gap-3">
+          <h3 class="text-3xl font-bold text-slate-800 dark:text-white">
+            {{ "%.1f"|format(stats.toplam_mesai_saat) }}
+            <span class="text-lg font-medium text-slate-400">Saat</span>
+          </h3>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between relative">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Dönem Durumu</p>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold
+          {% if mesai_state == 'locked' %}
+            bg-red-50 text-red-700 border border-red-100 dark:bg-red-900/30 dark:text-red-200 dark:border-red-800
+          {% else %}
+            bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border-emerald-800
+          {% endif %}">
+          <span class="material-symbols-outlined text-[16px]">
+            {% if mesai_state == 'locked' %}lock{% else %}lock_open{% endif %}
+          </span>
+          <span>
+            {% if mesai_state == 'locked' %}Kilitli{% else %}Açık{% endif %}
+          </span>
+        </span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+        Kilitli dönemde puantaj üzerinde değişiklik yapılamaz.
+      </p>
+      <form method="post" action="{{ url_for('mesailer_lock') }}" class="mt-auto flex gap-2">
+        <input type="hidden" name="year" value="{{ selected_year }}">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <input type="hidden" name="next_state" value="{{ 'open' if mesai_state == 'locked' else 'locked' }}">
+        {% if mesai_state == 'locked' %}
+        <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">lock_open</span>
+          Kilidi Aç
+        </button>
+        {% else %}
+        <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 text-white px-3 py-2 text-xs font-semibold shadow-sm shadow-red-500/30 transition-colors">
+          <span class="material-symbols-outlined text-[16px]">lock</span>
+          Dönemi Kilitle
+        </button>
+        {% endif %}
+      </form>
+    </div>
+    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+      <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-8xl text-primary">account_balance_wallet</span>
+      </div>
+      <div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tahmini Toplam Ödeme</p>
+        <div class="flex items-baseline gap-3">
+          <h3 class="text-3xl font-bold text-slate-800 dark:text-white">₺ {{ "{:,.2f}".format(stats.tahmini_odeme).replace(',', '.') }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
+      <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Personel Bazlı Mesai Detayı</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Seçili dönem için personel bazlı toplam mesai saatleri</p>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+        <thead class="bg-slate-50 dark:bg-slate-900/40">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Personel</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Departman</th>
+            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Toplam Mesai (Saat)</th>
+            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Tahmini Ödeme</th>
+            <th class="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Detay</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          {% if rows %}
+            {% for row in rows %}
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
+              <td class="px-6 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                    {{ row.personel.Ad[:1] }}{{ row.personel.Soyad[:1] }}
+                  </div>
+                  <div>
+                    <div class="font-medium text-slate-900 dark:text-white">{{ row.personel.Ad }} {{ row.personel.Soyad }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-3 text-slate-600 dark:text-slate-300">
+                {{ row.personel.Departman or '-' }}
+              </td>
+              <td class="px-6 py-3 text-right font-mono text-slate-800 dark:text-slate-100">
+                {{ "%.2f"|format(row.toplam_mesai_saat) }}
+              </td>
+              <td class="px-6 py-3 text-right font-mono text-slate-800 dark:text-slate-100">
+                ₺ {{ "{:,.2f}".format(row.tahmini_odeme).replace(',', '.') }}
+              </td>
+              <td class="px-6 py-3 text-center">
+                <a href="{{ url_for('mesailer_detay', personel_id=row.personel.PersonelID, year=selected_year, month=selected_month) }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-primary hover:text-white transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                  <span>Detay</span>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="4" class="px-6 py-6 text-center text-sm text-slate-500">
+                Seçili dönem için mesai kaydı bulunamadı.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var excelBtn = document.getElementById('mesaiExportExcelBtn');
+      var pdfBtn = document.getElementById('mesaiExportPdfBtn');
+      if (excelBtn) {
+        excelBtn.addEventListener('click', function() {
+          var table = document.querySelector('table');
+          if (!table) return;
+          var rows = Array.prototype.slice.call(table.querySelectorAll('thead tr, tbody tr'));
+          var csvContent = rows.map(function(row) {
+            if (row.querySelectorAll('td').length === 1 && row.querySelector('td[colspan]')) {
+              return '';
+            }
+            var cells = Array.prototype.slice.call(row.querySelectorAll('th, td'));
+            var rowData = cells.map(function(cell) {
+              var text = (cell.innerText || '').replace(/[\n\r]+/g, ' ').trim();
+              text = text.replace(/"/g, '""');
+              return '"' + text + '"';
+            });
+            return rowData.join(',');
+          }).filter(function(line) { return line !== ''; }).join('\n');
+          var blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          var month = '{{ selected_month }}';
+          var year = '{{ selected_year }}';
+          link.download = 'mesailer_' + year + '_' + month + '.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        });
+      }
+      if (pdfBtn) {
+        pdfBtn.addEventListener('click', function() {
+          window.print();
+        });
+      }
+    })();
+  </script>
+</div>
+{% endblock %}

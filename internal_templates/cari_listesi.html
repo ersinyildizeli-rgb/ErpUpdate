@@ -1,0 +1,474 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Cari Hesap Yönetimi</h1>
+            <p class="text-slate-500 text-sm">
+                Müşteri ve tedarikçilerinizin borç/alacak takibini yapın.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/cari/ekle"
+                class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95 group">
+                <span
+                    class="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
+                <span>Yeni Cari Ekle</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+            class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-green-500 transition-all">
+            <div
+                class="size-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-[28px]">trending_up</span>
+            </div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Toplam Alacak</p>
+                <p class="text-2xl font-bold text-slate-900">{{ '{:,.2f}'.format(total_alacak or 0) }} ₺</p>
+            </div>
+        </div>
+        <div
+            class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-red-500 transition-all">
+            <div
+                class="size-12 rounded-xl bg-red-50 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-[28px]">trending_down</span>
+            </div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Toplam Borç</p>
+                <p class="text-2xl font-bold text-slate-900">{{ '{:,.2f}'.format(total_borc or 0) }} ₺</p>
+            </div>
+        </div>
+        <div
+            class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-primary transition-all">
+            <div
+                class="size-12 rounded-xl bg-blue-50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-[28px]">account_balance_wallet</span>
+            </div>
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Net Bakiye</p>
+                <p class="text-2xl font-bold {% if net_bakiye >= 0 %}text-slate-900{% else %}text-red-600{% endif %}">
+                    {{ '{:,.2f}'.format(net_bakiye or 0) }} ₺
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-2 p-1 bg-slate-100 rounded-xl self-start">
+            <a href="/cari"
+                class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if not cari_tipi %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">
+                Tümü
+            </a>
+            <a href="/cari?tip=Müşteri"
+                class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if cari_tipi == 'Müşteri' %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">
+                Müşteriler
+            </a>
+            <a href="/cari?tip=Tedarikçi"
+                class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if cari_tipi == 'Tedarikçi' %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700{% endif %}">
+                Tedarikçiler
+            </a>
+        </div>
+
+        <div class="relative max-w-md w-full">
+            <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input type="text" id="cariSearch" placeholder="Cari ünvanı veya vergi no ile ara..."
+                class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all">
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Unvan / Firma Adı</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Tip</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600">Telefon</th>
+                        <th class="px-6 py-4 font-semibold text-slate-600 text-right">Bakiye</th>
+                        <th class="px-6 py-4 text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for cari in cariler %}
+                    <tr class="group hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-900 text-base">{{ cari.Unvan }}</span>
+                                <span class="text-xs text-slate-500">{{ cari.VergiNo or 'V.N. Yok' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                {% if cari.CariTipi == 'Müşteri' %}bg-blue-100 text-blue-800
+                {% elif cari.CariTipi == 'Tedarikçi' %}bg-purple-100 text-purple-800
+                {% else %}bg-slate-100 text-slate-800{% endif %}">
+                                {{ cari.CariTipi }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-slate-600 font-medium">
+                            <div class="flex items-center gap-2">
+                                <span>{{ cari.Telefon or '-' }}</span>
+                                {% if cari.Telefon %}
+                                <a href="https://wa.me/{{ cari.Telefon|replace('+', '')|replace(' ', '') }}"
+                                    target="_blank" class="text-green-500 hover:scale-110 transition-transform"
+                                    title="WhatsApp Mesaj Gönder">
+                                    <svg class="size-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                    </svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span
+                                class="font-bold text-base {% if cari.Bakiye > 0 %}text-green-600{% elif cari.Bakiye < 0 %}text-red-600{% else %}text-slate-400{% endif %}">
+                                {{ '{:,.2f}'.format(cari.Bakiye|abs) }} ₺
+                                <span
+                                    class="text-[10px] uppercase block px-2 py-0.5 rounded-full inline-block mt-1
+                                    {% if cari.Bakiye > 0 %}bg-green-100 text-green-700{% elif cari.Bakiye < 0 %}bg-red-100 text-red-700{% else %}bg-slate-100 text-slate-600{% endif %}">
+                                    {% if cari.Bakiye > 0 %}ALACAKLIYIZ{% elif cari.Bakiye < 0 %}BORÇLUYUZ{% else
+                                        %}SIFIR{% endif %} </span>
+                                </span>
+                        </td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="openCariIslemModal({{ cari.CariID }}, '{{ cari.Unvan }}', 'Gelir')"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-green-600 hover:bg-green-50 transition-all border border-green-100"
+                                    title="Tahsilat Yap">
+                                    <span class="material-symbols-outlined text-[20px]">add_card</span>
+                                </button>
+                                <button onclick="openCariIslemModal({{ cari.CariID }}, '{{ cari.Unvan }}', 'Gider')"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-red-500 hover:bg-red-50 transition-all border border-red-100"
+                                    title="Ödeme Yap">
+                                    <span class="material-symbols-outlined text-[20px]">payments</span>
+                                </button>
+                                <a href="/alacaklar?cari_id={{ cari.CariID }}"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-blue-500 hover:bg-blue-50 transition-all border border-blue-100"
+                                    title="Alacak/Satış Ekle">
+                                    <span class="material-symbols-outlined text-[20px]">receipt</span>
+                                </a>
+                                <a href="/borclar?cari_id={{ cari.CariID }}"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-orange-500 hover:bg-orange-50 transition-all border border-orange-100"
+                                    title="Borç/Alış Ekle">
+                                    <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                                </a>
+                                <a href="/cari/{{ cari.CariID }}/history"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-indigo-500 hover:bg-indigo-50 transition-all border border-indigo-100"
+                                    title="İşlem Geçmişi">
+                                    <span class="material-symbols-outlined text-[20px]">history</span>
+                                </a>
+                                <a href="/cari/{{ cari.CariID }}/ekstre"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-slate-400 hover:bg-white hover:text-primary hover:shadow-md transition-all shadow-sm border border-slate-100"
+                                    title="Hesap Ekstresi">
+                                    <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                                </a>
+                                <a href="/cari/{{ cari.CariID }}/duzenle"
+                                    class="size-9 inline-flex items-center justify-center rounded-xl text-slate-400 hover:bg-white hover:text-blue-600 hover:shadow-md transition-all shadow-sm border border-slate-100"
+                                    title="Düzenle">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </a>
+                                {% if session.get('user_role') == 'admin' %}
+                                <form action="/cari/{{ cari.CariID }}/sil" method="POST" class="inline"
+                                    onsubmit="return confirm('Bu cari hesabı silmek istediğinize emin misiniz?');">
+                                    <button type="submit"
+                                        class="size-9 inline-flex items-center justify-center rounded-xl text-slate-400 hover:bg-white hover:text-red-600 hover:shadow-md transition-all shadow-sm border border-slate-100"
+                                        title="Sil">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                            <span class="material-symbols-outlined text-5xl mb-2">person_off</span>
+                            <p>Henüz cari hesap kaydı bulunmuyor.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Cari İşlem Modalı -->
+<div id="cariIslemModal"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f0e1b]/60 backdrop-blur-sm hidden">
+    <div
+        class="bg-white dark:bg-[#1a1b26] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100 border border-[#e8e8f3] dark:border-gray-800">
+        <div
+            class="px-6 py-4 border-b border-[#e8e8f3] dark:border-gray-800 flex items-center justify-between bg-[#f9f8fb] dark:bg-[#111221]">
+            <h3 id="modalTitle" class="text-lg font-bold text-[#0f0e1b] dark:text-white">Cari İşlem</h3>
+            <button onclick="closeCariIslemModal()"
+                class="text-[#545095] dark:text-slate-400 hover:text-[#0f0e1b] dark:hover:text-white transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="cariIslemForm" method="POST" class="p-6 space-y-4">
+            <input type="hidden" name="islem_turu" id="modalIslemTuru">
+            <input type="hidden" name="payment_method" id="modalPaymentMethod" value="cash">
+            <input type="hidden" name="check_source" id="modalCheckSource" value="own">
+            <input type="hidden" name="customer_check_id" id="modalCustomerCheckId">
+
+            <div class="p-4 bg-blue-50 text-blue-800 rounded-xl mb-4 text-sm flex items-center gap-3">
+                <span class="material-symbols-outlined">info</span>
+                <span id="modalCariName"></span>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Tutar (TL)</label>
+                <input name="tutar" required
+                    class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-bold"
+                    placeholder="0.00" type="number" step="0.01" />
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Tahsilat / Ödeme Yöntemi</label>
+                <div
+                    class="flex w-full rounded-xl bg-[#f9f8fb] dark:bg-[#111221] p-1 border border-[#e8e8f3] dark:border-gray-700">
+                    <label class="flex-1 cursor-pointer">
+                        <input class="sr-only" type="radio" name="cari_payment_method_choice" value="cash" checked
+                            onchange="updateCariModalUI('cash')">
+                        <div id="btn-method-cash"
+                            class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-bold text-[#0f0e1b] dark:text-slate-300 bg-white dark:bg-[#1a1b26] shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                            Nakit
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input class="sr-only" type="radio" name="cari_payment_method_choice" value="bank"
+                            onchange="updateCariModalUI('bank')">
+                        <div id="btn-method-bank"
+                            class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-500 dark:text-slate-400">
+                            <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                            Banka
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input class="sr-only" type="radio" name="cari_payment_method_choice" value="cek"
+                            onchange="updateCariModalUI('cek')">
+                        <div id="btn-method-cek"
+                            class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-500 dark:text-slate-400">
+                            <span class="material-symbols-outlined text-[18px]">checkbook</span>
+                            Çek
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="cariModalBankWrapper" class="space-y-1.5 hidden">
+                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Banka Hesabı Seçin</label>
+                <select name="bank_id"
+                    class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                    <option value="">Banka hesabı seçin...</option>
+                    {% for bank in banks %}
+                    <option value="{{ bank.BankaID }}">{{ bank.BankaAdi }} - {{ bank.HesapAdi }} ({{ bank.ParaBirimi }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="cariModalCheckWrapper"
+                class="space-y-4 hidden border-t border-slate-100 dark:border-slate-800 pt-4 mt-2">
+                <div id="cariModalCiroToggle" class="space-y-1.5 hidden">
+                    <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Çek Kaynağı</label>
+                    <div class="flex w-full rounded-xl bg-slate-100 dark:bg-slate-900/60 p-1">
+                        <label class="flex-1 cursor-pointer">
+                            <input class="sr-only" type="radio" name="cari_check_type_choice" value="own" checked
+                                onchange="updateCariCheckUI('own')">
+                            <div id="btn-check-own"
+                                class="flex items-center justify-center gap-2 rounded-lg py-2 px-3 text-xs font-bold text-[#0f0e1b] dark:text-slate-300 bg-white dark:bg-slate-900 shadow-sm transition-all">
+                                <span class="material-symbols-outlined text-[18px]">stylus_note</span>
+                                Kendi Çekim
+                            </div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input class="sr-only" type="radio" name="cari_check_type_choice" value="customer"
+                                onchange="updateCariCheckUI('customer')">
+                            <div id="btn-check-customer"
+                                class="flex items-center justify-center gap-2 rounded-lg py-2 px-3 text-xs font-medium text-slate-500 dark:text-slate-400 transition-all">
+                                <span class="material-symbols-outlined text-[18px]">person</span>
+                                Müşteri Çeki (Ciro)
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="cariModalOwnCheckFields" class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase">Çek No</label>
+                        <input name="check_no"
+                            class="w-full h-10 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-sm"
+                            placeholder="Örn: 123456" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase">Vade
+                            Tarihi</label>
+                        <input name="check_due_date" type="date"
+                            class="w-full h-10 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-sm" />
+                    </div>
+                </div>
+
+                <div id="cariModalCustomerCheckSelect" class="space-y-1.5 hidden">
+                    <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Kullanılacak Müşteri
+                        Çeki</label>
+                    <select id="ciroCheckSelect" onchange="updateCiroAmount(this)"
+                        class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white text-sm">
+                        <option value="">Çek seçin...</option>
+                        {% for c in customer_checks %}
+                        <option value="{{ c.FinansID }}" data-amount="{{ c.Tutar or 0 }}">
+                            {{ c.Kategori or 'Çek' }} - {{ '{:,.2f}'.format(c.Tutar or 0) }} ₺ ({{ c.Aciklama }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if not customer_checks %}
+                    <p class="text-[10px] text-orange-500 font-medium mt-1">Sistemde henüz seçilebilir müşteri çeki yok.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Açıklama</label>
+                <textarea name="aciklama" rows="2"
+                    class="w-full px-3 py-2 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                    placeholder="İşlem detayı..."></textarea>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button type="button" onclick="closeCariIslemModal()"
+                    class="flex-1 h-12 rounded-xl border border-[#e8e8f3] dark:border-gray-700 text-[#0f0e1b] dark:text-white text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Vazgeç</button>
+                <button type="submit" id="modalSubmitBtn"
+                    class="flex-1 h-12 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all active:scale-95">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('cariSearch').addEventListener('input', function (e) {
+        const text = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            if (rowText.includes(text)) {
+                row.classList.remove('hidden');
+            } else {
+                row.classList.add('hidden');
+            }
+        });
+    });
+
+    function openCariIslemModal(cid, name, turu) {
+        const modal = document.getElementById('cariIslemModal');
+        const form = document.getElementById('cariIslemForm');
+        const title = document.getElementById('modalTitle');
+        const cariLabel = document.getElementById('modalCariName');
+        const typeInput = document.getElementById('modalIslemTuru');
+        const submitBtn = document.getElementById('modalSubmitBtn');
+
+        form.action = `/cari/${cid}/islem`;
+        typeInput.value = turu;
+        cariLabel.textContent = `Seçili Cari: ${name}`;
+
+        if (turu === 'Gelir') {
+            title.textContent = 'Tahsilat Yap';
+            submitBtn.className = submitBtn.className.replace('bg-primary', 'bg-green-600').replace('bg-blue-700', 'bg-green-700');
+            submitBtn.textContent = 'Tahsilatı Kaydet';
+            document.getElementById('cariModalCiroToggle').classList.add('hidden');
+        } else {
+            title.textContent = 'Ödeme Yap';
+            submitBtn.className = submitBtn.className.replace('bg-green-600', 'bg-primary').replace('bg-green-700', 'bg-blue-700');
+            submitBtn.textContent = 'Ödemeyi Kaydet';
+            document.getElementById('cariModalCiroToggle').classList.remove('hidden');
+        }
+
+        // Reset UI
+        updateCariModalUI('cash');
+        updateCariCheckUI('own');
+        document.querySelectorAll('input[name="cari_payment_method_choice"]').forEach(r => r.checked = r.value === 'cash');
+        document.querySelectorAll('input[name="cari_check_type_choice"]').forEach(r => r.checked = r.value === 'own');
+        document.getElementById('ciroCheckSelect').value = '';
+        document.querySelector('input[name="tutar"]').value = '';
+
+        modal.classList.remove('hidden');
+    }
+
+    function updateCariModalUI(method) {
+        document.getElementById('modalPaymentMethod').value = method;
+        const bankWrapper = document.getElementById('cariModalBankWrapper');
+        const checkWrapper = document.getElementById('cariModalCheckWrapper');
+
+        bankWrapper.classList.toggle('hidden', method !== 'bank');
+        checkWrapper.classList.toggle('hidden', method !== 'cek');
+
+        // Update Button Styles
+        ['cash', 'bank', 'cek'].forEach(m => {
+            const btn = document.getElementById('btn-method-' + m);
+            if (m === method) {
+                btn.classList.add('bg-white', 'dark:bg-[#1a1b26]', 'shadow-sm', 'font-bold');
+                btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+                btn.classList.add('text-[#0f0e1b]', 'dark:text-slate-300');
+            } else {
+                btn.classList.remove('bg-white', 'dark:bg-[#1a1b26]', 'shadow-sm', 'font-bold');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
+                btn.classList.remove('text-[#0f0e1b]', 'dark:text-slate-300');
+            }
+        });
+    }
+
+    function updateCariCheckUI(source) {
+        document.getElementById('modalCheckSource').value = source;
+        const ownFields = document.getElementById('cariModalOwnCheckFields');
+        const customerFields = document.getElementById('cariModalCustomerCheckSelect');
+
+        ownFields.classList.toggle('hidden', source !== 'own');
+        customerFields.classList.toggle('hidden', source !== 'customer');
+
+        // Update Button Styles
+        ['own', 'customer'].forEach(s => {
+            const btn = document.getElementById('btn-check-' + s);
+            if (s === source) {
+                btn.classList.add('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'font-bold');
+                btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+                btn.classList.add('text-[#0f0e1b]', 'dark:text-slate-300');
+            } else {
+                btn.classList.remove('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'font-bold');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
+                btn.classList.remove('text-[#0f0e1b]', 'dark:text-slate-300');
+            }
+        });
+    }
+
+    function updateCiroAmount(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        const modalCustomerCheckId = document.getElementById('modalCustomerCheckId');
+        const amountInput = document.querySelector('input[name="tutar"]');
+
+        if (selectedOption && selectedOption.value) {
+            const amount = selectedOption.getAttribute('data-amount');
+            amountInput.value = amount;
+            modalCustomerCheckId.value = selectedOption.value;
+        } else {
+            modalCustomerCheckId.value = '';
+            amountInput.value = ''; // Clear amount if no check is selected
+        }
+    }
+
+    function closeCariIslemModal() {
+        document.getElementById('cariIslemModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

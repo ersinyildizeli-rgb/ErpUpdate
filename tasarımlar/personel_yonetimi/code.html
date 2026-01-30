@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="light" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personel Yönetimi - ERP Sistemi</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4848e5",
+              "primary-dark": "#3b3be0",
+              "background-light": "#f6f6f8",
+              "background-dark": "#111121",
+              "sidebar-bg": "#1e1e2f",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        /* Custom scrollbar for table container */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-background-light text-slate-800 font-display overflow-hidden h-screen flex">
+<!-- Sidebar -->
+<aside class="w-72 bg-sidebar-bg flex flex-col h-full shrink-0 transition-all duration-300 relative z-20 shadow-xl">
+<!-- Logo Area -->
+<div class="h-20 flex items-center px-8 border-b border-white/10">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</div>
+<div>
+<h1 class="text-white text-lg font-bold leading-none tracking-tight">Nexus ERP</h1>
+<p class="text-slate-400 text-xs mt-1 font-medium">İK Yönetimi v2.4</p>
+</div>
+</div>
+</div>
+<!-- Navigation -->
+<div class="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1 custom-scrollbar">
+<p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Genel</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-medium text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/30 relative overflow-hidden group" href="#">
+<div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+<span class="material-symbols-outlined material-symbols-filled">group</span>
+<span class="font-medium text-sm">Personel</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">payments</span>
+<span class="font-medium text-sm">Finans</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">schedule</span>
+<span class="font-medium text-sm">Puantaj</span>
+</a>
+<p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">Sistem</p>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">folder_shared</span>
+<span class="font-medium text-sm">Dokümanlar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+<span class="font-medium text-sm">Ayarlar</span>
+</a>
+</div>
+<!-- User Profile Bottom -->
+<div class="p-4 border-t border-white/10">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+<div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/50" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDXc7PnX17X8kEz4PlEhd6_t7vDhqiFBQ907dbEALYpObun0up5q4VgrgB1GJfeD-aYocEirDWOuoH9Ikqb3oFWzQ91VulF6iux02i1I-l_FSdtvS1pGNjfKADaP-rr9YHp-Uuf0X2fGN-N2dDMzK3FXlUEqFy1JOHPzqs7o_l3pMFV_4ZcrDnNAvZagUzu7-pIWgTHR8CQFxZZV8RTxoqrvUBc0f28mk1yepUYP4w_bB0fz6_g3XiFE6Nsh364NxTklCBgBMDtMtY');"></div>
+<div class="flex-1 min-w-0">
+<p class="text-white text-sm font-semibold truncate">Can Yılmaz</p>
+<p class="text-slate-400 text-xs truncate">Admin</p>
+</div>
+<button class="text-slate-400 hover:text-white">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#f8f9fc] h-full">
+<!-- Header -->
+<header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-primary md:hidden">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center text-slate-500 text-sm">
+<span class="hover:text-primary cursor-pointer">Ana Sayfa</span>
+<span class="material-symbols-outlined text-[16px] mx-2">chevron_right</span>
+<span class="text-slate-800 font-medium">Personel Listesi</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="hidden md:flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 w-64 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none text-sm ml-2 w-full text-slate-700 placeholder:text-slate-400 focus:ring-0 p-0" placeholder="Hızlı arama..." type="text"/>
+<span class="text-xs text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">⌘K</span>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-3">
+<button class="relative p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white"></span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+<div class="max-w-7xl mx-auto flex flex-col gap-6">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-2xl font-bold text-slate-900 tracking-tight">Personel Yönetimi</h2>
+<p class="text-slate-500 text-sm mt-1">Tüm çalışanların listesi, durumları ve finansal bilgileri.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="hidden md:flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                            Filtrele
+                        </button>
+<button class="hidden md:flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">download</span>
+                            Dışa Aktar
+                        </button>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/30 transition-all hover:translate-y-[-1px] active:translate-y-[0px]">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                            Personel Ekle
+                        </button>
+</div>
+</div>
+<!-- Filters Bar (Mobile/Tablet visible mainly) -->
+<div class="flex gap-4 overflow-x-auto pb-2 md:hidden">
+<div class="flex-1 min-w-[200px] relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:border-primary focus:ring-0 shadow-sm" placeholder="Personel ara..." type="text"/>
+</div>
+<select class="bg-white border border-slate-200 rounded-xl text-sm px-4 py-2 shadow-sm focus:border-primary focus:ring-0">
+<option>Tüm Departmanlar</option>
+<option>Yazılım</option>
+<option>İK</option>
+</select>
+</div>
+<!-- Stats Cards (Optional overview) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase tracking-wider">Toplam Personel</p>
+<h3 class="text-2xl font-bold text-slate-900 mt-1">142</h3>
+</div>
+<div class="size-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase tracking-wider">Aktif Çalışan</p>
+<h3 class="text-2xl font-bold text-slate-900 mt-1">138</h3>
+</div>
+<div class="size-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase tracking-wider">İzindeki Personel</p>
+<h3 class="text-2xl font-bold text-slate-900 mt-1">4</h3>
+</div>
+<div class="size-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
+<span class="material-symbols-outlined">beach_access</span>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase tracking-wider">Yeni Başlayanlar</p>
+<h3 class="text-2xl font-bold text-slate-900 mt-1">+12</h3>
+</div>
+<div class="size-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap w-[300px]">Ad Soyad</th>
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Departman</th>
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Ünvan</th>
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap text-right">Net Maaş</th>
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Telefon</th>
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap text-center">Durum</th>
+<th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap text-right">İşlemler</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-cover bg-center ring-2 ring-white shadow-sm" data-alt="Portrait of Ahmet Yılmaz" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDphvUb2NqmmDiFhUpKeeepYi_9SDucVdoOsN1y7K8MHFLYlzxHwe1Yo4fApbkJpT0JSFbPxUk2-JozBvxG5S74aFAAd3GzTfM2yb-9MBPbpsyeT7EpajXwbbd2r7NGF9lqrmDxigM5vbd5zSHz9e1IuzGcETrf6KtaSFAYC8psB135X3sYA8x8j03yYuV0klE2JCGMrFg4vR6mY4pRTFXhMGKIvodglWOZEipPtgU1nVisZx-Jq1-H5G6Ibm4XyQLdFq8rKZRexU0');"></div>
+<div>
+<div class="font-semibold text-slate-900">Ahmet Yılmaz</div>
+<div class="text-xs text-slate-500">ahmet.yilmaz@company.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100">
+                                            Yazılım
+                                        </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-medium">Senior Developer</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right font-mono">45.000 ₺</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">0555 123 45 67</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                            Aktif
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-cover bg-center ring-2 ring-white shadow-sm" data-alt="Portrait of Ayşe Demir" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD1BQhILj0iDXl3bs5rykgDwS-v0SMIjRopEW5C_44sH-SWIzyjgND6ko7u2IHFirr9i3euaDvuoNypy-hcch_lalTDEkggqRT_57D5V1XXmITbQN8aynQwdb2qOIzwXrPodzyYaklHZnkZ0plWxJ_-fxWZ9Cq0z1TGX7Dn6SiYFTsefXcU8nw5uEny1vq4qm8kLGSCLB03qyqYrifhu7TzvYlBdlidA7qPgmezbxSJSXZcE6FcnAObAje_3eBFvJyJbcFdlB2S9uk');"></div>
+<div>
+<div class="font-semibold text-slate-900">Ayşe Demir</div>
+<div class="text-xs text-slate-500">ayse.demir@company.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 text-xs font-medium border border-purple-100">
+                                            İnsan Kaynakları
+                                        </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-medium">İK Uzmanı</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right font-mono">32.000 ₺</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">0532 987 65 43</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                            Aktif
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-cover bg-center ring-2 ring-white shadow-sm" data-alt="Portrait of Mehmet Öz" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUnxYn6zm5JscU4dl_mrOGv7il85VtqDay-7bNQoAs6Z0tVTXwQJnLXLgWAfCEIvj43uBFRwM9gPthh_UfngSy-Bgb1UnZ3YKcNWk_64S5qQpSqk9ocLOG9akCEYO66P5lA8tlSLDiasbkZ23HQru7aLqhQp-wfVl9zM2NtQB6miHWmngc4906wmz1CG8OvOJVwJnX1lTWhP66AY3WJhaTBJwQd4fAbxWJyxBWMASvNCkD5qAcr1JywmPgRVvvtZpaB2xg2H5UBQo');"></div>
+<div>
+<div class="font-semibold text-slate-900">Mehmet Öz</div>
+<div class="text-xs text-slate-500">mehmet.oz@company.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-orange-50 text-orange-700 text-xs font-medium border border-orange-100">
+                                            Satış
+                                        </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-medium">Bölge Müdürü</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right font-mono">38.000 ₺</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">0544 111 22 33</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+<span class="size-1.5 rounded-full bg-slate-400"></span>
+                                            Pasif
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-cover bg-center ring-2 ring-white shadow-sm" data-alt="Portrait of Zeynep Kaya" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCoR9urho8Xs7wnzXOnXL_nDCUKVL-T1gEVtuEzI5Xw3wyfRpZ_uq4fxPGY4xjJISLNblO7WQnf8pEzhW0dE0EZV2RWJtwgpOXd90kWGuFFaSZ5GvSNchqVek-c5C34zBYN-KosCP9nr68ayRG4DrCFxGyWQiI-sKSb2vwDtzmpn-q6FiiYe4IPw2NX5RhNvUQn543GY3WPhz9fdsnJ4_hJ0HunrcPFIDv5i4MYws2xh9hkWhFnqYjxn7OSbQ-nJpt6r1yBTDUocTU');"></div>
+<div>
+<div class="font-semibold text-slate-900">Zeynep Kaya</div>
+<div class="text-xs text-slate-500">zeynep.kaya@company.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-pink-50 text-pink-700 text-xs font-medium border border-pink-100">
+                                            Pazarlama
+                                        </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-medium">Grafiker</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right font-mono">29.500 ₺</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">0535 555 44 33</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                            Aktif
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-cover bg-center ring-2 ring-white shadow-sm" data-alt="Portrait of Caner Erkin" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxTWi-yXjdL4eSG1-gBZv50PJ00pV_jmFqOcTq6fGXFTGikap9wWS6iUjntLa5UqW6tb3nzOjXJAygqosSgbKJ_XfKEpLiHsLWzjRQfKjHbwGrafJQDeeg_3qbvOS1f1QKZX0kt8f9Ih9Xdx1f3YoEk9NIehnMhLonXEWcTbfUQI9F1gvo5KPno_u-bJ9uN15sirA7rha8PUQJa0jsz2PQzFpgvsaBR38qOLCkjuHH66XIXoaqK-XKmnkGKBwLpC2ix-hC0IAqm8w');"></div>
+<div>
+<div class="font-semibold text-slate-900">Caner Erkin</div>
+<div class="text-xs text-slate-500">caner.erkin@company.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+<div class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-700 text-xs font-medium border border-teal-100">
+                                            Finans
+                                        </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-medium">Muhasebe</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right font-mono">31.000 ₺</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">0533 222 11 00</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+                                            Aktif
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-slate-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-between">
+<p class="text-sm text-slate-500">
+                            Toplam <span class="font-medium text-slate-900">142</span> kayıttan <span class="font-medium text-slate-900">1-5</span> arası gösteriliyor
+                        </p>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg disabled:opacity-50" disabled="">Önceki</button>
+<button class="px-3 py-1.5 text-sm font-medium text-white bg-primary rounded-lg shadow-sm shadow-primary/30">1</button>
+<button class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">2</button>
+<button class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">3</button>
+<span class="px-2 py-1.5 text-sm text-slate-400">...</span>
+<button class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">12</button>
+<button class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Sonraki</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

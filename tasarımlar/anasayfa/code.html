@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html class="light" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4848e5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111121",
+                        "sidebar-bg": "#1a1a2e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #4848e5 0% 35%,
+                #3b82f6 35% 55%,
+                #60a5fa 55% 75%,
+                #93c5fd 75% 90%,
+                #e2e8f0 90% 100%
+            );
+            position: relative;
+        }
+        .pie-chart::after {
+            content: "";
+            position: absolute;
+            inset: 60px;
+            background: white;
+            border-radius: 50%;
+        }
+        .dark .pie-chart::after {
+            background: #1e293b;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 overflow-hidden">
+<div class="flex h-screen w-full">
+<aside class="w-64 h-full bg-sidebar-bg flex flex-col flex-shrink-0 transition-all duration-300">
+<div class="h-16 flex items-center px-6 border-b border-slate-700/50">
+<div class="size-8 rounded bg-primary flex items-center justify-center mr-3 text-white">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</div>
+<h1 class="text-white text-lg font-bold tracking-tight">ERP SİSTEMİ</h1>
+</div>
+<nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">group</span>
+<span class="text-sm font-medium">Personel</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">schedule</span>
+<span class="text-sm font-medium">Puantaj</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">payments</span>
+<span class="text-sm font-medium">Finans</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">account_balance</span>
+<span class="text-sm font-medium">Vergiler</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">checkbook</span>
+<span class="text-sm font-medium">Çekler</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">description</span>
+<span class="text-sm font-medium">Bordro</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">bar_chart</span>
+<span class="text-sm font-medium">Raporlar</span>
+</a>
+<div class="mt-auto">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Ayarlar</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-700/50">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-cover bg-center ring-2 ring-primary/30" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC1MRJ9riYDzPlCisgLD6Z1aahlSCPfTI5PHs-ZrJJ0gMGZObnAgA3TL26GSw4IBHIn_gemEccndMOCr7YtsGUYuXdqqb_Qnk_Uzr5GlwSQOjVaxyqP-hD_z6QHKFNuSO37d3Mz06JPIQV7G_Y6yWRejsewjzMO9NcSw-p0Vu9-OYDP6qFL50zSKQXmJPmvqOAnGAQZ0Gje7tMVsS3lsOU9EzWR_ORbr55wfCiTticiJyOPT3yX9ltPRGwtkjz7skRSy7IW3alJA5g");'></div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-medium text-white truncate">Ahmet Yılmaz</span>
+<span class="text-xs text-slate-400 truncate">Yönetici</span>
+</div>
+</div>
+</div>
+</aside>
+<div class="flex flex-col flex-1 h-full overflow-hidden bg-background-light dark:bg-background-dark">
+<header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-8 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">Şirket Adı A.Ş.</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group cursor-pointer">
+<span class="material-symbols-outlined text-slate-500 hover:text-primary transition-colors">notifications</span>
+<span class="absolute top-0 right-0 size-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+</div>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-600 mx-2"></div>
+<button class="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+<span class="text-sm font-medium">Çıkış Yap</span>
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-8">
+<div class="max-w-7xl mx-auto flex flex-col gap-8">
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white">Genel Bakış</h3>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Son güncelleme: Bugün, 14:30</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between h-36">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Toplam Kasa</p>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">₺1,250,000</h4>
+</div>
+<div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+12%</span>
+<span class="text-slate-400 font-normal ml-1">geçen aya göre</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between h-36">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Bekleyen Ödemeler</p>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">₺45,000</h4>
+</div>
+<div class="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium text-red-500 dark:text-red-400">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+5%</span>
+<span class="text-slate-400 font-normal ml-1">artış var</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between h-36">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Toplam Personel</p>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">124</h4>
+</div>
+<div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-primary dark:text-blue-400">
+<span class="material-symbols-outlined">groups</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">person_add</span>
+<span>+2</span>
+<span class="text-slate-400 font-normal ml-1">yeni giriş</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between h-36">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Tahmini Maaş Gideri</p>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">₺850,000</h4>
+</div>
+<div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined">payments</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>Bu Ay</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-lg text-rose-600 dark:text-rose-400">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Vergi Özeti</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">Kasım 2023 Dönemi</p>
+</div>
+</div>
+<button class="flex items-center gap-1 text-sm text-primary hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
+                            Detayları Yönet
+                            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="bg-slate-50 dark:bg-slate-700/30 p-5 rounded-xl border border-slate-100 dark:border-slate-700/50 mb-6">
+<div class="flex justify-between items-end">
+<div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Toplam Vergi Yükü</p>
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">₺467,550</h2>
+</div>
+<div class="text-right">
+<span class="block text-xs font-semibold text-rose-500 bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded-full border border-rose-100 dark:border-rose-800">
+                                    Ödeme Bekliyor
+                                </span>
+</div>
+</div>
+<div class="mt-4 w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2 overflow-hidden">
+<div class="bg-primary h-2 rounded-full" style="width: 73%"></div>
+</div>
+<div class="flex justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
+<span>Ödenen: ₺342,100</span>
+<span>Kalan: ₺125,450</span>
+</div>
+</div>
+<div class="flex-1 space-y-4">
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">percent</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">KDV Ödemesi</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Son Ödeme: 26.11.2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-white">₺125,450</p>
+<span class="text-xs font-medium text-orange-500">Bekliyor</span>
+</div>
+</div>
+<div class="h-px bg-slate-100 dark:bg-slate-700/50"></div>
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">health_and_safety</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">SGK Primi</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Son Ödeme: 30.11.2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-white">₺342,100</p>
+<span class="text-xs font-medium text-green-600">Ödendi</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex justify-between items-center mb-5">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined">checkbook</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Çek Takibi</h3>
+</div>
+<button class="text-sm text-primary hover:underline font-medium">Tümünü Gör</button>
+</div>
+<div class="grid grid-cols-3 gap-4 mb-4">
+<div class="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700/50 text-center">
+<span class="block text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Gelen Çekler</span>
+<span class="block text-lg font-bold text-green-600 dark:text-green-400 mt-1">₺85K</span>
+<span class="text-[10px] text-slate-400">Vade: 7 Gün</span>
+</div>
+<div class="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700/50 text-center">
+<span class="block text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Giden Çekler</span>
+<span class="block text-lg font-bold text-red-500 dark:text-red-400 mt-1">₺120K</span>
+<span class="text-[10px] text-slate-400">Vade: 15 Gün</span>
+</div>
+<div class="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700/50 text-center">
+<span class="block text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Bankadaki</span>
+<span class="block text-lg font-bold text-blue-600 dark:text-blue-400 mt-1">₺450K</span>
+<span class="text-[10px] text-slate-400">Takas Sürecinde</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-sm">arrow_downward</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">ABC Lojistik</p>
+<p class="text-xs text-slate-500">Vade: 25.10.2023</p>
+</div>
+</div>
+<span class="text-sm font-semibold text-slate-800 dark:text-slate-200">₺25,000</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined text-sm">arrow_upward</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">XYZ Tedarik</p>
+<p class="text-xs text-slate-500">Vade: 02.11.2023</p>
+</div>
+</div>
+<span class="text-sm font-semibold text-slate-800 dark:text-slate-200">₺42,500</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white">Aylık Gelir/Gider</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Son 6 aylık finansal performans</p>
+</div>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-slate-500">more_horiz</span>
+</button>
+</div>
+<div class="w-full h-64 relative">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 800 300">
+<line stroke="#e2e8f0" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
+<line stroke="#e2e8f0" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="190" y2="190"></line>
+<line stroke="#e2e8f0" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="130" y2="130"></line>
+<line stroke="#e2e8f0" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="70" y2="70"></line>
+<defs>
+<linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4848e5" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#4848e5" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0,200 C100,200 100,100 200,120 C300,140 300,80 400,60 C500,40 500,150 600,140 C700,130 700,50 800,80 L800,250 L0,250 Z" fill="url(#chartGradient)"></path>
+<path d="M0,200 C100,200 100,100 200,120 C300,140 300,80 400,60 C500,40 500,150 600,140 C700,130 700,50 800,80" fill="none" stroke="#4848e5" stroke-linecap="round" stroke-width="3"></path>
+<circle cx="200" cy="120" fill="white" r="4" stroke="#4848e5" stroke-width="2"></circle>
+<circle cx="400" cy="60" fill="white" r="4" stroke="#4848e5" stroke-width="2"></circle>
+<circle cx="600" cy="140" fill="white" r="4" stroke="#4848e5" stroke-width="2"></circle>
+<circle cx="800" cy="80" fill="white" r="4" stroke="#4848e5" stroke-width="2"></circle>
+</svg>
+<div class="flex justify-between mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 px-2">
+<span>Oca</span>
+<span>Şub</span>
+<span>Mar</span>
+<span>Nis</span>
+<span>May</span>
+<span>Haz</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">Personel Dağılımı</h3>
+<div class="flex-1 flex flex-col items-center justify-center">
+<div class="pie-chart shadow-inner mb-8">
+<div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+<span class="text-3xl font-bold text-slate-800 dark:text-white">124</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">TOPLAM</span>
+</div>
+</div>
+<div class="w-full grid grid-cols-2 gap-y-3 gap-x-4">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#4848e5]"></div>
+<span class="text-sm text-slate-600 dark:text-slate-300">Yazılım (35%)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#3b82f6]"></div>
+<span class="text-sm text-slate-600 dark:text-slate-300">Satış (20%)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#60a5fa]"></div>
+<span class="text-sm text-slate-600 dark:text-slate-300">Pazarlama (20%)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#93c5fd]"></div>
+<span class="text-sm text-slate-600 dark:text-slate-300">Muhasebe (15%)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#e2e8f0]"></div>
+<span class="text-sm text-slate-600 dark:text-slate-300">İK (10%)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

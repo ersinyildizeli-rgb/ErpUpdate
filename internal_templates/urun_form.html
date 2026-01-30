@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8 max-w-4xl mx-auto">
+    <div class="flex flex-col gap-1">
+        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ 'Ürün Düzenle' if urun else 'Yeni Ürün Ekle' }}
+        </h1>
+        <p class="text-slate-500 text-sm">Ürün bilgilerini detaylıca girin. Yıldızlı (*) alanlar zorunludur.</p>
+    </div>
+
+    <form method="POST" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="flex flex-col gap-2 md:col-span-2">
+                <label class="text-sm font-bold text-slate-700">Ürün Adı *</label>
+                <input type="text" name="urun_adi" required value="{{ urun.UrunAdi if urun else '' }}"
+                    placeholder="Örn: A4 Fotokopi Kağıdı 80gr"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none">
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Barkod / Kod</label>
+                <input type="text" name="barkod" value="{{ urun.Barkod if urun else '' }}" placeholder="869..."
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none">
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Birim</label>
+                <select name="birim"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none cursor-pointer">
+                    {% for b in ['Adet', 'KG', 'Metre', 'Paket', 'Koli', 'Litre', 'Ton'] %}
+                    <option value="{{ b }}" {{ 'selected' if urun and urun.Birim==b }}>{{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Alış Fiyatı (₺)</label>
+                <input type="number" step="0.01" name="alis_fiyati" value="{{ urun.AlisFiyati if urun else '0.00' }}"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none">
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Satış Fiyatı (₺)</label>
+                <input type="number" step="0.01" name="satis_fiyati" value="{{ urun.SatisFiyati if urun else '0.00' }}"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none">
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">KDV Oranı (%)</label>
+                <select name="kdv"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none cursor-pointer">
+                    <option value="20" {{ 'selected' if urun and urun.KDV==20 }}>%20 (Standart)</option>
+                    <option value="10" {{ 'selected' if urun and urun.KDV==10 }}>%10 (Gıda vb.)</option>
+                    <option value="1" {{ 'selected' if urun and urun.KDV==1 }}>%1 (Temel gıda)</option>
+                    <option value="0" {{ 'selected' if urun and urun.KDV==0 }}>%0 (Muaf)</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-slate-700">Kritik Stok Seviyesi</label>
+                <input type="number" step="0.1" name="kritik_stok" value="{{ urun.KritikStok if urun else '5.0' }}"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none">
+                <p class="text-[11px] text-slate-400 italic">Stok bu seviyenin altına geldiğinde ana ekranda uyarı
+                    görünür.</p>
+            </div>
+        </div>
+
+        <div class="p-8 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-4">
+            <a href="/urunler"
+                class="px-6 py-3 font-bold text-slate-500 hover:text-slate-900 transition-colors">Vazgeç</a>
+            <button type="submit"
+                class="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95">
+                {{ 'Güncelle' if urun else 'Ürünü Oluştur' }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

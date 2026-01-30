@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <a href="/cari"
+                class="size-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-primary transition-all shadow-sm border border-slate-100">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div class="flex flex-col">
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ cari.Unvan }}</h1>
+                <p class="text-slate-500 text-sm">Hesap Ekstresi / Hareket Dökümü</p>
+            </div>
+        </div>
+
+        <div class="bg-white px-6 py-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-end">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Güncel Bakiye</span>
+            <span
+                class="text-2xl font-black {% if cari.Bakiye > 0 %}text-green-600{% elif cari.Bakiye < 0 %}text-red-600{% else %}text-slate-400{% endif %}">
+                {{ '{:,.2f}'.format(cari.Bakiye|abs) }} ₺
+                <span class="text-xs">{% if cari.Bakiye > 0 %}Alacaklıyız{% elif cari.Bakiye < 0 %}Borçluyuz{% else
+                        %}-{% endif %}</span>
+                </span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-1 space-y-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    Cari Bilgileri
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Telefon</span>
+                        <span class="text-sm font-medium text-slate-700">{{ cari.Telefon or '-' }}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Vergi Bilgisi</span>
+                        <span class="text-sm font-medium text-slate-700">{{ cari.VergiDairesi or '-' }} / {{
+                            cari.VergiNo or '-' }}</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Adres</span>
+                        <span class="text-sm font-medium text-slate-700">{{ cari.Adres or '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="font-bold text-slate-900">İşlem Geçmişi</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-3 font-semibold text-slate-600">Tarih</th>
+                                <th class="px-6 py-3 font-semibold text-slate-600">İşlem</th>
+                                <th class="px-6 py-3 font-semibold text-slate-600 text-right">Borç (Çıkan)</th>
+                                <th class="px-6 py-3 font-semibold text-slate-600 text-right">Alacak (Giren)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for h in hareketler %}
+                            <tr class="hover:bg-slate-50/50">
+                                <td class="px-6 py-4 text-slate-500 whitespace-nowrap">{{ h.Tarih.strftime('%d.%m.%Y')
+                                    }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-slate-800">{{ h.Kategori }}</span>
+                                        <span class="text-xs text-slate-500">{{ h.Aciklama }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    {% if h.IslemTuru == 'Gider' %}
+                                    <span class="text-red-600 font-bold">{{ '{:,.2f}'.format(h.Tutar) }} ₺</span>
+                                    {% else %}-{% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    {% if h.IslemTuru == 'Gelir' %}
+                                    <span class="text-green-600 font-bold">{{ '{:,.2f}'.format(h.Tutar) }} ₺</span>
+                                    {% else %}-{% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center text-slate-400 italic">Henüz bir hareket
+                                    kaydı bulunmuyor.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

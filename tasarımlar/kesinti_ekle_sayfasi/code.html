@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kesinti Ekle Modalı - ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#5048e5",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121121",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom scrollbar styling for the modal content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen relative overflow-hidden font-display">
+<!-- Blurred Background Simulation (Simulating the ERP Dashboard behind the modal) -->
+<div aria-hidden="true" class="absolute inset-0 z-0 flex pointer-events-none select-none opacity-40 blur-[2px]">
+<!-- Sidebar -->
+<div class="w-64 bg-white dark:bg-[#1a1929] border-r border-gray-200 dark:border-gray-800 h-full flex flex-col p-4 gap-4">
+<div class="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-6"></div>
+<div class="h-10 w-full bg-primary/10 rounded-lg"></div>
+<div class="h-10 w-full bg-transparent rounded-lg"></div>
+<div class="h-10 w-full bg-transparent rounded-lg"></div>
+</div>
+<!-- Content Area -->
+<div class="flex-1 flex flex-col">
+<div class="h-16 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1929] w-full mb-8"></div>
+<div class="px-8 grid grid-cols-3 gap-6">
+<div class="h-32 bg-white dark:bg-[#1a1929] rounded-xl border border-gray-200 dark:border-gray-800"></div>
+<div class="h-32 bg-white dark:bg-[#1a1929] rounded-xl border border-gray-200 dark:border-gray-800"></div>
+<div class="h-32 bg-white dark:bg-[#1a1929] rounded-xl border border-gray-200 dark:border-gray-800"></div>
+</div>
+</div>
+</div>
+<!-- Modal Backdrop -->
+<div aria-hidden="true" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-40 transition-opacity duration-300"></div>
+<!-- Modal Center Wrapper -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+<!-- Modal Card -->
+<div class="w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-[#1a1929] text-left align-middle shadow-2xl transition-all flex flex-col max-h-[90vh]">
+<!-- Modal Header -->
+<div class="flex items-start justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5 bg-white dark:bg-[#1a1929]">
+<div>
+<h3 class="text-xl font-bold leading-6 text-gray-900 dark:text-white">
+                        Kesinti Ekle
+                    </h3>
+<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Personel hesabına yansıtılacak yeni bir finansal kesinti oluşturun.
+                    </p>
+</div>
+<button class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors" type="button">
+<span class="sr-only">Kapat</span>
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar space-y-6">
+<!-- Personel Seçimi -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Personel Seçimi
+                    </label>
+<div class="relative">
+<select class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4 pr-10">
+<option disabled="" value="">Personel seçiniz...</option>
+<option value="1">Ali Yılmaz (Yazılım Departmanı)</option>
+<option selected="" value="2">Ayşe Kaya (İnsan Kaynakları)</option>
+<option value="3">Mehmet Demir (Finans)</option>
+</select>
+<!-- Custom Icon Overlay (optional if default doesn't match theme) -->
+</div>
+</div>
+<!-- Grid Row: Tip ve Tutar -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Kesinti Tipi
+                        </label>
+<select class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4">
+<option value="">Seçiniz</option>
+<option value="avans">Avans</option>
+<option value="icra">İcra Dosyası</option>
+<option value="bes">BES Kesintisi</option>
+<option selected="" value="sigorta">Özel Sağlık Sigortası</option>
+<option value="diger">Diğer</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Tutar (TL)
+                        </label>
+<div class="relative rounded-lg shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+<span class="text-gray-500 dark:text-gray-400 sm:text-sm font-semibold">₺</span>
+</div>
+<input class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 pl-9 text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary h-12 sm:text-sm font-medium" id="price" name="price" placeholder="0.00" type="text" value="1,250.00"/>
+</div>
+</div>
+</div>
+<!-- Kesinti Tarihi -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Kesinti Tarihi
+                    </label>
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-12 sm:text-sm pl-4" type="date" value="2023-11-15"/>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-lg">calendar_month</span>
+</div>
+</div>
+</div>
+<!-- Taksit Opsiyonu Bölümü -->
+<div class="rounded-xl border border-primary/20 bg-primary/5 p-4 dark:bg-primary/10 dark:border-primary/30">
+<div class="flex items-start">
+<div class="flex h-6 items-center">
+<input checked="" class="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary transition-colors cursor-pointer" id="installment" name="installment" type="checkbox"/>
+</div>
+<div class="ml-3 text-sm leading-6">
+<label class="font-medium text-gray-900 dark:text-white cursor-pointer select-none" for="installment">Taksitli Kesinti mi?</label>
+<p class="text-gray-500 dark:text-gray-400 text-xs">İşaretlendiğinde kesinti tutarı belirtilen aylara bölünür.</p>
+</div>
+</div>
+<!-- Conditional Fields (Simulated as Visible) -->
+<div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 animate-fadeIn">
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Taksit Sayısı
+                            </label>
+<input class="block w-full rounded-lg border-gray-300 bg-white dark:bg-[#232236] dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-11 sm:text-sm pl-4" max="24" min="1" placeholder="Örn: 3" type="number" value="3"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Taksit Başlangıç Tarihi
+                            </label>
+<input class="block w-full rounded-lg border-gray-300 bg-white dark:bg-[#232236] dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary h-11 sm:text-sm pl-4" type="date"/>
+</div>
+</div>
+</div>
+<!-- Açıklama -->
+<div class="space-y-2">
+<div class="flex justify-between">
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                            Açıklama
+                        </label>
+<span class="text-xs text-gray-500 dark:text-gray-400">Opsiyonel</span>
+</div>
+<textarea class="block w-full rounded-lg border-gray-300 bg-gray-50/50 dark:bg-[#232236] dark:border-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-4 resize-none" placeholder="Kesinti hakkında ek bilgi giriniz..." rows="3"></textarea>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="bg-gray-50 dark:bg-[#232236]/50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-gray-100 dark:border-gray-800">
+<button class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-0 transition-all" type="button">
+                    İptal
+                </button>
+<button class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-transparent bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-primary/25 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all" type="button">
+                    Kaydet
+                </button>
+</div>
+</div>
+</div>
+</body></html>

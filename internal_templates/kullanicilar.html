@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+    <!-- Page Header -->
+    <div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center text-xs font-medium text-slate-500 mb-1">
+                <span class="hover:text-primary cursor-default">Ana Menü</span>
+                <span class="material-symbols-outlined mx-1 text-[14px] text-slate-400">chevron_right</span>
+                <span class="text-primary font-semibold">Kullanıcı Yönetimi</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Kullanıcı ve Rol
+                Yönetimi</h2>
+            <p class="text-slate-500 text-sm">Sisteme erişimi olan kullanıcıları yönetin ve yetkilendirmelerini
+                yapılandırın.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button @click="$dispatch('open-add-user-modal')"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">person_add</span>
+                Yeni Kullanıcı Ekle
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+            class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6">
+            <div
+                class="size-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[32px]">group</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Toplam Kullanıcı</p>
+                <p class="text-2xl font-black text-slate-900 dark:text-white">{{ users|length }}</p>
+            </div>
+        </div>
+        <div
+            class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6">
+            <div
+                class="size-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[32px]">check_circle</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Aktif Kullanıcılar</p>
+                <p class="text-2xl font-black text-slate-900 dark:text-white">{{ users|selectattr('Aktif', 'equalto',
+                    True)|list|length }}</p>
+            </div>
+        </div>
+        <div
+            class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6">
+            <div
+                class="size-14 rounded-2xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[32px]">verified_user</span>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Yönetici Sayısı</p>
+                <p class="text-2xl font-black text-slate-900 dark:text-white">{{ users|selectattr('Rol', 'equalto',
+                    'admin')|list|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users List Card -->
+    <div
+        class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden min-h-[400px]">
+        <div
+            class="px-8 py-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">manage_accounts</span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Kayıtlı Kullanıcılar</h3>
+            </div>
+            <div class="relative w-64">
+                <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-[20px]">search</span>
+                <input type="text" placeholder="Kullanıcı ara..."
+                    class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:border-primary focus:ring-primary">
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr
+                        class="bg-slate-50/30 dark:bg-slate-800/20 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">
+                        <th class="px-8 py-5">Kullanıcı Bilgileri</th>
+                        <th class="px-8 py-5">Durum</th>
+                        <th class="px-8 py-5">Rol & Yetki</th>
+                        <th class="px-8 py-5 text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% if users %}
+                    {% for u in users %}
+                    <tr class="group hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-all duration-300">
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-4">
+                                {% set initials = (u.KullaniciAdi or '')[:2].upper() %}
+                                <div
+                                    class="size-11 rounded-2xl bg-gradient-to-br from-primary/10 to-indigo-500/10 text-primary flex items-center justify-center font-black text-sm border border-primary/10 shadow-sm group-hover:scale-110 transition-transform">
+                                    {{ initials }}
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ u.KullaniciAdi
+                                        }}</span>
+                                    <span class="text-xs text-slate-500 font-medium">{{ u.Email or 'E-posta tanımlı
+                                        değil' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5">
+                            {% if u.Aktif %}
+                            <div
+                                class="inline-flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 shadow-sm shadow-emerald-500/5">
+                                <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                AKTİF
+                            </div>
+                            {% else %}
+                            <div
+                                class="inline-flex items-center gap-2 rounded-full bg-slate-100 dark:bg-slate-700/50 px-3 py-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                                <span class="size-1.5 rounded-full bg-slate-400"></span>
+                                PASİF
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500">
+                                    <span class="material-symbols-outlined text-[18px]">{% if u.Rol == 'admin'
+                                        %}verified_user{% elif u.Rol == 'finans' %}payments{% else %}person_check{%
+                                        endif %}</span>
+                                </div>
+                                <span
+                                    class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">{{
+                                    u.Rol }}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5 text-right">
+                            <div
+                                class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                <form method="post" action="{{ url_for('ayarlar_kullanici_islem') }}">
+                                    <input type="hidden" name="user_id" value="{{ u.KullaniciID }}">
+                                    <input type="hidden" name="action" value="toggle_active">
+                                    <button type="submit" title="{{ 'Pasif Yap' if u.Aktif else 'Aktif Yap' }}"
+                                        class="size-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-amber-500 hover:border-amber-200 dark:hover:border-amber-800 transition-all hover:shadow-lg active:scale-90">
+                                        <span class="material-symbols-outlined text-[20px]">{{ 'toggle_on' if u.Aktif
+                                            else 'toggle_off' }}</span>
+                                    </button>
+                                </form>
+                                {% if session.get('user_id') != u.KullaniciID %}
+                                <form method="post" action="{{ url_for('ayarlar_kullanici_islem') }}"
+                                    onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.');">
+                                    <input type="hidden" name="user_id" value="{{ u.KullaniciID }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit"
+                                        class="size-9 flex items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 border border-rose-100 dark:border-rose-900/30 hover:bg-rose-500 hover:text-white hover:shadow-rose-300 transition-all active:scale-90"
+                                        title="Kullanıcıyı Sil">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-8 py-20 text-center">
+                            <div class="flex flex-col items-center gap-4 text-slate-400">
+                                <span class="material-symbols-outlined text-6xl opacity-20">person_off</span>
+                                <p class="text-sm font-medium">Henüz bir kullanıcı tanımlamadınız.</p>
+                                <button @click="$dispatch('open-add-user-modal')"
+                                    class="text-primary font-bold text-sm hover:underline">Hemen bir tane
+                                    ekleyin</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div x-data="{ open: false }" @open-add-user-modal.window="open = true" x-show="open"
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+    <div @click.away="open = false"
+        class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div
+            class="px-8 py-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined">person_add</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yeni Kullanıcı Ekle</h3>
+            </div>
+            <button @click="open = false"
+                class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form method="post" action="{{ url_for('ayarlar_kullanici_ekle') }}" class="p-8 flex flex-col gap-6">
+            <!-- Passing a direct field to indicate we are coming from dedicated page -->
+            <input type="hidden" name="from_page" value="kullanicilar">
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Kullanıcı Adı</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 text-[20px]">person</span>
+                    <input type="text" name="username" required
+                        class="block w-full rounded-2xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 pl-11 pr-4 py-3 text-sm focus:border-primary focus:ring-primary transition-all"
+                        placeholder="Örn: ersin_admin">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">E-posta Adresi</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 text-[20px]">mail</span>
+                    <input type="email" name="email"
+                        class="block w-full rounded-2xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 pl-11 pr-4 py-3 text-sm focus:border-primary focus:ring-primary transition-all"
+                        placeholder="ornek@sirket.com">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Giriş Şifresi</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3.5 top-3 text-slate-400 text-[20px]">key</span>
+                    <input type="password" name="password" required
+                        class="block w-full rounded-2xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 pl-11 pr-4 py-3 text-sm focus:border-primary focus:ring-primary transition-all"
+                        placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Yetki Rolü</label>
+                    <select name="role" required
+                        class="block w-full rounded-2xl border-slate-200 dark:border-slate-700 dark:bg-slate-900 px-4 py-3 text-sm focus:border-primary focus:ring-primary transition-all">
+                        <option value="admin">Yönetici (Admin)</option>
+                        <option value="finans">Finans Sorumlusu</option>
+                        <option value="personel">Personel / İK</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Hesap Durumu</label>
+                    <div
+                        class="flex h-[46px] items-center px-4 rounded-2xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900">
+                        <label class="inline-flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" name="active" checked
+                                class="h-5 w-5 rounded-lg border-slate-300 text-primary focus:ring-primary">
+                            <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Aktif</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 flex gap-3">
+                <button type="button" @click="open = false"
+                    class="flex-1 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95">
+                    Vazgeç
+                </button>
+                <button type="submit"
+                    class="flex-[2] h-12 rounded-2xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                    Kullanıcıyı Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    [x-cloak] {
+        display: none !important;
+    }
+</style>
+{% endblock %}

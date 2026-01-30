@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto pb-20">
+    <form action="/portfoy/ekle" method="POST" class="flex flex-col gap-8">
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Yeni Evrak Kaydı</h1>
+            <div class="flex gap-3">
+                <a href="/portfoy"
+                    class="px-6 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-all">İptal</a>
+                <button type="submit"
+                    class="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all active:scale-95">Evrağı
+                    Kaydet</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Basic Info -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-6">
+                <h3
+                    class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4 mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">description</span>
+                    Evrak Genel Bilgileri
+                </h3>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evrak
+                            Türü</label>
+                        <select name="evrak_turu" required
+                            class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                            <option value="Çek">Çek</option>
+                            <option value="Senet">Senet</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">İşlem
+                            Yönü</label>
+                        <select name="islem_turu" required
+                            class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                            <option value="Alınan">Müşteriden Alınan</option>
+                            <option value="Verilen">Tedarikçiye Verilen</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evrak (Seri)
+                        No</label>
+                    <input type="text" name="evrak_no" placeholder="Örn: AK456789" required
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vade
+                            Tarihi</label>
+                        <input type="date" name="vade_tarihi" required
+                            class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tutar (₺)</label>
+                        <input type="number" step="0.01" name="tutar" placeholder="0.00" required
+                            class="w-full h-12 px-4 rounded-xl border-slate-200 font-black text-emerald-600 focus:ring-primary">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stakeholders -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-6">
+                <h3
+                    class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4 mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">groups</span>
+                    Taraflar ve Finansal Bağlantı
+                </h3>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cari Hesap (Hareketi
+                        İşle)</label>
+                    <select name="cari_id" required
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                        <option value="">Seçiniz...</option>
+                        {% for c in cariler %}
+                        <option value="{{ c.CariID }}">{{ c.Unvan }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asıl Borçlu (Keşideci
+                        / Muhatap)</label>
+                    <input type="text" name="asil_borclu" placeholder="Evrağın asıl sahibi..."
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-medium focus:ring-primary">
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">İlişkili Banka
+                        (Opsiyonel)</label>
+                    <select name="banka_id"
+                        class="w-full h-12 px-4 rounded-xl border-slate-200 font-bold focus:ring-primary">
+                        <option value="">İlişkilendirme Yok</option>
+                        {% for b in bankalar %}
+                        <option value="{{ b.BankaID }}">{{ b.BankaAdi }} - {{ b.HesapAdi }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Ek Notlar ve
+                Açıklama</label>
+            <textarea name="aciklama" rows="3"
+                placeholder="Ödeme planı veya ciro detayları hakkında not alabilirsiniz..."
+                class="w-full p-4 rounded-xl border-slate-200 font-medium focus:ring-primary focus:border-primary"></textarea>
+        </div>
+    </form>
+</div>
+{% endblock %}

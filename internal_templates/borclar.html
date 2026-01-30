@@ -1,0 +1,969 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex-1 flex flex-col min-w-0 bg-[#f9f8fb] dark:bg-background-dark relative h-full">
+    <!-- Top Header -->
+    <header
+        class="h-16 bg-white dark:bg-[#1a1a2e] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-20">
+        <div class="flex items-center gap-2 text-sm">
+            <span class="text-slate-400">Finans</span>
+            <span class="material-symbols-outlined text-slate-300 text-[16px]">chevron_right</span>
+            <span
+                class="text-slate-800 dark:text-white font-medium bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-md">Borç
+                Yönetimi</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="relative hidden sm:block">
+                <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+                <input id="debtSearchInput"
+                    class="h-9 w-64 pl-10 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-slate-400 text-slate-700 dark:text-slate-200"
+                    placeholder="Genel arama..." type="text" />
+            </div>
+            <button
+                class="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                <span class="material-symbols-outlined text-[22px]">notifications</span>
+                <span
+                    class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white dark:border-[#1a1a2e]"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
+        <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+            <!-- Page Heading -->
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Borç
+                        Listesi</h1>
+                    <p class="text-slate-500 text-sm sm:text-base">Şirketinizin güncel borç durumunu ve vadesi yaklaşan
+                        ödemeleri yönetin.</p>
+                </div>
+                <button onclick="document.getElementById('addDebtModal').classList.remove('hidden')"
+                    class="bg-primary hover:bg-primary-dark text-white h-11 px-5 rounded-lg font-medium shadow-lg shadow-primary/30 flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                    <span>Borç Ekle</span>
+                </button>
+            </div>
+
+            <!-- Add Debt Modal -->
+            <div id="addDebtModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f0e1b]/60 backdrop-blur-sm hidden">
+                <div
+                    class="bg-white dark:bg-[#1e1c30] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
+                    <div
+                        class="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-[#1e1c30]">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white leading-tight">Borç Ekle</h2>
+                            <p class="text-sm text-slate-500 mt-1">Yeni bir kurumsal borç kaydı oluşturun.</p>
+                        </div>
+                        <button onclick="document.getElementById('addDebtModal').classList.add('hidden')"
+                            class="rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                            <span class="material-symbols-outlined text-2xl">close</span>
+                        </button>
+                    </div>
+                    <form action="/borclar/ekle" method="POST" class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Borç Veren</label>
+                                <div class="relative">
+                                    <span
+                                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none">apartment</span>
+                                    <input name="BorcVeren" required
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white pl-11 pr-4 py-3 text-base focus:border-primary focus:ring-primary transition-all"
+                                        placeholder="Örn. ABC Bankası" type="text" />
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">İlgili Cari
+                                    (Opsiyonel)</label>
+                                <div class="relative">
+                                    <span
+                                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none">groups</span>
+                                    <select name="cari_id"
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white pl-11 pr-10 py-3 text-base focus:border-primary focus:ring-primary transition-all">
+                                        <option value="">Cari Seçilmedi</option>
+                                        {% for c in cariler %}
+                                        <option value="{{ c.CariID }}">{{ c.Unvan }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Borç Türü</label>
+                                <div class="relative">
+                                    <span
+                                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none">category</span>
+                                    <select name="BorcTuru"
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white pl-11 pr-10 py-3 text-base focus:border-primary focus:ring-primary transition-all">
+                                        <option value="Banka Kredisi">Banka Kredisi</option>
+                                        <option value="Tedarikçi Borcu">Tedarikçi Borcu</option>
+                                        <option value="Vergi / SGK">Vergi / SGK</option>
+                                        <option value="Personel Avansı">Personel Avansı</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Ana Tutar</label>
+                                <div class="relative">
+                                    <span
+                                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl pointer-events-none">attach_money</span>
+                                    <input name="AnaTutar" step="0.01" required
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white pl-11 pr-4 py-3 text-base focus:border-primary focus:ring-primary transition-all"
+                                        placeholder="0,00" type="number" />
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                        <span class="text-slate-400 sm:text-sm">TRY</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Vade Tarihi</label>
+                                <div class="relative">
+                                    <input name="VadeTarihi" required
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white px-4 py-3 text-base focus:border-primary focus:ring-primary transition-all"
+                                        type="date" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Taksitli Borç Seçeneği -->
+                        <div class="py-2">
+                            <label class="inline-flex items-center cursor-pointer group">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" id="isInstallment" name="isInstallment"
+                                        class="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-slate-200 dark:border-slate-700 bg-transparent transition-all checked:border-primary checked:bg-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 dark:focus:ring-offset-gray-900"
+                                        onchange="toggleInstallmentDetails()" />
+                                    <span
+                                        class="material-symbols-outlined absolute opacity-0 peer-checked:opacity-100 text-white text-sm pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-bold">check</span>
+                                </div>
+                                <span
+                                    class="ml-3 text-base font-medium text-slate-900 dark:text-gray-200 select-none group-hover:text-primary transition-colors">
+                                    Taksitli Borç mu?
+                                </span>
+                            </label>
+                        </div>
+
+                        <!-- Taksit Detayları (Gizli) -->
+                        <div id="installmentDetails"
+                            class="hidden rounded-xl bg-primary/5 p-5 border border-primary/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div class="flex items-center gap-2 mb-4 text-primary font-medium text-sm">
+                                <span class="material-symbols-outlined text-lg">calendar_month</span>
+                                Taksit Planı Detayları
+                            </div>
+                            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Taksit
+                                        Sayısı</label>
+                                    <input name="TaksitSayisi" type="number" min="1" max="120"
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 dark:text-white px-4 py-3 text-base focus:border-primary focus:ring-primary transition-all"
+                                        placeholder="Örn. 12" />
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-sm font-medium text-slate-900 dark:text-gray-200">İlk Taksit
+                                        Tarihi</label>
+                                    <input name="IlkTaksitTarihi" type="date"
+                                        class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 dark:text-white px-4 py-3 text-base focus:border-primary focus:ring-primary transition-all" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Açıklama <span
+                                    class="text-slate-400 font-normal text-xs">(Opsiyonel)</span></label>
+                            <textarea name="Aciklama"
+                                class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white px-4 py-3 text-base focus:border-primary focus:ring-primary resize-none transition-all"
+                                placeholder="Borç ile ilgili notlar..." rows="3"></textarea>
+                        </div>
+                        <div class="pt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                            <button type="button"
+                                onclick="document.getElementById('addDebtModal').classList.add('hidden')"
+                                class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-transparent dark:text-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">İptal</button>
+                            <button type="submit"
+                                class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all">
+                                <span class="material-symbols-outlined mr-2 text-lg">save</span>
+                                Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                    class="bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col gap-3 relative overflow-hidden group transition-all hover:shadow-md">
+                    <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <span
+                            class="material-symbols-outlined text-6xl text-slate-900 dark:text-white">account_balance_wallet</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Toplam Kalan Borç</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{
+                            total_debts|currency }} TL</h3>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-white/5 h-1.5 rounded-full mt-1">
+                        <div class="bg-primary h-1.5 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+                <div
+                    class="bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col gap-3 relative overflow-hidden group transition-all hover:shadow-md">
+                    <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <span class="material-symbols-outlined text-6xl text-slate-900 dark:text-white">payments</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Ödenen Tutar</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{
+                            paid_debts_amount|currency }} TL</h3>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Geçen aya göre artış var</p>
+                </div>
+                <div
+                    class="bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col gap-3 relative overflow-hidden group transition-all hover:shadow-md">
+                    <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <span class="material-symbols-outlined text-6xl text-rose-500">warning</span>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Gecikmiş Ödemeler</p>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{{
+                            overdue_debts_count }} Adet</h3>
+                        <span
+                            class="text-xs font-medium text-rose-600 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded flex items-center">
+                            <span class="material-symbols-outlined text-[12px] mr-0.5">priority_high</span>
+                            Kritik
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Acil ödeme bekliyor</p>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#1a1a2e] p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="relative flex-1 min-w-[200px] max-w-sm">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+                    <input id="debtTableSearch"
+                        class="w-full h-10 pl-10 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-slate-400 text-slate-900 dark:text-white"
+                        placeholder="Borç veren veya açıklama ara..." type="text" />
+                </div>
+                <div class="flex items-center gap-3 overflow-x-auto pb-1 sm:pb-0">
+                    <select id="statusFilter"
+                        class="h-10 pl-3 pr-8 bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Ödenmedi">Ödenmedi</option>
+                        <option value="Kısmi Ödendi">Kısmi Ödendi</option>
+                        <option value="Ödendi">Ödendi</option>
+                        <option value="Gecikmiş">Gecikmiş</option>
+                    </select>
+                    <select
+                        class="h-10 pl-3 pr-8 bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer">
+                        <option value="">Borç Türü</option>
+                        <option value="bank">Banka Kredisi</option>
+                        <option value="supplier">Tedarikçi</option>
+                        <option value="tax">Vergi/SGK</option>
+                    </select>
+                    <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                    <button id="debtExportBtn"
+                        class="h-10 px-3 flex items-center gap-2 bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-sm font-medium">
+                        <span class="material-symbols-outlined text-[18px]">download</span>
+                        <span>Dışa Aktar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div
+                class="bg-white dark:bg-[#1a1a2e] border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-slate-700">
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    Borç Veren</th>
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    Tür</th>
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+                                    Ana Tutar</th>
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+                                    Kalan</th>
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    Vade Tarihi</th>
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-center">
+                                    Durum</th>
+                                <th
+                                    class="py-4 px-5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-right">
+                                    İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            {% for d in debts %}
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
+                                <td class="py-4 px-5">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="size-9 rounded-full {% if loop.index % 3 == 0 %}bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400{% elif loop.index % 2 == 0 %}bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400{% else %}bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400{% endif %} flex items-center justify-center font-bold text-xs border border-white/10">
+                                            {{ d.BorcVeren[:2].upper() }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ d.BorcVeren
+                                                }}</p>
+                                            {% if d.CariID %}
+                                            {% set c = cariler|selectattr('CariID', 'equalto', d.CariID)|first %}
+                                            {% if c %}
+                                            <p
+                                                class="text-[10px] text-primary font-semibold truncate max-w-[150px] flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[12px]">groups</span>
+                                                {{ c.Unvan }}
+                                            </p>
+                                            {% endif %}
+                                            {% endif %}
+                                            <p class="text-xs text-slate-500">ID: #BR-{{ d.BorcID }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-5">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                                        <span class="material-symbols-outlined text-[14px]">{% if 'Banka' in d.BorcTuru
+                                            %}account_balance{% elif 'Vergi' in d.BorcTuru %}account_balance_wallet{%
+                                            else %}inventory_2{% endif %}</span>
+                                        {{ d.BorcTuru }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-5 text-right font-medium text-slate-600 dark:text-slate-400">{{
+                                    d.AnaTutar|currency }} TL</td>
+                                <td class="py-4 px-5 text-right font-bold text-slate-900 dark:text-white">{{
+                                    d.KalanTutar|currency }} TL</td>
+                                <td class="py-4 px-5 text-sm text-slate-600 dark:text-slate-300">
+                                    <div
+                                        class="flex items-center gap-2 {% if d.Durum == 'Gecikmiş' %}text-rose-600 dark:text-rose-400 font-medium{% endif %}">
+                                        <span class="material-symbols-outlined text-[18px]">{% if d.Durum == 'Gecikmiş'
+                                            %}event_busy{% else %}event{% endif %}</span>
+                                        {{ d.VadeTarihi.strftime('%d %b %Y') if d.VadeTarihi else '-' }}
+                                    </div>
+                                </td>
+                                <td class="py-4 px-5 text-center">
+                                    {% if d.Durum == 'Ödendi' %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
+                                        <span class="size-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                                        Ödendi
+                                    </span>
+                                    {% elif d.Durum == 'Gecikmiş' %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
+                                        <span class="size-1.5 rounded-full bg-rose-500 mr-1.5"></span>
+                                        Gecikmiş
+                                    </span>
+                                    {% elif d.Durum == 'Kısmi Ödendi' %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">
+                                        <span class="size-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                                        Kısmi Ödendi
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-700 border border-slate-100 dark:bg-white/5 dark:text-slate-400 dark:border-white/10">
+                                        <span class="size-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                                        {{ d.Durum }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-5 text-right">
+                                    <div class="flex items-center justify-end gap-2 transition-opacity">
+                                        {% if d.KalanTutar > 0 and d.Durum != 'Ödendi' %}
+                                        <button type="button" onclick="openDebtPaymentModal(this)"
+                                            data-debt-id="{{ d.BorcID }}" data-debt-creditor="{{ d.BorcVeren }}"
+                                            data-debt-remaining="{{ d.KalanTutar }}"
+                                            class="p-1.5 text-primary hover:text-primary-dark hover:bg-primary/10 rounded-lg transition-colors"
+                                            title="Borç Öde">
+                                            <span class="material-symbols-outlined text-[20px]">payments</span>
+                                        </button>
+                                        {% endif %}
+                                        <a href="/borclar/{{ d.BorcID }}/edit"
+                                            class="p-1.5 text-slate-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                            title="Düzenle">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </a>
+                                        <form action="/borclar/{{ d.BorcID }}/delete" method="POST" class="inline"
+                                            onsubmit="return confirm('Bu borç kaydını silmek istediğinize emin misiniz?')">
+                                            <button type="submit"
+                                                class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                                title="Sil">
+                                                <span class="material-symbols-outlined text-[20px]">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not debts %}
+                            <tr class="empty-row">
+                                <td colspan="7" class="py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <span class="material-symbols-outlined text-4xl opacity-20">payments</span>
+                                        <p>Henüz borç kaydı bulunmuyor.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div
+                    class="bg-white dark:bg-[#1a1a2e] px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <span class="text-sm text-slate-500 dark:text-slate-400">Toplam {{ debts|length }} kayıt
+                        gösteriliyor</span>
+                    <div class="flex gap-2">
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-50">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+                        </button>
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-medium text-sm">1</button>
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5">2</button>
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% set has_banks = banks is defined and banks %}
+<div id="debtPaymentModal"
+    class="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+    <div
+        class="relative w-full max-w-lg bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div
+            class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a1a2e]">
+            <div class="flex flex-col gap-0.5">
+                <h3 id="debtPaymentTitle" class="text-slate-900 dark:text-white text-lg font-bold tracking-tight">
+                    Borç Ödemesi
+                </h3>
+                <p id="debtPaymentSubtitle" class="text-xs text-slate-500 dark:text-slate-400"></p>
+            </div>
+            <button type="button"
+                class="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                onclick="closeDebtPaymentModal()">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+        <form id="debtPaymentForm" method="POST" class="flex flex-col">
+            <input type="hidden" name="payment_method" id="debtPaymentMethod" value="cash">
+            <input type="hidden" name="bank_id" id="debtPaymentBankId">
+            <input type="hidden" name="check_source" id="debtPaymentCheckSource" value="own">
+            <input type="hidden" name="customer_check_id" id="debtPaymentCustomerCheckId">
+            <div class="p-6 flex flex-col gap-5">
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">request_quote</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Kalan Tutar</span>
+                            <span id="debtPaymentSummary"
+                                class="text-sm font-semibold text-slate-900 dark:text-white"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                            Ödeme tutarı
+                        </label>
+                        <div class="relative">
+                            <span
+                                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">₺</span>
+                            <input id="debtPaymentAmountInput" name="amount" type="number" min="0" step="0.01"
+                                class="h-11 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 pl-8 pr-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                placeholder="0,00">
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                            Ödeme yöntemi
+                        </span>
+                        <div class="flex w-full rounded-xl bg-slate-100 dark:bg-slate-900/60 p-1">
+                            <label class="flex-1 cursor-pointer">
+                                <input class="sr-only" type="radio" name="debt_payment_method_choice" value="cash"
+                                    checked>
+                                <div
+                                    class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                    <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                                    Nakit (Kasa)
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input class="sr-only" type="radio" name="debt_payment_method_choice" value="bank" {% if
+                                    not has_banks %}disabled{% endif %}>
+                                <div
+                                    class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium {% if has_banks %}text-slate-600 dark:text-slate-300{% else %}text-slate-400 dark:text-slate-500{% endif %}">
+                                    <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                                    Banka
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input class="sr-only" type="radio" name="debt_payment_method_choice" value="cek">
+                                <div
+                                    class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                    <span class="material-symbols-outlined text-[18px]">checkbook</span>
+                                    Çek
+                                </div>
+                            </label>
+                        </div>
+                        <div id="debtPaymentBankWrapper" class="mt-2 flex flex-col gap-2 hidden">
+                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                Banka hesabı
+                            </span>
+                            {% if has_banks %}
+                            <select id="debtPaymentBankSelect"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                <option value="">Banka hesabı seçin...</option>
+                                {% for b in banks %}
+                                <option value="{{ b.BankaID }}">
+                                    {{ b.BankaAdi }} - {{ b.HesapAdi }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                Tanımlı banka hesabı bulunmuyor. Bankadan ödeme yapabilmek için önce banka hesabı
+                                ekleyin.
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div id="debtPaymentCheckWrapper" class="mt-2 flex flex-col gap-2 hidden">
+                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                Çek türü
+                            </span>
+                            <div class="flex w-full rounded-xl bg-slate-100 dark:bg-slate-900/60 p-1">
+                                <label class="flex-1 cursor-pointer">
+                                    <input class="sr-only" type="radio" name="debt_check_type_choice" value="own"
+                                        checked>
+                                    <div
+                                        class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                        <span class="material-symbols-outlined text-[18px]">stylus_note</span>
+                                        Kendi çeki
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input class="sr-only" type="radio" name="debt_check_type_choice" value="customer">
+                                    <div
+                                        class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-slate-600 dark:text-slate-300">
+                                        <span class="material-symbols-outlined text-[18px]">person</span>
+                                        Müşteri çeki
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="debtOwnCheckDetails"
+                                class="mt-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 space-y-4">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label
+                                            class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Çek
+                                            No</label>
+                                        <input name="check_no"
+                                            class="h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20"
+                                            placeholder="Örn: 123456">
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label
+                                            class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Vade
+                                            Tarihi</label>
+                                        <input name="check_due_date" type="date"
+                                            class="h-10 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="debtCustomerCheckSelectWrapper" class="mt-2 flex flex-col gap-2 hidden">
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                    Kullanılacak müşteri çeki
+                                </span>
+                                {% if customer_checks %}
+                                <select id="debtCustomerCheckSelect"
+                                    class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                    <option value="">Müşteri çeki seçin...</option>
+                                    {% for c in customer_checks %}
+                                    <option value="{{ c.FinansID }}" data-amount="{{ c.Tutar or 0 }}">
+                                        {{ c.FinansID }} - {{ c.Kategori or 'Çek' }} - {{ '{:,.2f}'.format(c.Tutar or 0)
+                                        }} ₺{% if c.Tarih %} - {{ c.Tarih.strftime('%d.%m.%Y') }}{% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% else %}
+                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                    Portföyde tanımlı müşteri çeki bulunmuyor.
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/60 dark:bg-[#151424]">
+                <button type="button"
+                    class="h-10 px-4 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onclick="closeDebtPaymentModal()">
+                    İptal
+                </button>
+                <button type="submit"
+                    class="h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-primary/90 hover:shadow-lg transition-all">
+                    <span class="material-symbols-outlined text-[18px]">payments</span>
+                    Ödemeyi Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openDebtPaymentModal(button) {
+        var modal = document.getElementById('debtPaymentModal');
+        var form = document.getElementById('debtPaymentForm');
+        var amountInput = document.getElementById('debtPaymentAmountInput');
+        var summary = document.getElementById('debtPaymentSummary');
+        var title = document.getElementById('debtPaymentTitle');
+        var subtitle = document.getElementById('debtPaymentSubtitle');
+        var bankWrapper = document.getElementById('debtPaymentBankWrapper');
+        var bankSelect = document.getElementById('debtPaymentBankSelect');
+        var checkWrapper = document.getElementById('debtPaymentCheckWrapper');
+        var ownCheckDetails = document.getElementById('debtOwnCheckDetails');
+        var checkTypeRadios = document.querySelectorAll('input[name="debt_check_type_choice"]');
+        var customerCheckSelectWrapper = document.getElementById('debtCustomerCheckSelectWrapper');
+        var customerCheckSelect = document.getElementById('debtCustomerCheckSelect');
+        var checkSourceInput = document.getElementById('debtPaymentCheckSource');
+        var customerCheckIdInput = document.getElementById('debtPaymentCustomerCheckId');
+        if (!modal || !form || !amountInput || !summary) {
+            return;
+        }
+        var id = button.getAttribute('data-debt-id');
+        var creditor = button.getAttribute('data-debt-creditor') || '';
+        var remainingRaw = button.getAttribute('data-debt-remaining') || '0';
+        var remaining = parseFloat(String(remainingRaw).replace(',', '.')) || 0;
+        form.action = '/borclar/' + id + '/pay';
+        var formatted = remaining.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        summary.textContent = '₺ ' + formatted;
+        if (title) {
+            title.textContent = 'Borç Ödemesi';
+        }
+        if (subtitle) {
+            if (creditor) {
+                subtitle.textContent = creditor + ' • Borç ID: ' + id;
+            } else {
+                subtitle.textContent = 'Borç ID: ' + id;
+            }
+        }
+        amountInput.value = remaining > 0 ? remaining : '';
+        amountInput.max = remaining > 0 ? String(remaining) : '';
+        var methodInput = document.getElementById('debtPaymentMethod');
+        if (methodInput) {
+            methodInput.value = 'cash';
+        }
+        var methodRadios = document.querySelectorAll('input[name="debt_payment_method_choice"]');
+        methodRadios.forEach(function (radio) {
+            radio.checked = radio.value === 'cash';
+        });
+        if (bankWrapper) {
+            bankWrapper.classList.add('hidden');
+        }
+        if (bankSelect) {
+            bankSelect.value = '';
+        }
+        if (checkWrapper) {
+            checkWrapper.classList.add('hidden');
+        }
+        if (ownCheckDetails) {
+            ownCheckDetails.classList.remove('hidden');
+            var ownCheckNo = document.getElementById('debtOwnCheckNo');
+            var ownCheckDue = document.getElementById('debtOwnCheckDueDate');
+            if (ownCheckNo) {
+                ownCheckNo.value = '';
+            }
+            if (ownCheckDue) {
+                ownCheckDue.value = '';
+            }
+        }
+        if (customerCheckSelectWrapper) {
+            customerCheckSelectWrapper.classList.add('hidden');
+        }
+        if (customerCheckSelect) {
+            customerCheckSelect.value = '';
+        }
+        if (checkSourceInput) {
+            checkSourceInput.value = 'own';
+        }
+        if (customerCheckIdInput) {
+            customerCheckIdInput.value = '';
+        }
+        if (checkTypeRadios && checkTypeRadios.length > 0) {
+            checkTypeRadios.forEach(function (radio) {
+                radio.checked = radio.value === 'own';
+            });
+        }
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Initial UI Updates
+        document.querySelectorAll('input[name="debt_payment_method_choice"]').forEach(function (r) {
+            const div = r.nextElementSibling;
+            if (r.checked) {
+                div.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+            } else {
+                div.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+            }
+        });
+        document.querySelectorAll('input[name="debt_check_type_choice"]').forEach(function (r) {
+            const div = r.nextElementSibling;
+            if (r.checked) {
+                div.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+            } else {
+                div.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+            }
+        });
+
+        amountInput.focus();
+    }
+
+    function closeDebtPaymentModal() {
+        var modal = document.getElementById('debtPaymentModal');
+        if (!modal) {
+            return;
+        }
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    var debtMethodRadios = document.querySelectorAll('input[name="debt_payment_method_choice"]');
+    if (debtMethodRadios.length > 0) {
+        debtMethodRadios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                var methodInput = document.getElementById('debtPaymentMethod');
+                var bankWrapper = document.getElementById('debtPaymentBankWrapper');
+                var checkWrapper = document.getElementById('debtPaymentCheckWrapper');
+                var customerCheckSelectWrapper = document.getElementById('debtCustomerCheckSelectWrapper');
+                var ownCheckDetails = document.getElementById('debtOwnCheckDetails');
+                var checkSourceInput = document.getElementById('debtPaymentCheckSource');
+                var customerCheckIdInput = document.getElementById('debtPaymentCustomerCheckId');
+                if (methodInput) {
+                    methodInput.value = this.value;
+                }
+                if (bankWrapper) {
+                    if (this.value === 'bank') {
+                        bankWrapper.classList.remove('hidden');
+                    } else {
+                        bankWrapper.classList.add('hidden');
+                    }
+                }
+                if (checkWrapper) {
+                    if (this.value === 'cek') {
+                        checkWrapper.classList.remove('hidden');
+                    } else {
+                        checkWrapper.classList.add('hidden');
+                    }
+                }
+                if (customerCheckSelectWrapper) {
+                    if (this.value !== 'cek') {
+                        customerCheckSelectWrapper.classList.add('hidden');
+                    }
+                }
+                if (ownCheckDetails) {
+                    if (this.value === 'cek') {
+                        ownCheckDetails.classList.remove('hidden');
+                    } else {
+                        ownCheckDetails.classList.add('hidden');
+                    }
+                }
+                if (checkSourceInput && this.value !== 'cek') {
+                    checkSourceInput.value = 'own';
+                }
+                if (customerCheckIdInput && this.value !== 'cek') {
+                    customerCheckIdInput.value = '';
+                }
+
+                // Update UI styles
+                debtMethodRadios.forEach(function (r) {
+                    const div = r.nextElementSibling;
+                    if (r.checked) {
+                        div.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+                    } else {
+                        div.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+                    }
+                });
+            });
+        });
+    }
+
+    var debtBankSelect = document.getElementById('debtPaymentBankSelect');
+    if (debtBankSelect) {
+        debtBankSelect.addEventListener('change', function () {
+            var bankIdInput = document.getElementById('debtPaymentBankId');
+            if (bankIdInput) {
+                bankIdInput.value = this.value;
+            }
+        });
+    }
+
+    var debtCheckTypeRadios = document.querySelectorAll('input[name="debt_check_type_choice"]');
+    if (debtCheckTypeRadios.length > 0) {
+        debtCheckTypeRadios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                var checkSourceInput = document.getElementById('debtPaymentCheckSource');
+                var customerCheckSelectWrapper = document.getElementById('debtCustomerCheckSelectWrapper');
+                var customerCheckIdInput = document.getElementById('debtPaymentCustomerCheckId');
+                var customerCheckSelect = document.getElementById('debtCustomerCheckSelect');
+                var ownCheckDetails = document.getElementById('debtOwnCheckDetails');
+                if (checkSourceInput) {
+                    checkSourceInput.value = this.value === 'customer' ? 'customer' : 'own';
+                }
+                if (customerCheckSelectWrapper) {
+                    if (this.value === 'customer') {
+                        customerCheckSelectWrapper.classList.remove('hidden');
+                    } else {
+                        customerCheckSelectWrapper.classList.add('hidden');
+                    }
+                }
+                if (ownCheckDetails) {
+                    if (this.value === 'customer') {
+                        ownCheckDetails.classList.add('hidden');
+                    } else {
+                        ownCheckDetails.classList.remove('hidden');
+                    }
+                }
+                if (this.value !== 'customer') {
+                    if (customerCheckSelect) {
+                        customerCheckSelect.value = '';
+                    }
+                    if (customerCheckIdInput) {
+                        customerCheckIdInput.value = '';
+                    }
+                }
+
+                // Update UI styles
+                debtCheckTypeRadios.forEach(function (r) {
+                    const div = r.nextElementSibling;
+                    if (r.checked) {
+                        div.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+                    } else {
+                        div.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold');
+                    }
+                });
+            });
+        });
+    }
+
+    var debtCustomerCheckSelect = document.getElementById('debtCustomerCheckSelect');
+    if (debtCustomerCheckSelect) {
+        debtCustomerCheckSelect.addEventListener('change', function () {
+            var customerCheckIdInput = document.getElementById('debtPaymentCustomerCheckId');
+            var amountInput = document.getElementById('debtPaymentAmountInput');
+            var selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && amountInput) {
+                var rawAmount = selectedOption.getAttribute('data-amount') || '';
+                var parsed = parseFloat(String(rawAmount).replace(',', '.'));
+                if (!isNaN(parsed) && parsed > 0) {
+                    amountInput.value = parsed;
+                }
+            }
+            if (customerCheckIdInput) {
+                customerCheckIdInput.value = this.value;
+            }
+        });
+    }
+
+    function toggleInstallmentDetails() {
+        const checkbox = document.getElementById('isInstallment');
+        const details = document.getElementById('installmentDetails');
+        if (checkbox.checked) {
+            details.classList.remove('hidden');
+        } else {
+            details.classList.add('hidden');
+        }
+    }
+
+    const debtSearchInput = document.getElementById('debtTableSearch');
+    if (debtSearchInput) {
+        debtSearchInput.addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr:not(.empty-row)');
+            let hasVisible = false;
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    hasVisible = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const emptyRow = document.querySelector('.empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = hasVisible ? 'none' : '';
+            }
+        });
+    }
+
+    const debtExportBtn = document.getElementById('debtExportBtn');
+    if (debtExportBtn) {
+        debtExportBtn.addEventListener('click', function () {
+            const table = document.querySelector('table');
+            if (!table) {
+                return;
+            }
+            const rows = Array.from(table.querySelectorAll('thead tr, tbody tr:not(.empty-row)'));
+
+            const csvContent = rows.map(row => {
+                const cells = Array.from(row.querySelectorAll('th, td'));
+                const rowData = cells.slice(0, -1).map(cell => {
+                    let text = cell.innerText.replace(/[\n\r]+/g, ' ').trim();
+                    text = text.replace(/"/g, '""');
+                    return `"${text}"`;
+                });
+                return rowData.join(',');
+            }).join('\n');
+
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'borclar_listesi.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    // Cari listesinden yönlendirme gelirse modalı aç
+    {% if pre_selected_cari_id %}
+    window.addEventListener('load', () => {
+        const modal = document.getElementById('addDebtModal');
+        const cariSelect = document.getElementById('debtCariSelect');
+        if (modal && cariSelect) {
+            modal.classList.remove('hidden');
+            cariSelect.value = "{{ pre_selected_cari_id }}";
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

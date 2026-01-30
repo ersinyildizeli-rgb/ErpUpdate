@@ -1,0 +1,735 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex-1 flex flex-col min-w-0 bg-[#f9f8fb] dark:bg-background-dark relative">
+    <!-- Header -->
+    <header
+        class="h-16 bg-white dark:bg-[#1a1b26] border-b border-[#e8e8f3] dark:border-gray-800 flex items-center justify-between px-6 sticky top-0 z-20">
+        <h2 class="text-xl font-bold text-[#0f0e1b] dark:text-white tracking-tight">Alacak Yönetimi</h2>
+        <div class="flex items-center gap-4">
+            <div class="relative hidden sm:block">
+                <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500"
+                    style="font-size: 20px;">search</span>
+                <input id="receivableSearchInput"
+                    class="h-10 pl-10 pr-4 rounded-lg bg-[#f6f6f8] dark:bg-[#111221] border-none text-sm focus:ring-2 focus:ring-primary/20 w-64 text-[#0f0e1b] dark:text-white placeholder-[#545095] dark:placeholder-slate-500"
+                    placeholder="Firma veya kişi ara..." type="text" />
+            </div>
+            <button
+                class="size-10 rounded-full flex items-center justify-center hover:bg-[#f6f6f8] dark:hover:bg-white/5 text-[#545095] dark:text-slate-400 relative">
+                <span class="material-symbols-outlined" style="font-size: 24px;">notifications</span>
+                <span
+                    class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-white dark:border-[#1a1b26]"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Scroll Area -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                    class="bg-white dark:bg-[#1a1b26] p-5 rounded-xl border border-[#e8e8f3] dark:border-gray-800 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
+                    <div>
+                        <p class="text-sm text-[#545095] dark:text-slate-400 font-medium mb-1">Toplam Alacak</p>
+                        <h3 class="text-2xl font-bold text-[#0f0e1b] dark:text-white">{{ total_receivables|currency }}
+                            TL</h3>
+                    </div>
+                    <div
+                        class="size-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                    </div>
+                </div>
+                <div
+                    class="bg-white dark:bg-[#1a1b26] p-5 rounded-xl border border-[#e8e8f3] dark:border-gray-800 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
+                    <div>
+                        <p class="text-sm text-[#545095] dark:text-slate-400 font-medium mb-1">Tahsil Edilen</p>
+                        <h3 class="text-2xl font-bold text-green-600 dark:text-green-400">{{ collected_amount|currency
+                            }} TL</h3>
+                        <div class="mt-1 flex items-center gap-1 text-[11px] font-medium text-green-600">
+                            <span class="material-symbols-outlined text-[14px]">check</span>
+                            <span>Toplamın %{{ "%.1f"|format((collected_amount / total_receivables * 100) if
+                                total_receivables > 0 else 0) }}'i</span>
+                        </div>
+                    </div>
+                    <div
+                        class="size-12 rounded-full bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                </div>
+                <div
+                    class="bg-white dark:bg-[#1a1b26] p-5 rounded-xl border border-[#e8e8f3] dark:border-gray-800 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
+                    <div>
+                        <p class="text-sm text-[#545095] dark:text-slate-400 font-medium mb-1">Bekleyen Tutar</p>
+                        <h3 class="text-2xl font-bold text-orange-500 dark:text-orange-400">{{ pending_amount|currency
+                            }} TL</h3>
+                        <div class="mt-1 flex items-center gap-1 text-[11px] font-medium text-orange-600">
+                            <span class="material-symbols-outlined text-[14px]">schedule</span>
+                            <span>Vadesi gelen: 0,00 TL</span>
+                        </div>
+                    </div>
+                    <div
+                        class="size-12 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-500 dark:text-orange-400">
+                        <span class="material-symbols-outlined">pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Toolbar -->
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#1a1b26] p-4 rounded-xl border border-[#e8e8f3] dark:border-gray-800 shadow-sm">
+                <div class="flex flex-1 items-center gap-3 w-full sm:w-auto">
+                    <div class="relative w-full sm:max-w-xs">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500"
+                            style="font-size: 20px;">search</span>
+                        <input id="receivableTableSearch"
+                            class="w-full h-10 pl-10 pr-4 rounded-lg bg-[#f9f8fb] dark:bg-[#111221] border border-[#e8e8f3] dark:border-gray-700 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary text-[#0f0e1b] dark:text-white"
+                            placeholder="Firma veya kişi ara..." type="text" />
+                    </div>
+                    <!-- Filters -->
+                    <div class="hidden md:flex items-center gap-2">
+                        <select id="statusFilter"
+                            class="h-10 pl-3 pr-8 rounded-lg bg-white dark:bg-[#1a1b26] border border-[#e8e8f3] dark:border-gray-700 text-sm text-[#545095] dark:text-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="Tahsil Edildi">Tahsil Edildi</option>
+                            <option value="Tahsil Edilmedi">Tahsil Edilmedi</option>
+                            <option value="Kısmi Tahsil">Kısmi Tahsil</option>
+                        </select>
+                        <button
+                            class="h-10 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5 flex items-center gap-2 text-sm font-medium transition-colors">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span>
+                            Tarih
+                        </button>
+                        <button id="receivableExportBtn"
+                            class="h-10 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5 flex items-center gap-2 text-sm font-medium transition-colors">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                            Dışa Aktar
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <button
+                        class="h-10 px-4 rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5 flex items-center justify-center gap-2 text-sm font-medium sm:hidden transition-colors">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">filter_list</span>
+                        Filtrele
+                    </button>
+                    <button onclick="document.getElementById('addReceivableModal').classList.remove('hidden')"
+                        class="h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 flex items-center justify-center gap-2 text-sm font-bold transition-all transform hover:scale-[1.02]">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+                        Alacak Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Receivable Modal -->
+            <div id="addReceivableModal"
+                class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f0e1b]/60 backdrop-blur-sm hidden">
+                <div
+                    class="bg-white dark:bg-[#1a1b26] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100 border border-[#e8e8f3] dark:border-gray-800">
+                    <div
+                        class="px-6 py-4 border-b border-[#e8e8f3] dark:border-gray-800 flex items-center justify-between bg-[#f9f8fb] dark:bg-[#111221]">
+                        <h3 class="text-lg font-bold text-[#0f0e1b] dark:text-white">Yeni Alacak Ekle</h3>
+                        <button onclick="document.getElementById('addReceivableModal').classList.add('hidden')"
+                            class="text-[#545095] dark:text-slate-400 hover:text-[#0f0e1b] dark:hover:text-white transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <form action="/alacaklar/ekle" method="POST" class="p-6 space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Alacaklı
+                                (Kişi/Kurum)</label>
+                            <input name="Alacakli" required
+                                class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                                placeholder="Örn: Akıncılar Lojistik" type="text" />
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">İlgili Cari
+                                (Opsiyonel)</label>
+                            <select name="cari_id"
+                                class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                                <option value="">Cari Seçilmedi</option>
+                                {% for c in cariler %}
+                                <option value="{{ c.CariID }}">{{ c.Unvan }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Alacak
+                                    Türü</label>
+                                <select name="AlacakTuru"
+                                    class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                                    <option value="Hizmet Faturası">Hizmet Faturası</option>
+                                    <option value="Ürün Satışı">Ürün Satışı</option>
+                                    <option value="Personel Avans">Personel Avans</option>
+                                    <option value="Diğer">Diğer</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Vade
+                                    Tarihi</label>
+                                <input name="VadeTarihi" required
+                                    class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                                    type="date" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Ana Tutar
+                                    (₺)</label>
+                                <input name="AnaTutar" step="0.01" required
+                                    class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm text-right font-medium"
+                                    placeholder="0.00" type="number" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-sm font-medium text-[#0f0e1b] dark:text-slate-200">Açıklama</label>
+                                <input name="Aciklama"
+                                    class="w-full h-11 px-3 rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                                    placeholder="Not ekleyin..." type="text" />
+                            </div>
+                        </div>
+                        <div class="pt-2 flex justify-end gap-3">
+                            <button type="button"
+                                onclick="document.getElementById('addReceivableModal').classList.add('hidden')"
+                                class="h-10 px-5 rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5 text-sm font-medium bg-white dark:bg-transparent transition-colors">İptal</button>
+                            <button type="submit"
+                                class="h-10 px-5 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-bold shadow-lg shadow-primary/25 transition-all">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Data Table Card -->
+            <div
+                class="bg-white dark:bg-[#1a1b26] rounded-xl border border-[#e8e8f3] dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#f9f8fb] dark:bg-[#111221] border-b border-[#e8e8f3] dark:border-gray-800">
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider">
+                                    Alacaklı</th>
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider">
+                                    Alacak Türü</th>
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider text-right">
+                                    Ana Tutar</th>
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider text-right">
+                                    Kalan Tutar</th>
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider">
+                                    Vade Tarihi</th>
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider">
+                                    Durum</th>
+                                <th
+                                    class="py-4 px-6 text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wider text-center">
+                                    İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e8e8f3] dark:divide-gray-800">
+                            {% for r in receivables %}
+                            <tr class="hover:bg-[#f9f8fb]/50 dark:hover:bg-white/5 transition-colors group">
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="size-8 rounded-full {% if loop.index % 3 == 0 %}bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400{% elif loop.index % 2 == 0 %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400{% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400{% endif %} flex items-center justify-center text-xs font-bold border border-white/20">
+                                            {{ r.Alacakli[:2].upper() }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-[#0f0e1b] dark:text-white">{{ r.Alacakli
+                                                }}</p>
+                                            {% if r.CariID %}
+                                            {% set c = cariler|selectattr('CariID', 'equalto', r.CariID)|first %}
+                                            {% if c %}
+                                            <p
+                                                class="text-[10px] text-primary font-semibold truncate max-w-[150px] flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[12px]">groups</span>
+                                                {{ c.Unvan }}
+                                            </p>
+                                            {% endif %}
+                                            {% endif %}
+                                            <p class="text-xs text-[#545095] dark:text-slate-500">ID: #AL-{{ r.AlacakID
+                                                }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-[#545095] dark:text-slate-400">{{ r.AlacakTuru }}</td>
+                                <td class="py-4 px-6 text-sm font-medium text-[#0f0e1b] dark:text-white text-right">{{
+                                    r.AnaTutar|currency }} TL</td>
+                                <td class="py-4 px-6 text-sm font-bold text-primary dark:text-blue-400 text-right">{{
+                                    r.KalanTutar|currency }} TL</td>
+                                <td class="py-4 px-6 text-sm text-[#545095] dark:text-slate-400">{{
+                                    r.VadeTarihi.strftime('%d %b %Y') if r.VadeTarihi else '-' }}</td>
+                                <td class="py-4 px-6">
+                                    {% if r.Durum == 'Tahsil Edildi' %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                        Tahsil Edildi
+                                    </span>
+                                    {% elif r.Durum == 'Tahsil Edilmedi' %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                        Tahsil Edilmedi
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                                        {{ r.Durum }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        {% if r.KalanTutar > 0 and r.Durum != 'Tahsil Edildi' %}
+                                        <button type="button" onclick="openReceivablePaymentModal(this)"
+                                            data-receivable-id="{{ r.AlacakID }}"
+                                            data-receivable-name="{{ r.Alacakli }}"
+                                            data-receivable-remaining="{{ r.KalanTutar }}"
+                                            class="p-1.5 rounded-lg text-primary hover:text-primary/90 hover:bg-primary/10 transition-colors"
+                                            title="Tahsilat Al">
+                                            <span class="material-symbols-outlined"
+                                                style="font-size: 18px;">payments</span>
+                                        </button>
+                                        {% endif %}
+                                        <a href="/alacaklar/{{ r.AlacakID }}/edit"
+                                            class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-[#545095] dark:text-slate-400 hover:text-primary transition-colors">
+                                            <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
+                                        </a>
+                                        <form action="/alacaklar/{{ r.AlacakID }}/delete" method="POST" class="inline"
+                                            onsubmit="return confirm('Bu alacak kaydını silmek istediğinize emin misiniz?')">
+                                            <button type="submit"
+                                                class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-[#545095] dark:text-slate-400 hover:text-red-600 transition-colors">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 18px;">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not receivables %}
+                            <tr class="empty-row">
+                                <td colspan="7" class="py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <span class="material-symbols-outlined text-4xl opacity-20">receipt_long</span>
+                                        <p>Henüz alacak kaydı bulunmuyor.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div
+                    class="bg-white dark:bg-[#1a1b26] px-6 py-4 border-t border-[#e8e8f3] dark:border-gray-800 flex items-center justify-between">
+                    <span class="text-sm text-[#545095] dark:text-slate-400">Toplam {{ receivables|length }} kayıt
+                        gösteriliyor</span>
+                    <div class="flex gap-2">
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5 disabled:opacity-50">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+                        </button>
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-medium text-sm">1</button>
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5">2</button>
+                        <button
+                            class="size-8 flex items-center justify-center rounded-lg border border-[#e8e8f3] dark:border-gray-700 text-[#545095] dark:text-slate-400 hover:bg-[#f9f8fb] dark:hover:bg-white/5">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+{% set has_banks = banks is defined and banks %}
+<div id="receivablePaymentModal"
+    class="fixed inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
+    <div
+        class="relative w-full max-w-lg bg-white dark:bg-[#1a1b26] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#e8e8f3] dark:border-gray-800">
+        <div
+            class="flex items-center justify-between px-6 py-4 border-b border-[#e8e8f3] dark:border-gray-800 bg-white dark:bg-[#1a1b26]">
+            <div class="flex flex-col gap-0.5">
+                <h3 id="receivablePaymentTitle" class="text-[#0f0e1b] dark:text-white text-lg font-bold tracking-tight">
+                    Alacak Tahsilatı
+                </h3>
+                <p id="receivablePaymentSubtitle" class="text-xs text-[#545095] dark:text-slate-400"></p>
+            </div>
+            <button type="button"
+                class="p-2 rounded-full text-[#545095] dark:text-slate-400 hover:text-[#0f0e1b] dark:hover:text-white hover:bg-[#f6f6f8] dark:hover:bg-gray-800 transition-colors"
+                onclick="closeReceivablePaymentModal()">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+        <form id="receivablePaymentForm" method="POST" class="flex flex-col">
+            <input type="hidden" name="payment_method" id="receivablePaymentMethod" value="cash">
+            <input type="hidden" name="bank_id" id="receivablePaymentBankId">
+            <input type="hidden" name="check_source" id="receivablePaymentCheckSource" value="own">
+            <input type="hidden" name="customer_check_id" id="receivableCustomerCheckId">
+            <div class="p-6 flex flex-col gap-5">
+                <div class="p-3 rounded-xl bg-[#f9f8fb] dark:bg-[#111221] flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">request_quote</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-[#545095] dark:text-slate-400">Kalan Tutar</span>
+                            <span id="receivablePaymentSummary"
+                                class="text-sm font-semibold text-[#0f0e1b] dark:text-white"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wide">
+                            Tahsilat tutarı
+                        </label>
+                        <div class="relative">
+                            <span
+                                class="absolute left-3 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-sm font-semibold">₺</span>
+                            <input id="receivablePaymentAmountInput" name="amount" type="number" min="0" step="0.01"
+                                class="h-11 w-full rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-[#f9f8fb] dark:bg-[#111221] pl-8 pr-3 text-sm text-[#0f0e1b] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                placeholder="0,00">
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase tracking-wide">
+                            Tahsilat yöntemi
+                        </span>
+                        <div class="flex w-full rounded-xl bg-[#f9f8fb] dark:bg-[#111221] p-1">
+                            <label class="flex-1 cursor-pointer">
+                                <input class="sr-only" type="radio" name="receivable_payment_method_choice" value="cash"
+                                    checked>
+                                <div
+                                    class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-[#0f0e1b] dark:text-slate-300">
+                                    <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                                    Nakit (Kasa)
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input class="sr-only" type="radio" name="receivable_payment_method_choice" value="bank"
+                                    {% if not has_banks %}disabled{% endif %}>
+                                <div
+                                    class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium {% if has_banks %}text-[#0f0e1b] dark:text-slate-300{% else %}text-slate-400 dark:text-slate-500{% endif %}">
+                                    <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                                    Banka
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input class="sr-only" type="radio" name="receivable_payment_method_choice" value="cek">
+                                <div
+                                    class="flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-medium text-[#0f0e1b] dark:text-slate-300">
+                                    <span class="material-symbols-outlined text-[18px]">checkbook</span>
+                                    Çek
+                                </div>
+                            </label>
+                        </div>
+                        <div id="receivablePaymentBankWrapper" class="mt-2 flex flex-col gap-2 hidden">
+                            <span class="text-xs font-medium text-[#545095] dark:text-slate-400">
+                                Banka hesabı
+                            </span>
+                            {% if has_banks %}
+                            <select id="receivablePaymentBankSelect"
+                                class="w-full rounded-xl border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] px-3 py-2.5 text-sm text-[#0f0e1b] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                <option value="">Banka hesabı seçin...</option>
+                                {% for b in banks %}
+                                <option value="{{ b.BankaID }}">
+                                    {{ b.BankaAdi }} - {{ b.HesapAdi }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            {% endif %}
+                        </div>
+
+                        <div id="receivablePaymentCheckWrapper"
+                            class="mt-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 space-y-4 hidden">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex flex-col gap-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase">Çek
+                                        No</label>
+                                    <input name="check_no"
+                                        class="h-10 w-full rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] px-3 text-sm text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20"
+                                        placeholder="Örn: 123456">
+                                </div>
+                                <div class="flex flex-col gap-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-[#545095] dark:text-slate-400 uppercase">Vade
+                                        Tarihi</label>
+                                    <input name="check_due_date" type="date"
+                                        class="h-10 w-full rounded-lg border border-[#e8e8f3] dark:border-gray-700 bg-white dark:bg-[#111221] px-3 text-sm text-[#0f0e1b] dark:text-white focus:ring-2 focus:ring-primary/20">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="px-6 py-4 border-t border-[#e8e8f3] dark:border-gray-800 flex items-center justify-between bg-[#f9f8fb] dark:bg-[#111221]">
+                <button type="button"
+                    class="h-10 px-4 rounded-xl text-sm font-medium text-[#545095] dark:text-slate-400 hover:bg-[#f6f6f8] dark:hover:bg-gray-800"
+                    onclick="closeReceivablePaymentModal()">
+                    İptal
+                </button>
+                <button type="submit"
+                    class="h-10 px-5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-primary/90 hover:shadow-lg transition-all">
+                    <span class="material-symbols-outlined text-[18px]">payments</span>
+                    Tahsilatı Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openReceivablePaymentModal(button) {
+        var modal = document.getElementById('receivablePaymentModal');
+        var form = document.getElementById('receivablePaymentForm');
+        var amountInput = document.getElementById('receivablePaymentAmountInput');
+        var summary = document.getElementById('receivablePaymentSummary');
+        var title = document.getElementById('receivablePaymentTitle');
+        var subtitle = document.getElementById('receivablePaymentSubtitle');
+        if (!modal || !form || !amountInput || !summary) {
+            return;
+        }
+        var id = button.getAttribute('data-receivable-id');
+        var name = button.getAttribute('data-receivable-name') || '';
+        var remainingRaw = button.getAttribute('data-receivable-remaining') || '0';
+        var remaining = parseFloat(String(remainingRaw).replace(',', '.')) || 0;
+        form.action = '/alacaklar/' + id + '/collect';
+        var formatted = remaining.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        summary.textContent = '₺ ' + formatted;
+        if (title) {
+            title.textContent = 'Alacak Tahsilatı';
+        }
+        if (subtitle) {
+            if (name) {
+                subtitle.textContent = name + ' • Alacak ID: ' + id;
+            } else {
+                subtitle.textContent = 'Alacak ID: ' + id;
+            }
+        }
+        amountInput.value = remaining > 0 ? remaining : '';
+        amountInput.max = remaining > 0 ? String(remaining) : '';
+
+        var methodInput = document.getElementById('receivablePaymentMethod');
+        if (methodInput) {
+            methodInput.value = 'cash';
+        }
+
+        var methodRadios = document.querySelectorAll('input[name="receivable_payment_method_choice"]');
+        methodRadios.forEach(function (radio) {
+            radio.checked = radio.value === 'cash';
+        });
+
+        var bankWrapper = document.getElementById('receivablePaymentBankWrapper');
+        if (bankWrapper) {
+            bankWrapper.classList.add('hidden');
+        }
+
+        var bankSelect = document.getElementById('receivablePaymentBankSelect');
+        if (bankSelect) {
+            bankSelect.value = '';
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Initial UI Update
+        receivableMethodRadios.forEach(function (r) {
+            const div = r.nextElementSibling;
+            if (r.checked) {
+                div.classList.add('bg-white', 'dark:bg-[#1a1b26]', 'shadow-sm', 'font-bold');
+            } else {
+                div.classList.remove('bg-white', 'dark:bg-[#1a1b26]', 'shadow-sm', 'font-bold');
+            }
+        });
+
+        amountInput.focus();
+    }
+
+    function closeReceivablePaymentModal() {
+        var modal = document.getElementById('receivablePaymentModal');
+        if (!modal) {
+            return;
+        }
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    var receivableMethodRadios = document.querySelectorAll('input[name="receivable_payment_method_choice"]');
+    if (receivableMethodRadios.length > 0) {
+        receivableMethodRadios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                var methodInput = document.getElementById('receivablePaymentMethod');
+                var bankWrapper = document.getElementById('receivablePaymentBankWrapper');
+                var checkWrapper = document.getElementById('receivablePaymentCheckWrapper');
+                if (methodInput) {
+                    methodInput.value = this.value;
+                }
+
+                // Update UI styles
+                receivableMethodRadios.forEach(function (r) {
+                    const div = r.nextElementSibling;
+                    if (r.checked) {
+                        div.classList.add('bg-white', 'dark:bg-[#1a1b26]', 'shadow-sm', 'font-bold');
+                        div.classList.remove('text-[#545095]', 'dark:text-slate-500');
+                    } else {
+                        div.classList.remove('bg-white', 'dark:bg-[#1a1b26]', 'shadow-sm', 'font-bold');
+                        div.classList.add('text-[#545095]', 'dark:text-slate-500');
+                    }
+                });
+
+                if (bankWrapper) {
+                    bankWrapper.classList.toggle('hidden', this.value !== 'bank');
+                }
+                if (checkWrapper) {
+                    checkWrapper.classList.toggle('hidden', this.value !== 'cek');
+                }
+            });
+        });
+    }
+
+    var receivableBankSelect = document.getElementById('receivablePaymentBankSelect');
+    if (receivableBankSelect) {
+        receivableBankSelect.addEventListener('change', function () {
+            var bankIdInput = document.getElementById('receivablePaymentBankId');
+            if (bankIdInput) {
+                bankIdInput.value = this.value;
+            }
+        });
+    }
+
+    function updateReceivableCheckUI(source) {
+        document.getElementById('receivablePaymentCheckSource').value = source;
+        const ownFields = document.getElementById('receivableOwnCheckFields');
+        const existingFields = document.getElementById('receivableExistingCheckSelect');
+
+        ownFields.classList.toggle('hidden', source !== 'own');
+        existingFields.classList.toggle('hidden', source !== 'existing');
+
+        // Update Button Styles
+        ['own', 'existing'].forEach(s => {
+            const btn = document.getElementById('btn-receivable-check-' + s);
+            if (s === source) {
+                btn.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold', 'text-primary');
+                btn.classList.remove('text-slate-500');
+            } else {
+                btn.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'font-bold', 'text-primary');
+                btn.classList.add('text-slate-500');
+            }
+        });
+    }
+
+    function updateReceivableCheckAmount(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        const amountInput = document.getElementById('receivablePaymentAmountInput');
+        const customerCheckIdInput = document.getElementById('receivableCustomerCheckId');
+
+        if (selectedOption && selectedOption.value) {
+            const amount = selectedOption.getAttribute('data-amount');
+            amountInput.value = amount;
+            customerCheckIdInput.value = selectedOption.value;
+        } else {
+            customerCheckIdInput.value = '';
+        }
+    }
+
+    var receivableTableSearchInput = document.getElementById('receivableTableSearch');
+    if (receivableTableSearchInput) {
+        receivableTableSearchInput.addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr:not(.empty-row)');
+            let hasVisible = false;
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    hasVisible = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const emptyRow = document.querySelector('.empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = hasVisible ? 'none' : '';
+            }
+        });
+    }
+
+    var statusFilterSelect = document.getElementById('statusFilter');
+    if (statusFilterSelect) {
+        statusFilterSelect.addEventListener('change', function (e) {
+            const status = e.target.value;
+            const rows = document.querySelectorAll('tbody tr:not(.empty-row)');
+            let hasVisible = false;
+
+            rows.forEach(row => {
+                const rowStatus = row.querySelector('td:nth-child(6)').innerText.trim();
+                if (status === '' || rowStatus === status) {
+                    row.style.display = '';
+                    hasVisible = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const emptyRow = document.querySelector('.empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = hasVisible ? 'none' : '';
+            }
+        });
+    }
+
+    var receivableExportBtn = document.getElementById('receivableExportBtn');
+    if (receivableExportBtn) {
+        receivableExportBtn.addEventListener('click', function () {
+            const table = document.querySelector('table');
+            const rows = Array.from(table.querySelectorAll('thead tr, tbody tr:not(.empty-row)'));
+
+            const csvContent = rows.map(row => {
+                const cells = Array.from(row.querySelectorAll('th, td'));
+                const rowData = cells.slice(0, -1).map(cell => {
+                    let text = cell.innerText.replace(/[\n\r]+/g, ' ').trim();
+                    text = text.replace(/"/g, '""');
+                    return `"${text}"`;
+                });
+                return rowData.join(',');
+            }).join('\n');
+
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'alacaklar_listesi.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    // Cari listesinden yönlendirme gelirse modalı aç
+    {% if pre_selected_cari_id %}
+    window.addEventListener('load', () => {
+        const modal = document.getElementById('addReceivableModal');
+        const cariSelect = document.querySelector('select[name="cari_id"]');
+        if (modal && cariSelect) {
+            modal.classList.remove('hidden');
+            cariSelect.value = "{{ pre_selected_cari_id }}";
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

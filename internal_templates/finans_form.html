@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f0e1b]/40 backdrop-blur-sm overflow-hidden">
+  <div
+    class="w-full max-w-3xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-white/20 flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div>
+          <h3 class="text-slate-900 text-xl font-bold leading-tight tracking-tight">
+            {% if entry %}İşlem Düzenle{% else %}İşlem Ekle{% endif %}
+          </h3>
+          <p class="text-xs text-slate-500 mt-1">Kasa gelir/gider hareketlerini kaydedin.</p>
+        </div>
+      </div>
+      <a href="{{ cancel_url if cancel_url else '/' }}"
+        class="text-slate-400 hover:text-slate-600 transition p-2 rounded-full hover:bg-slate-100">
+        <span class="material-symbols-outlined">close</span>
+      </a>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
+      <form id="finans-form" method="post" enctype="multipart/form-data" class="flex flex-col gap-6">
+        <div class="flex flex-col gap-3">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">İşlem Tipi</label>
+          <div class="flex h-12 w-full items-center justify-center rounded-xl bg-slate-100 p-1">
+            <label
+              class="group flex cursor-pointer h-full grow items-center justify-center rounded-lg has-[:checked]:bg-white has-[:checked]:shadow-sm transition-all duration-200">
+              <span
+                class="truncate text-slate-500 group-has-[:checked]:text-slate-900 text-sm font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">trending_up</span> Gelir
+              </span>
+              <input class="sr-only" name="type" type="radio" value="Gelir" {% if (entry and entry.IslemTuru=='Gelir' )
+                or (not entry and pre_type=='Gelir' ) %}checked{% endif %}>
+            </label>
+            <label
+              class="group flex cursor-pointer h-full grow items-center justify-center rounded-lg has-[:checked]:bg-white has-[:checked]:shadow-sm transition-all duration-200">
+              <span
+                class="truncate text-slate-500 group-has-[:checked]:text-slate-900 text-sm font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">trending_down</span> Gider
+              </span>
+              <input class="sr-only" name="type" type="radio" value="Gider" {% if (entry and entry.IslemTuru=='Gider' )
+                or (not entry and pre_type !='Gelir' ) %}checked{% endif %}>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-bold text-slate-500 uppercase">Tutar</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-900 font-bold">₺</span>
+              <input name="amount" type="number" step="0.01" value="{{ entry.Tutar if entry else '' }}"
+                class="w-full h-11 rounded-xl bg-slate-50 border border-slate-200 pl-9 pr-4 text-sm font-bold focus:border-primary outline-none transition"
+                placeholder="0.00">
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-bold text-slate-500 uppercase">İşlem Tarihi</label>
+            <input type="date" name="date"
+              value="{{ entry.Tarih.strftime('%Y-%m-%d') if entry and entry.Tarih else '' }}"
+              class="w-full h-11 rounded-xl bg-slate-50 border border-slate-200 px-4 text-sm focus:border-primary outline-none transition">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Kategori</label>
+          <div class="relative">
+            {% if entry and entry.Kategori and entry.Kategori.lower().startswith('kesinti') %}
+            <input type="hidden" name="category" value="{{ entry.Kategori }}">
+            <div class="flex h-11 w-full items-center rounded-xl bg-slate-100 px-4 text-slate-600 text-sm font-bold">
+              {% set parts = entry.Kategori.split('|') %}
+              Personel Kesintisi: {{ parts[2] if parts|length > 2 else 'Diğer' }}
+            </div>
+            {% else %}
+            <select name="category"
+              class="w-full h-11 rounded-xl bg-slate-50 border border-slate-200 px-4 text-sm focus:border-primary outline-none transition cursor-pointer appearance-none">
+              <option value="" disabled {% if not entry %}selected{% endif %}>Kategori Seçiniz</option>
+              <option value="Maaş" {% if entry and entry.Kategori=='Maaş' %}selected{% endif %}>Maaş Ödemesi</option>
+              <option value="Satış" {% if entry and entry.Kategori=='Satış' %}selected{% endif %}>Satış Geliri</option>
+              <option value="Demirbaş" {% if entry and entry.Kategori=='Demirbaş' %}selected{% endif %}>Demirbaş Gideri
+              </option>
+              <option value="Kira" {% if entry and entry.Kategori=='Kira' %}selected{% endif %}>Kira / Ofis Gideri
+              </option>
+              <option value="Vergi" {% if entry and entry.Kategori=='Vergi' %}selected{% endif %}>Vergi Ödemesi</option>
+              <option value="Çek" {% if entry and entry.Kategori=='Çek' %}selected{% endif %}>Çek İşlemi</option>
+            </select>
+            <span
+              class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 material-symbols-outlined text-[20px]">expand_more</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Cari Hesap (Opsiyonel)</label>
+          <div class="relative">
+            <select name="cari_id"
+              class="w-full h-11 rounded-xl bg-slate-50 border border-slate-200 px-4 text-sm focus:border-primary outline-none transition cursor-pointer appearance-none">
+              <option value="">Cari Seçilmedi</option>
+              {% for c in cariler %}
+              <option value="{{ c.CariID }}" {% if entry and entry.CariID==c.CariID %}selected{% endif %}>{{ c.Unvan }}
+                ({{ c.CariTipi }})</option>
+              {% endfor %}
+            </select>
+            <span
+              class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 material-symbols-outlined text-[20px]">expand_more</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold text-slate-500 uppercase">Açıklama</label>
+          <textarea name="description" rows="2"
+            class="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm focus:border-primary outline-none transition resize-none">{{ entry.Aciklama if entry else '' }}</textarea>
+        </div>
+
+        <!-- Document Support -->
+        <div class="border-t border-slate-100 pt-5 mt-2">
+          <h4 class="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">attach_file</span>
+            Makbuz / Fatura Belgeleri
+          </h4>
+
+          {% if entry %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="p-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 flex flex-col gap-2">
+              <input type="file" id="direct-fin-file" accept="image/*"
+                class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:bg-primary/10 file:text-primary file:border-0 cursor-pointer" />
+              <input type="text" id="direct-fin-desc" class="w-full h-9 rounded-lg border border-slate-200 px-3 text-xs"
+                placeholder="Açıklama">
+              <button type="button" onclick="uploadFinDocDirectly()"
+                class="w-full h-9 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-dark transition">Yükle</button>
+            </div>
+            <div class="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar">
+              {% for doc in documents %}
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200 group">
+                <div class="flex items-center gap-2 overflow-hidden text-xs">
+                  <span class="material-symbols-outlined text-slate-400 text-[18px]">receipt_long</span>
+                  <span class="truncate max-w-[120px] font-medium">{{ doc.DosyaAdi }}</span>
+                </div>
+                <div class="flex gap-1">
+                  <a href="/view_document/{{ doc.BelgeID }}" target="_blank"
+                    class="p-1 text-primary hover:bg-slate-50 transition"><span
+                      class="material-symbols-outlined text-sm">visibility</span></a>
+                  <button type="button" onclick="deleteFinDoc({{ doc.BelgeID }})"
+                    class="p-1 text-red-500 hover:bg-slate-50 transition"><span
+                      class="material-symbols-outlined text-sm">delete</span></button>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div class="p-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 flex flex-col gap-3">
+            <input type="file" name="files[]" multiple onchange="handleFinFiles(event)" accept="image/*"
+              class="text-xs w-full file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:bg-primary/10 file:text-primary file:border-0 cursor-pointer" />
+            <div id="fin-preview-list" class="flex flex-wrap gap-2 mt-1"></div>
+          </div>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-8 py-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shrink-0">
+      <a href="{{ cancel_url if cancel_url else '/' }}"
+        class="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">İptal</a>
+      <button type="submit" form="finans-form"
+        class="px-10 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/30 transition active:scale-95">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function handleFinFiles(e) {
+    const list = document.getElementById('fin-preview-list');
+    list.innerHTML = '';
+    for (let f of e.target.files) {
+      const sp = document.createElement('span');
+      sp.className = 'text-[9px] font-bold bg-white text-primary px-2 py-1 rounded-md border border-primary/20';
+      sp.innerText = f.name;
+      list.appendChild(sp);
+    }
+  }
+  function uploadFinDocDirectly() {
+    const fInput = document.getElementById('direct-fin-file');
+    const dInput = document.getElementById('direct-fin-desc');
+    if (!fInput.files[0]) return;
+    const formData = new FormData();
+    formData.append('file', fInput.files[0]);
+    formData.append('aciklama', dInput.value);
+    const fid = "{{ entry.FinansID if entry else '' }}";
+    fetch(`/upload_document/Finans/${fid}`, { method: 'POST', body: formData }).then(() => window.location.reload());
+  }
+  function deleteFinDoc(id) {
+    if (!confirm('Silmek istediğinize emin misiniz?')) return;
+    fetch(`/delete_document/${id}`, { method: 'POST' }).then(() => window.location.reload());
+  }
+</script>
+{% endblock %}

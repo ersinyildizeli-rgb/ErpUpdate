@@ -1,0 +1,747 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-8 pb-10">
+  <!-- Welcome Hero Section -->
+  <div
+    class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#4848e5] via-[#5c5ce8] to-[#7a7af0] p-8 text-white shadow-2xl shadow-primary/30">
+    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-white/60 font-bold tracking-widest text-[10px] uppercase">Sistem Paneli</span>
+          <span class="size-1 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-emerald-300 text-[10px] font-bold uppercase">Canlı Veri</span>
+        </div>
+        <h2 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">İyi Çalışmalar,<br /><span
+            class="text-white/80">{{ company_name }}</span></h2>
+
+        <div class="flex flex-wrap items-center gap-3 mt-4">
+          <div
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 backdrop-blur-md text-xs font-bold border border-white/10">
+            <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+            {{ current_date }}
+          </div>
+          {% if today_income > 0 or today_expense > 0 %}
+          <div
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-400/20 backdrop-blur-md text-xs font-bold border border-emerald-400/30 text-emerald-100">
+            <span class="material-symbols-outlined text-[18px]">bolt</span>
+            Bugün: ₺{{ '{:,.0f}'.format(today_income - today_expense) }} Net
+          </div>
+          {% endif %}
+          <!-- City Selection & Weather -->
+          <div class="relative group/city">
+            <button
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400/20 backdrop-blur-md text-xs font-bold border border-amber-400/30 text-amber-100 hover:bg-amber-400/30 transition-all">
+              <span class="material-symbols-outlined text-[18px]">
+                {% if weather.code <= 3 %}partly_cloudy_day{% elif weather.code <=69 %}rainy{% else %}cloudy_snowing{%
+                  endif %} </span>
+                  {{ weather.city }} / {{ weather.temp }}°C
+                  <span class="material-symbols-outlined text-[14px]">expand_more</span>
+            </button>
+            <div
+              class="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 py-2 hidden group-hover/city:block z-50 animate-in fade-in slide-in-from-top-1">
+              {% for c in ["Ankara", "İstanbul", "İzmir", "Bursa", "Antalya", "Adana", "Konya", "Gaziantep", "Kayseri",
+              "Samsun"] %}
+              <a href="/?city={{ c }}"
+                class="block px-4 py-2 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+                {{ c }}
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-end gap-3">
+        <div
+          class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 flex flex-col items-end min-w-[200px]">
+          <p class="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Net Finansal Durum</p>
+          <p class="text-4xl font-black tabular-nums">₺{{ '{:,.0f}'.format(net_balance) }}</p>
+          <div class="mt-2 text-[10px] font-bold text-white/40 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[12px]">account_balance_wallet</span>
+            Alacak - Borç Dengesi
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Background decorative elements -->
+    <div class="absolute -right-20 -top-20 size-80 rounded-full bg-white/15 blur-3xl"></div>
+    <div class="absolute -left-20 -bottom-20 size-60 rounded-full bg-[#3d3dbd]/30 blur-3xl"></div>
+    <div class="absolute right-[20%] bottom-[10%] size-40 rounded-full bg-white/5 blur-2xl"></div>
+  </div>
+
+  <!-- Quick Actions Panel -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+    <a href="/cari/ekle"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group overflow-hidden">
+      <div
+        class="size-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all">
+        <span class="material-symbols-outlined text-3xl">person_add</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Cari Ekle</span>
+    </a>
+    <a href="/cekler"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group overflow-hidden">
+      <div
+        class="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all">
+        <span class="material-symbols-outlined text-3xl">payments</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Tahsilat</span>
+    </a>
+    <a href="/bankalar/ekle"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group">
+      <div
+        class="size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all">
+        <span class="material-symbols-outlined text-3xl">account_balance</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Banka Ekle</span>
+    </a>
+    <a href="/personel/create"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group">
+      <div
+        class="size-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all">
+        <span class="material-symbols-outlined text-3xl">badge</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Pers. Kaydı</span>
+    </a>
+    <a href="/urunler"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group overflow-hidden">
+      <div
+        class="size-12 rounded-2xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all">
+        <span class="material-symbols-outlined text-3xl">inventory_2</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Stok
+        Yönetimİ</span>
+    </a>
+    <a href="/stok/hareket"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group overflow-hidden">
+      <div
+        class="size-12 rounded-2xl bg-pink-50 dark:bg-pink-900/20 text-pink-600 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all">
+        <span class="material-symbols-outlined text-3xl">swap_vert</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Stok
+        Giriş/Çıkış</span>
+    </a>
+    <a href="/ayarlar"
+      class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all group">
+      <div
+        class="size-12 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-500 flex items-center justify-center group-hover:rotate-90 transition-all duration-500">
+        <span class="material-symbols-outlined text-3xl">settings</span>
+      </div>
+      <span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Ayarlar</span>
+    </a>
+  </div>
+
+  <!-- Financial Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Income Card -->
+    <div
+      class="group bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-emerald-200 dark:hover:border-emerald-900 transition-all relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4 relative z-10">
+        <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <span class="material-symbols-outlined text-2xl">trending_up</span>
+        </div>
+        <div class="text-right">
+          <span
+            class="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg uppercase tracking-widest">Aylık
+            Gelir</span>
+        </div>
+      </div>
+      <div class="relative z-10">
+        <p class="text-slate-400 dark:text-slate-500 text-xs font-bold mb-1 uppercase">Toplam Nakit Akışı</p>
+        <div class="flex items-baseline gap-1">
+          <h3 class="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{{ total_income|currency }} TL
+          </h3>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+          <span class="font-bold text-slate-400 uppercase">Bugün</span>
+          <span class="font-black text-emerald-600">{{ today_income|currency }} TL</span>
+        </div>
+      </div>
+      <div class="absolute -right-4 -bottom-4 size-24 bg-emerald-500/5 rounded-full blur-2xl"></div>
+    </div>
+
+    <!-- Expense Card -->
+    <div
+      class="group bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-rose-200 dark:hover:border-rose-900 transition-all relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4 relative z-10">
+        <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400">
+          <span class="material-symbols-outlined text-2xl">trending_down</span>
+        </div>
+        <div class="text-right">
+          <span
+            class="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-lg uppercase tracking-widest">Aylık
+            Gider</span>
+        </div>
+      </div>
+      <div class="relative z-10">
+        <p class="text-slate-400 dark:text-slate-500 text-xs font-bold mb-1 uppercase">Toplam Harcama</p>
+        <div class="flex items-baseline gap-1">
+          <h3 class="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{{ total_expense|currency }} TL
+          </h3>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+          <span class="font-bold text-slate-400 uppercase">Bugün</span>
+          <span class="font-black text-rose-600">{{ today_expense|currency }} TL</span>
+        </div>
+      </div>
+      <div class="absolute -right-4 -bottom-4 size-24 bg-rose-500/5 rounded-full blur-2xl"></div>
+    </div>
+
+    <!-- Receivables Card -->
+    <div
+      class="group bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-blue-200 dark:hover:border-blue-900 transition-all relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4 relative z-10">
+        <div class="p-3 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          <span class="material-symbols-outlined text-2xl">call_received</span>
+        </div>
+        <div class="text-right">
+          <span
+            class="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded-lg uppercase tracking-widest">Alacaklar</span>
+        </div>
+      </div>
+      <div class="relative z-10">
+        <p class="text-slate-400 dark:text-slate-500 text-xs font-bold mb-1 uppercase">Müşteri Alacakları</p>
+        <h3 class="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{{ total_receivables|currency }} TL
+        </h3>
+        <div class="mt-4 w-full bg-slate-100 dark:bg-slate-700 h-1 rounded-full">
+          <div class="h-full bg-blue-500 rounded-full" style="width: 65%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payables Card -->
+    <div
+      class="group bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-amber-200 dark:hover:border-amber-900 transition-all relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4 relative z-10">
+        <div class="p-3 rounded-2xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <span class="material-symbols-outlined text-2xl">call_made</span>
+        </div>
+        <div class="text-right">
+          <span
+            class="text-[10px] font-black text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg uppercase tracking-widest">Borçlar</span>
+        </div>
+      </div>
+      <div class="relative z-10">
+        <p class="text-slate-400 dark:text-slate-500 text-xs font-bold mb-1 uppercase">Tedarikçi Borçları</p>
+        <h3 class="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{{ total_payables|currency }} TL
+        </h3>
+        <div class="mt-4 w-full bg-slate-100 dark:bg-slate-700 h-1 rounded-full">
+          <div class="h-full bg-amber-500 rounded-full" style="width: 40%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts and Analytics Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Main Performance Chart -->
+    <div
+      class="lg:col-span-8 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 relative z-10">
+        <div>
+          <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Finansal Akış Grafiği
+          </h3>
+          <p class="text-xs text-slate-400 font-bold mt-1 uppercase tracking-widest">Son 6 Aylık Gelir & Gider
+            Karşılaştırması</p>
+        </div>
+        <div class="flex gap-4 mt-4 sm:mt-0">
+          <div class="flex items-center gap-2 text-[10px] font-black uppercase text-slate-500">
+            <span class="size-3 rounded-md bg-primary shadow-sm shadow-primary/40"></span> Gelir
+          </div>
+          <div class="flex items-center gap-2 text-[10px] font-black uppercase text-slate-500">
+            <span class="size-3 rounded-md bg-rose-500 shadow-sm shadow-rose-500/40"></span> Gider
+          </div>
+        </div>
+      </div>
+      <div class="h-[350px] w-full relative z-10">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+      <div class="absolute -left-10 top-20 size-64 bg-primary/3 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Right Column Widgets -->
+    <div class="lg:col-span-4 flex flex-col gap-8">
+      <!-- Attendance Summary -->
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+        <h3
+          class="text-lg font-black text-slate-900 dark:text-white tracking-tight mb-6 uppercase flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">groups</span>
+          Personel Katılımı
+        </h3>
+        <div class="grid grid-cols-3 gap-3 mb-6">
+          <div
+            class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/5 text-center border border-emerald-100/50 dark:border-emerald-500/10">
+            <p class="text-2xl font-black text-emerald-600 tabular-nums">{{ attendance_summary.geldi }}</p>
+            <p class="text-[9px] font-black text-emerald-600/60 uppercase mt-1">Geldİ</p>
+          </div>
+          <div
+            class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/5 text-center border border-amber-100/50 dark:border-amber-500/10">
+            <p class="text-2xl font-black text-amber-600 tabular-nums">{{ attendance_summary.izinli }}</p>
+            <p class="text-[9px] font-black text-amber-600/60 uppercase mt-1">İzİnlİ</p>
+          </div>
+          <div
+            class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/5 text-center border border-rose-100/50 dark:border-rose-500/10">
+            <p class="text-2xl font-black text-rose-600 tabular-nums">{{ attendance_summary.yok }}</p>
+            <p class="text-[9px] font-black text-rose-600/60 uppercase mt-1">Yok</p>
+          </div>
+        </div>
+        <div class="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden flex">
+          {% set total = attendance_summary.geldi + attendance_summary.izinli + attendance_summary.yok %}
+          {% if total > 0 %}
+          <div class="h-full bg-emerald-500" style="width: {{ (attendance_summary.geldi / total * 100) }}%"></div>
+          <div class="h-full bg-amber-400" style="width: {{ (attendance_summary.izinli / total * 100) }}%"></div>
+          <div class="h-full bg-rose-500" style="width: {{ (attendance_summary.yok / total * 100) }}%"></div>
+          {% endif %}
+        </div>
+        <div
+          class="mt-4 flex justify-between items-center bg-slate-50 dark:bg-slate-700/30 p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+          <span class="text-[10px] font-black text-slate-500 uppercase">Toplam Mevcut</span>
+          <span class="text-xs font-black text-slate-800 dark:text-white">{{ personel_count }} Personel</span>
+        </div>
+      </div>
+
+      <!-- Stock Summary -->
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase">Stok & Depo</h3>
+          <a href="/urunler" class="text-[10px] font-black text-primary uppercase hover:underline">Tüm Ürünler</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div
+            class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+              <div class="size-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Envanter Değerİ</p>
+                <p class="text-lg font-black text-slate-900 dark:text-white tabular-nums">{{
+                  inventory_total_value|currency }} TL</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-[10px] font-black text-red-600 uppercase tracking-widest">Kritik Stok Uyarıları</p>
+              <span
+                class="size-5 rounded-full bg-red-600 text-white text-[10px] flex items-center justify-center font-black animate-pulse">{{
+                critical_stock_count }}</span>
+            </div>
+            <div class="space-y-2">
+              {% for u in critical_products %}
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-700 dark:text-slate-300 font-bold truncate max-w-[150px]">{{ u.UrunAdi }}</span>
+                <span class="text-red-600 font-black">{{ u.StokMiktari }} {{ u.Birim }}</span>
+              </div>
+              {% else %}
+              <p class="text-xs text-slate-400 font-bold italic">Tüm stok seviyeleri güvenli.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lower Section: Due Alerts & Timeline -->
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+    <!-- Due Alerts (Upcoming Payments) -->
+    <div
+      class="xl:col-span-4 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-2">
+          <span class="material-symbols-outlined text-rose-500">alarm</span>
+          Vadesİ Yaklaşanlar
+        </h3>
+        <span class="text-[10px] font-black text-slate-400 uppercase">Son 7 Gün</span>
+      </div>
+
+      <div class="flex-1 space-y-4">
+        {% for alert in due_alerts %}
+        <div
+          class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700 flex items-center justify-between group hover:border-primary/30 transition-all">
+          <div class="flex items-center gap-3">
+            <div
+              class="size-10 rounded-xl flex items-center justify-center {% if alert.type == 'borc' %}bg-rose-100 text-rose-600{% else %}bg-emerald-100 text-emerald-600{% endif %}">
+              <span class="material-symbols-outlined text-[22px]">{% if alert.type == 'borc' %}outbound{% else
+                %}inbound{% endif %}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-black text-slate-800 dark:text-white truncate max-w-[120px]">{{ alert.title
+                }}</span>
+              <span class="text-[10px] font-black text-slate-400 uppercase">{{ alert.date.strftime('%d %B %Y') if
+                alert.date else 'Belirsiz' }}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <p
+              class="text-sm font-black tabular-nums {% if alert.type == 'borc' %}text-rose-600{% else %}text-emerald-600{% endif %}">
+              {{ alert.amount|currency }} TL</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase">{% if alert.type == 'borc' %}Ödenecek{% else
+              %}Alınacak{% endif %}</p>
+          </div>
+        </div>
+        {% else %}
+        <div class="h-full flex flex-col items-center justify-center py-10 text-center opacity-40">
+          <span class="material-symbols-outlined text-4xl mb-2">event_available</span>
+          <p class="text-xs font-black uppercase">Yaklaşan kritik ödeme yok.</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-8 p-4 rounded-2xl bg-primary/5 border border-primary/20">
+        <div class="flex items-center gap-2 text-primary">
+          <span class="material-symbols-outlined text-[20px]">info</span>
+          <span class="text-[10px] font-black uppercase">Fİnansal Hatırlatıcı</span>
+        </div>
+        <p class="text-[10px] text-primary/70 font-bold mt-1">Vadesi geçen ödemeler için ilgili cariye ekstre
+          gönderebilirsiniz.</p>
+      </div>
+    </div>
+
+    <!-- Timeline Flow -->
+    <div
+      class="xl:col-span-8 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col relative overflow-hidden">
+      <div class="flex items-center justify-between mb-8 relative z-10">
+        <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Sİstem İşlem Akışı</h3>
+        <div class="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400">
+          <span class="size-2 rounded-full bg-emerald-400"></span> Canlı İzleme
+        </div>
+      </div>
+
+      <div
+        class="flex-1 space-y-6 relative z-10 before:absolute before:inset-y-0 before:left-[19px] before:w-[2px] before:bg-slate-100 dark:before:bg-slate-700/50">
+        {% for f in recent_transactions %}
+        <div class="relative flex gap-6 pl-10 group">
+          <!-- Dot / Icon -->
+          <div class="absolute left-0 top-1 size-10 rounded-2xl flex items-center justify-center z-10 border-4 border-white dark:border-slate-800 shadow-sm
+                        {% if f.IslemTuru == 'Gelir' %}
+                        bg-emerald-500 text-white
+                        {% else %}
+                        bg-rose-500 text-white
+                        {% endif %} transition-all group-hover:scale-110 group-hover:rotate-6">
+            <span class="material-symbols-outlined text-[18px]">
+              {% if f.IslemTuru == 'Gelir' %}north_east{% else %}south_west{% endif %}
+            </span>
+          </div>
+
+          <div
+            class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-50 dark:border-slate-700/50 last:border-0 last:pb-0">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-black text-slate-800 dark:text-white truncate max-w-[250px]">{{ f.Aciklama
+                  }}</span>
+                {% if f.BankaID %}
+                <span
+                  class="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-[8px] font-black text-slate-400 uppercase">Banka</span>
+                {% endif %}
+              </div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                {{ f.Kategori }} <span class="mx-1">•</span> {{ f.Tarih.strftime('%d %b, %H:%M') }}
+              </span>
+            </div>
+            <div class="flex flex-col items-end">
+              <div
+                class="text-sm font-black tabular-nums {% if f.IslemTuru == 'Gelir' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                {{ ' + ' if f.IslemTuru == 'Gelir' else ' - ' }}{{ f.Tutar|currency }} TL
+              </div>
+              <span class="text-[9px] font-black text-slate-400 uppercase">{{ f.IslemTuru }}</span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="h-64 flex flex-col items-center justify-center opacity-40">
+          <span class="material-symbols-outlined text-5xl mb-3">cloud_off</span>
+          <p class="text-xs font-black uppercase">Henüz bir hareket kaydedilmedİ.</p>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="absolute -right-20 bottom-0 size-64 bg-slate-100/30 dark:bg-slate-700/5 rounded-full blur-3xl"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Analytics Row -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <!-- Expense breakdown Doughnut -->
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
+      <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight mb-8 uppercase text-center">Harcama
+        Dağılımı</h3>
+      <div class="h-[200px] relative">
+        <canvas id="expenseDoughnut"></canvas>
+      </div>
+      <div class="mt-6 space-y-2" id="expenseLegend">
+        <!-- Legend will be dynamic -->
+      </div>
+    </div>
+
+    <!-- Tax Summary Progress -->
+    <div
+      class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+      <div class="flex justify-between items-start mb-6">
+        <h4 class="text-lg font-black text-slate-900 dark:text-white uppercase">Vergi & SGK Yükü</h4>
+        <div
+          class="size-10 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 flex items-center justify-center">
+          <span class="material-symbols-outlined">receipt_long</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="flex justify-between text-[11px] font-black uppercase">
+          <span class="text-slate-500">KDV/SGK Birikimi</span>
+          <span class="text-slate-900 dark:text-white">{{ tax_paid|currency }} TL</span>
+        </div>
+        <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+          {% set tax_percent = (tax_paid / tax_total * 100) if tax_total > 0 else 0 %}
+          <div class="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full"
+            style="width: {{ tax_percent }}%"></div>
+        </div>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="material-symbols-outlined text-orange-400 text-[14px]">info</span>
+          <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">İndirilecek KDV sonrası net
+            yük.</span>
+        </div>
+      </div>
+      <div class="mt-8 flex gap-4">
+        <div
+          class="flex-1 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 text-center border border-slate-100 dark:border-slate-700">
+          <p class="text-[9px] text-slate-400 uppercase font-black">Tahsil Edilen</p>
+          <p class="text-sm font-black text-slate-800 dark:text-white tabular-nums">₺{{ '{:,.0f}'.format(kdv_hesaplanan)
+            }}</p>
+        </div>
+        <div
+          class="flex-1 p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 text-center border border-slate-100 dark:border-slate-700">
+          <p class="text-[9px] text-slate-400 uppercase font-black">İndirilecek</p>
+          <p class="text-sm font-black text-slate-800 dark:text-white tabular-nums">₺{{
+            '{:,.0f}'.format(kdv_indirilecek) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Currency and Quick Info -->
+    <div
+      class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col gap-6">
+      <div class="flex items-center justify-between">
+        <h4 class="text-lg font-black text-slate-900 dark:text-white uppercase">Piyasa Verileri</h4>
+        <span
+          class="px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-600 text-[9px] font-black uppercase">Canlı</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div
+          class="p-4 rounded-3xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/20">
+          <p class="text-[10px] font-black uppercase opacity-60 mb-2 tracking-widest">USD/TRY</p>
+          <p class="text-xl font-black tabular-nums">₺{{ '{:,.2f}'.format(exchange_rates.USD or 0) }}</p>
+          <div class="flex items-center gap-1 mt-2 text-[9px] font-bold opacity-80">
+            <span class="material-symbols-outlined text-[12px]">trending_up</span>
+            Serbest Piyasa
+          </div>
+        </div>
+        <div
+          class="p-4 rounded-3xl bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/20">
+          <p class="text-[10px] font-black uppercase opacity-60 mb-2 tracking-widest">EUR/TRY</p>
+          <p class="text-xl font-black tabular-nums">₺{{ '{:,.2f}'.format(exchange_rates.EUR or 0) }}</p>
+          <div class="flex items-center gap-1 mt-2 text-[9px] font-bold opacity-80">
+            <span class="material-symbols-outlined text-[12px]">trending_up</span>
+            Serbest Piyasa
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 flex flex-col gap-3 justify-end">
+        <div class="flex items-center gap-4 group cursor-pointer">
+          <div
+            class="size-10 rounded-2xl bg-primary/5 text-primary flex items-center justify-center font-black text-xs group-hover:bg-primary group-hover:text-white transition-all">
+            {{ upcoming_holidays[0].date.split('-')[2] if upcoming_holidays else '--' }}
+          </div>
+          <div class="flex flex-1 flex-col">
+            <span class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tighter">Bir Sonraki
+              Tatil</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ upcoming_holidays[0].name if
+              upcoming_holidays else 'Planlı tatil yok' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const chartData = {{ chart_data | tojson }};
+
+  // Custom Chart Styles
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.font.family = "'Outfit', sans-serif";
+  Chart.defaults.font.weight = '700';
+
+  // Monthly Performance Chart
+  const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+  const gradientInc = ctxMonthly.createLinearGradient(0, 0, 0, 400);
+  gradientInc.addColorStop(0, 'rgba(72, 72, 229, 0.4)');
+  gradientInc.addColorStop(1, 'rgba(72, 72, 229, 0.05)');
+
+  const gradientExp = ctxMonthly.createLinearGradient(0, 0, 0, 400);
+  gradientExp.addColorStop(0, 'rgba(244, 63, 94, 0.25)');
+  gradientExp.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+
+  new Chart(ctxMonthly, {
+    type: 'line',
+    data: {
+      labels: chartData.monthly.labels,
+      datasets: [
+        {
+          label: 'Gelir',
+          data: chartData.monthly.income,
+          borderColor: '#4848e5',
+          backgroundColor: gradientInc,
+          borderWidth: 5,
+          fill: true,
+          tension: 0.45,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#4848e5',
+          pointBorderWidth: 4,
+          pointRadius: 6,
+          pointHoverRadius: 9,
+          pointHoverBorderWidth: 5
+        },
+        {
+          label: 'Gider',
+          data: chartData.monthly.expense,
+          borderColor: '#f43f5e',
+          backgroundColor: gradientExp,
+          borderWidth: 5,
+          fill: true,
+          tension: 0.45,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#f43f5e',
+          pointBorderWidth: 4,
+          pointRadius: 6,
+          pointHoverRadius: 9,
+          pointHoverBorderWidth: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index',
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleFont: { size: 14, weight: '800' },
+          padding: 15,
+          cornerRadius: 15,
+          displayColors: true,
+          usePointStyle: true,
+          callbacks: {
+            label: function (context) {
+              let label = context.dataset.label || '';
+              if (label) label += ': ';
+              if (context.parsed.y !== null) {
+                label += new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(context.parsed.y);
+              }
+              return label;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
+          border: { display: false },
+          ticks: {
+            callback: function (value) { return '₺' + (value / 1000) + 'k'; },
+            font: { size: 10 }
+          }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          border: { display: false },
+          ticks: { font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  // Expense Doughnut Chart
+  const ctxExp = document.getElementById('expenseDoughnut').getContext('2d');
+  const expLabels = chartData.expense_categories.labels.slice(0, 5);
+  const expValues = chartData.expense_categories.values.slice(0, 5);
+
+  const colors = ['#4848e5', '#8b5cf6', '#ec4899', '#f97316', '#10b981'];
+
+  new Chart(ctxExp, {
+    type: 'doughnut',
+    data: {
+      labels: expLabels,
+      datasets: [{
+        data: expValues,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 15,
+        weight: 0.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '75%',
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // Simple legend builder
+  const legendEl = document.getElementById('expenseLegend');
+  expLabels.forEach((label, i) => {
+    const div = document.createElement('div');
+    div.className = 'flex items-center justify-between text-[11px] font-black uppercase';
+    div.innerHTML = `
+          <div class="flex items-center gap-2">
+              <span class="size-2.5 rounded-full" style="background-color: ${colors[i]}"></span>
+              <span class="text-slate-500">${label}</span>
+          </div>
+          <span class="text-slate-900 dark:text-white">₺${new Intl.NumberFormat('tr-TR').format(expValues[i])}</span>
+      `;
+    legendEl.appendChild(div);
+  });
+
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+  body {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+</style>
+{% endblock %}

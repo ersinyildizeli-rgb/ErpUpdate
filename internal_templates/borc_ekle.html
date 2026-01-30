@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex-1 flex flex-col min-w-0 bg-[#f9f8fb] dark:bg-background-dark relative">
+    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div
+            class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-[#1e1c30] shadow-2xl transition-all flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div
+                class="flex items-center justify-between border-b border-[#d2d1e6] dark:border-gray-800 px-6 py-5 bg-white dark:bg-[#1e1c30] sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl font-bold text-[#0f0e1b] dark:text-white leading-tight">{% if debt %}Borç
+                        Düzenle{% else %}Borç Ekle{% endif %}</h2>
+                    <p class="text-sm text-[#545095] dark:text-slate-400 mt-1">{% if debt %}Mevcut borç kaydını
+                        güncelleyin.{% else %}Yeni bir kurumsal borç kaydı oluşturun.{% endif %}</p>
+                </div>
+                <a href="/borclar"
+                    class="rounded-full p-2 text-[#545095] hover:bg-[#f6f6f8] dark:hover:bg-gray-800 transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </a>
+            </div>
+
+            <!-- Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <form action="{% if debt %}/borclar/{{ debt.BorcID }}/edit{% else %}/borclar/ekle{% endif %}"
+                    method="POST" class="space-y-6">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200" for="creditor">Borç
+                                Veren</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-xl pointer-events-none">apartment</span>
+                                <input name="BorcVeren" required value="{{ debt.BorcVeren if debt else '' }}"
+                                    class="form-input block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white pl-11 pr-4 py-3 text-base placeholder:text-[#545095] focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="creditor" placeholder="Örn. ABC Bankası" type="text" />
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200" for="cari_id">İlgili
+                                Cari (Opsiyonel)</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-xl pointer-events-none">groups</span>
+                                <select name="cari_id"
+                                    class="form-select block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white pl-11 pr-10 py-3 text-base text-[#0f0e1b] focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="cari_id">
+                                    <option value="">Cari Seçilmedi</option>
+                                    {% for c in cariler %}
+                                    <option value="{{ c.CariID }}" {% if debt and debt.CariID==c.CariID %}selected{%
+                                        endif %}>{{ c.Unvan }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" onclick="openQuickCariModal()"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 size-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                                    title="Yeni Cari Ekle">
+                                    <span class="material-symbols-outlined text-lg">add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200" for="debt-type">Borç
+                                Türü</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-xl pointer-events-none">category</span>
+                                <select name="BorcTuru" required
+                                    class="form-select block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white pl-11 pr-10 py-3 text-base text-[#0f0e1b] focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="debt-type">
+                                    <option disabled {% if not debt %}selected{% endif %} value="">Seçiniz</option>
+                                    <option value="Banka Kredisi" {% if debt and debt.BorcTuru=='Banka Kredisi'
+                                        %}selected{% endif %}>Banka Kredisi</option>
+                                    <option value="Tedarikçi Borcu" {% if debt and debt.BorcTuru=='Tedarikçi Borcu'
+                                        %}selected{% endif %}>Tedarikçi Borcu</option>
+                                    <option value="Vergi / SGK" {% if debt and debt.BorcTuru=='Vergi / SGK' %}selected{%
+                                        endif %}>Vergi / SGK</option>
+                                    <option value="Personel Avansı" {% if debt and debt.BorcTuru=='Personel Avansı'
+                                        %}selected{% endif %}>Personel Avansı</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200" for="amount">Ana
+                                Tutar</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-xl pointer-events-none">payments</span>
+                                <input name="AnaTutar" required value="{{ debt.AnaTutar if debt else '' }}" step="0.01"
+                                    class="form-input block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white pl-11 pr-4 py-3 text-base placeholder:text-[#545095] focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="amount" placeholder="0,00" type="number" />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                    <span class="text-[#545095] sm:text-sm">TRY</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200" for="due-date">Vade
+                                Tarihi</label>
+                            <div class="relative">
+                                <input name="VadeTarihi" required
+                                    value="{{ debt.VadeTarihi.strftime('%Y-%m-%d') if debt and debt.VadeTarihi else '' }}"
+                                    class="form-input block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white px-4 py-3 text-base text-[#545095] focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="due-date" type="date" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Taksitli Borç Seçeneği -->
+                    <div class="py-2">
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <div class="relative flex items-center">
+                                <input type="checkbox" id="isInstallment" name="isInstallment"
+                                    class="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-slate-200 dark:border-slate-700 bg-transparent transition-all checked:border-primary checked:bg-primary focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 dark:focus:ring-offset-gray-900"
+                                    onchange="toggleInstallmentDetails()" />
+                                <span
+                                    class="material-symbols-outlined absolute opacity-0 peer-checked:opacity-100 text-white text-sm pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-bold">check</span>
+                            </div>
+                            <span
+                                class="ml-3 text-base font-medium text-slate-900 dark:text-gray-200 select-none group-hover:text-primary transition-colors">
+                                Taksitli Borç mu?
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Taksit Detayları (Gizli) -->
+                    <div id="installmentDetails"
+                        class="hidden rounded-xl bg-primary/5 p-5 border border-primary/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div class="flex items-center gap-2 mb-4 text-primary font-medium text-sm">
+                            <span class="material-symbols-outlined text-lg">calendar_month</span>
+                            Taksit Planı Detayları
+                        </div>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">Taksit
+                                    Sayısı</label>
+                                <input name="TaksitSayisi" type="number" min="1" max="120"
+                                    class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 dark:text-white px-4 py-3 text-base focus:border-primary focus:ring-primary transition-all"
+                                    placeholder="Örn. 12" />
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-sm font-medium text-slate-900 dark:text-gray-200">İlk Taksit
+                                    Tarihi</label>
+                                <input name="IlkTaksitTarihi" type="date"
+                                    class="block w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 dark:text-white px-4 py-3 text-base focus:border-primary focus:ring-primary transition-all" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if debt %}
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200"
+                                for="remaining-amount">Kalan Tutar</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-xl pointer-events-none">account_balance_wallet</span>
+                                <input name="KalanTutar" required value="{{ debt.KalanTutar if debt else '' }}"
+                                    step="0.01"
+                                    class="form-input block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white pl-11 pr-4 py-3 text-base placeholder:text-[#545095] focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="remaining-amount" placeholder="0,00" type="number" />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                    <span class="text-[#545095] sm:text-sm">TRY</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200"
+                                for="status">Durum</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#545095] dark:text-slate-500 text-xl pointer-events-none">info</span>
+                                <select name="Durum"
+                                    class="form-select block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white pl-11 pr-10 py-3 text-base focus:border-primary focus:ring-primary transition-shadow duration-200"
+                                    id="status">
+                                    <option value="Bekliyor" {% if debt.Durum=='Bekliyor' %}selected{% endif %}>Bekliyor
+                                    </option>
+                                    <option value="Kısmi Ödendi" {% if debt.Durum=='Kısmi Ödendi' %}selected{% endif %}>
+                                        Kısmi Ödendi</option>
+                                    <option value="Ödendi" {% if debt.Durum=='Ödendi' %}selected{% endif %}>Ödendi
+                                    </option>
+                                    <option value="Gecikmiş" {% if debt.Durum=='Gecikmiş' %}selected{% endif %}>Gecikmiş
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-[#0f0e1b] dark:text-gray-200 flex justify-between"
+                            for="description">
+                            Açıklama <span class="text-[#545095] font-normal text-xs">Opsiyonel</span>
+                        </label>
+                        <textarea name="Aciklama"
+                            class="form-textarea block w-full rounded-lg border-[#d2d1e6] dark:border-gray-700 bg-[#f6f6f8] dark:bg-[#121121] dark:text-white px-4 py-3 text-base placeholder:text-[#545095] focus:border-primary focus:ring-primary resize-none transition-shadow duration-200"
+                            id="description" placeholder="Borç ile ilgili notlar..."
+                            rows="3">{{ debt.Aciklama if debt else '' }}</textarea>
+                    </div>
+
+                    <!-- Footer Buttons -->
+                    <div
+                        class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-[#d2d1e6] dark:border-gray-800">
+                        <a href="/borclar"
+                            class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-[#d2d1e6] dark:border-gray-700 bg-white dark:bg-[#1e1c30] px-6 py-3 text-sm font-semibold text-[#0f0e1b] dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                            İptal
+                        </a>
+                        <button type="submit"
+                            class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-transparent bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark transition-all">
+                            <span class="material-symbols-outlined mr-2 text-lg">save</span>
+                            Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Cari Modal -->
+<div id="quickCariModal"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f0e1b]/60 backdrop-blur-sm hidden">
+    <div
+        class="bg-white dark:bg-[#1a1b26] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all border border-[#d2d1e6] dark:border-gray-800">
+        <div
+            class="px-6 py-4 border-b border-[#d2d1e6] dark:border-gray-800 flex items-center justify-between bg-[#f9f8fb] dark:bg-[#111221]">
+            <h3 class="text-lg font-bold text-[#0f0e1b] dark:text-white">Hızlı Cari Ekle</h3>
+            <button type="button" onclick="closeQuickCariModal()"
+                class="text-[#545095] hover:text-[#0f0e1b] transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#545095] dark:text-slate-400 uppercase tracking-wider">Firma
+                    Ünvanı / Adı</label>
+                <input id="quickCariUnvan" required
+                    class="w-full h-11 px-4 rounded-lg border border-[#d2d1e6] dark:border-gray-700 bg-white dark:bg-[#121121] dark:text-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    placeholder="Firma adını girin...">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#545095] dark:text-slate-400 uppercase tracking-wider">Cari
+                    Tipi</label>
+                <select id="quickCariTipi"
+                    class="w-full h-11 px-4 rounded-lg border border-[#d2d1e6] dark:border-gray-700 bg-white dark:bg-[#121121] dark:text-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="Tedarikçi">Tedarikçi</option>
+                    <option value="Müşteri">Müşteri</option>
+                    <option value="Her İkisi">Her İkisi</option>
+                </select>
+            </div>
+            <div class="pt-4 flex justify-end gap-3">
+                <button type="button" onclick="closeQuickCariModal()"
+                    class="px-4 py-2 text-sm font-semibold text-[#545095] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">İptal</button>
+                <button type="button" onclick="saveQuickCari()"
+                    class="px-6 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleInstallmentDetails() {
+        const checkbox = document.getElementById('isInstallment');
+        const details = document.getElementById('installmentDetails');
+        if (checkbox.checked) {
+            details.classList.remove('hidden');
+        } else {
+            details.classList.add('hidden');
+        }
+    }
+
+    function openQuickCariModal() {
+        document.getElementById('quickCariModal').classList.remove('hidden');
+        document.getElementById('quickCariUnvan').focus();
+    }
+
+    function closeQuickCariModal() {
+        document.getElementById('quickCariModal').classList.add('hidden');
+    }
+
+    async function saveQuickCari() {
+        const unvan = document.getElementById('quickCariUnvan').value;
+        const tipi = document.getElementById('quickCariTipi').value;
+
+        if (!unvan) {
+            alert('Lütfen firma ünvanını girin.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/cari/add_ajax', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Unvan: unvan, CariTipi: tipi })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // Dropdown'ı güncelle
+                const select = document.getElementById('cari_id');
+                const option = new Option(data.unvan, data.cari_id);
+                select.add(option);
+                select.value = data.cari_id;
+
+                // Borç Veren alanını da otomatik doldur
+                const creditorInput = document.getElementById('creditor');
+                if (creditorInput) creditorInput.value = data.unvan;
+
+                closeQuickCariModal();
+                alert('Cari başarıyla eklendi.');
+            } else {
+                alert('Hata: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Bir hata oluştu.');
+        }
+    }
+
+    // Cari seçildiğinde Borç Veren adını otomatik doldur
+    document.getElementById('cari_id').addEventListener('change', function () {
+        const select = this;
+        const creditorInput = document.getElementById('creditor');
+        if (select.value && creditorInput) {
+            creditorInput.value = select.options[select.selectedIndex].text;
+        }
+    });
+</script>
+{% endblock %}

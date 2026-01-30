@@ -1,0 +1,12 @@
+{
+    "version": "1.0.98",
+    "build_date": "2026-01-30",
+    "app_name": "MY HOME ERP",
+    "author": "Antigravity AI",
+    "changelog": [
+        "Kesintiler Sayfası: Filtreleme alanı geliştirildi, 'Detaylı Filtre' butonu eklendi.",
+        "Kesintiler Sayfası: Gereksiz hızlı filtre butonları (Tümü, Avans, İcra) kaldırıldı.",
+        "Sistem: Python 3.14 uyumluluğu için kütüphane güncellemeleri yapıldı.",
+        "Sistem: pymssql bağımlılığı kaldırılarak kurulum sorunları giderildi."
+    ]
+}

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Puantaj ve Mesai Takibi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4848e5",
+                        "primary-dark": "#3636b8",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111121",
+                        "sidebar-bg": "#0f172a", // Dark navy for sidebar
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light font-display text-slate-800 antialiased overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- SideNavBar (Modified for Dark Navy Theme) -->
+<aside class="flex w-64 flex-col bg-sidebar-bg text-white shadow-xl z-20 transition-all duration-300">
+<div class="flex h-16 items-center gap-3 px-6 border-b border-slate-700/50">
+<div class="flex items-center justify-center size-8 rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight text-white">Nexus ERP</h1>
+</div>
+<div class="flex flex-1 flex-col justify-between overflow-y-auto py-6 px-3">
+<nav class="flex flex-col gap-1.5">
+<p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Yönetim</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">group</span>
+<span class="text-sm font-medium">Personel</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white shadow-md shadow-primary/20" href="#">
+<span class="material-symbols-outlined text-[20px] filled">schedule</span>
+<span class="text-sm font-medium">Puantaj</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">payments</span>
+<span class="text-sm font-medium">Finans</span>
+</a>
+<p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">Sistem</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">settings</span>
+<span class="text-sm font-medium">Ayarlar</span>
+</a>
+</nav>
+<!-- User Profile Snippet in Sidebar -->
+<div class="mt-auto border-t border-slate-700/50 pt-4 px-2">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 border-2 border-slate-600" data-alt="User profile picture showing a smiling man" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBxUIYylec4IL4mVkG6xu7LdWnXx2iA7E0vtmUFOws4UOU7nFVKckYSrEpwBcWcVzlh6yGBmATUT74R6dMaYoTn4ADQMqUVmPUTrSpq2TIWSGseQ4iinqkQAXC8PoA0bUq-c-U4Th5z_olRY3pxaLlUHrAEi5ofkJTNOccdi__s4aWMOl8CtFJRYjVVZ52mQdkY6amvSuO7wzMgYO-YEMt_VohAnEgXjAP4Xvy0oIYedD1X12jP0zGGWpsrccyeC6LRRjpgo7L4tm0");'></div>
+<div class="flex flex-col overflow-hidden">
+<p class="text-sm font-medium text-white truncate">Ahmet Yılmaz</p>
+<p class="text-xs text-slate-400 truncate">İK Yöneticisi</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full min-w-0 bg-[#f8f9fc]">
+<!-- TopNavBar -->
+<header class="flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white px-8 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-slate-600 lg:hidden">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Breadcrumbs -->
+<div class="flex items-center text-sm text-slate-500">
+<span>Ana Sayfa</span>
+<span class="material-symbols-outlined mx-1 text-[16px]">chevron_right</span>
+<span>Personel</span>
+<span class="material-symbols-outlined mx-1 text-[16px]">chevron_right</span>
+<span class="text-slate-900 font-semibold">Puantaj Girişi</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center size-10 rounded-full text-slate-500 hover:bg-slate-100 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 rounded-full bg-red-500 border border-white"></span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full text-slate-500 hover:bg-slate-100">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Page Content -->
+<div class="flex-1 overflow-auto p-6 md:p-8">
+<div class="mx-auto max-w-7xl flex flex-col gap-6">
+<!-- Page Heading & Date Navigation -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h2 class="text-2xl font-bold text-slate-900 tracking-tight">Günlük Puantaj Kontrolü</h2>
+<p class="text-slate-500 text-sm mt-1">Personel devam durumu ve mesai girişlerini yönetin.</p>
+</div>
+<!-- Date Picker Component -->
+<div class="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors hover:text-primary">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex items-center gap-2 px-4 border-x border-slate-100 min-w-[200px] justify-center cursor-pointer hover:bg-slate-50 py-1.5 rounded-md group">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<span class="text-sm font-semibold text-slate-700 group-hover:text-primary transition-colors">24 Ekim 2023</span>
+</div>
+<button class="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors hover:text-primary">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase">Mevcut</p>
+<p class="text-xl font-bold text-slate-900">42 Kişi</p>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined">beach_access</span>
+</div>
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase">İzinli</p>
+<p class="text-xl font-bold text-slate-900">3 Kişi</p>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-600">
+<span class="material-symbols-outlined">sick</span>
+</div>
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase">Raporlu</p>
+<p class="text-xl font-bold text-slate-900">1 Kişi</p>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<div>
+<p class="text-slate-500 text-xs font-medium uppercase">Toplam Mesai</p>
+<p class="text-xl font-bold text-slate-900">18.5 Saat</p>
+</div>
+</div>
+</div>
+<!-- Main Table Section -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+<!-- Toolbar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 border-b border-slate-100">
+<!-- Search -->
+<div class="relative max-w-sm w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-slate-400 text-slate-700" placeholder="Personel ara..." type="text"/>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span>Filtrele</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Değişiklikleri Kaydet</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-slate-100 bg-slate-50/50">
+<th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider">Personel</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider">Departman</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider w-[200px]">Durum</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider">Giriş / Çıkış</th>
+<th class="py-4 px-6 text-xs font-semibold uppercase text-slate-500 tracking-wider text-right">Fazla Mesai</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1: Present, Some Overtime -->
+<tr class="group hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 bg-cover bg-center" data-alt="Portrait of Ali Yılmaz" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDagesyXFQf9xftQ0brBVID18tls7clHU0SxOOQkxufpSq8K3aVZ9Ejc5AZwt6wBdZUY64EXSOK8ZtpD3KAgtL69iZgGsirVFB8-JDGr8b7Tng1Fp44Lrq0Pb06QZV8zdDe7B7oYop8RlfrVdsIULhITCacySrbwzApirVrZTD4_nC1POD8HHZI9QN5ljfptLQ3e9h5H8Pd19--GaQc0PoHixf2G0g_sP2F4LR1FktTD_oVO3RPjAjK7rOwJpE_5byDRRRI3RadleY");'></div>
+<div>
+<p class="text-sm font-semibold text-slate-900">Ali Yılmaz</p>
+<p class="text-xs text-slate-500">ID: #8921</p>
+</div>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600">Yazılım</td>
+<td class="py-3 px-6">
+<div class="relative">
+<select class="appearance-none w-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-lg py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
+<option selected="" value="geldi">Geldi</option>
+<option value="izinli">İzinli</option>
+<option value="raporlu">Raporlu</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-emerald-600 text-[18px] pointer-events-none">expand_more</span>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600 font-medium font-mono">08:00 - 18:00</td>
+<td class="py-3 px-6">
+<div class="flex items-center justify-end gap-2">
+<div class="relative flex items-center w-24">
+<input class="w-full text-right font-mono font-medium text-slate-900 bg-white border border-slate-300 rounded-lg py-1.5 px-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none" min="0" step="0.5" type="number" value="2"/>
+<span class="absolute left-2 text-xs text-slate-400 font-medium pointer-events-none">Saat</span>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 2: Present, No Overtime -->
+<tr class="group hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 bg-cover bg-center" data-alt="Portrait of Ayşe Demir" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDxGpIHGcwF7jtNjQbticdSd07eJlZ29wnXMZZraCfKmD3UzeHcxC7SLYd7dlcOowf3boBL4s2ZT3zteZk9i7kiJs0DdT12lMWHiJ_6gvvOXZfZQkD6az_oyG67lGMhqsx2PUVRpwqMHNjIt_zQDAGCn9KAe67eWhhYIczdos4LPyJuZ_l01QK_LUTewnXU3e1NujeP6lAgQNjkYVTuGPYTnCA7X5palTi7FVCMCLvhn2rCQu6UJ-aJj5KgdlmV0hQWS--231XWT9U");'></div>
+<div>
+<p class="text-sm font-semibold text-slate-900">Ayşe Demir</p>
+<p class="text-xs text-slate-500">ID: #8922</p>
+</div>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600">Pazarlama</td>
+<td class="py-3 px-6">
+<div class="relative">
+<select class="appearance-none w-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-lg py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
+<option selected="" value="geldi">Geldi</option>
+<option value="izinli">İzinli</option>
+<option value="raporlu">Raporlu</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-emerald-600 text-[18px] pointer-events-none">expand_more</span>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600 font-medium font-mono">08:30 - 17:30</td>
+<td class="py-3 px-6">
+<div class="flex items-center justify-end gap-2">
+<div class="relative flex items-center w-24">
+<input class="w-full text-right font-mono font-medium text-slate-400 bg-slate-50 border border-slate-200 rounded-lg py-1.5 px-2 text-sm focus:bg-white focus:text-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none transition-all" min="0" step="0.5" type="number" value="0"/>
+<span class="absolute left-2 text-xs text-slate-400 font-medium pointer-events-none">Saat</span>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 3: Leave (İzinli) -->
+<tr class="group hover:bg-slate-50/80 transition-colors bg-amber-50/30">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 bg-cover bg-center grayscale" data-alt="Portrait of Mehmet Kaya" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDAXUbPpMGVk5dqpE6xkJnFRSuonhefZI1fZ-aJsFypmShQxa2sAz8gMBfXo0A0wAI89JH2yEYhUzwjsdWGLZJleqlBVyxA2EdJ6rkLN2oeuqv2C6D5BUHMilwxM0hSW3v-EKCuiDRp5i5oXL6KJRwi3sBngxfmUOKmT0KwV5cjw37pxS5c0Gu4HTh9Evdl01zSqeld8BrsZgXpYOKemoyxl9h8yZQMkiP2RAo1zCMBxu2Vnk8t8TJU4d7aUXbm7misSBNdi-LSlDE");'></div>
+<div>
+<p class="text-sm font-semibold text-slate-700">Mehmet Kaya</p>
+<p class="text-xs text-slate-500">ID: #8925</p>
+</div>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600">Finans</td>
+<td class="py-3 px-6">
+<div class="relative">
+<select class="appearance-none w-full bg-amber-50 border border-amber-200 text-amber-700 text-sm font-medium rounded-lg py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer">
+<option value="geldi">Geldi</option>
+<option selected="" value="izinli">İzinli</option>
+<option value="raporlu">Raporlu</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-amber-600 text-[18px] pointer-events-none">expand_more</span>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-400 font-medium font-mono">-</td>
+<td class="py-3 px-6">
+<div class="flex items-center justify-end gap-2">
+<div class="relative flex items-center w-24 opacity-50 cursor-not-allowed">
+<input class="w-full text-right font-mono font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg py-1.5 px-2 text-sm cursor-not-allowed" disabled="" type="number" value="0"/>
+<span class="absolute left-2 text-xs text-slate-400 font-medium pointer-events-none">Saat</span>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 4: Sick (Raporlu) -->
+<tr class="group hover:bg-slate-50/80 transition-colors bg-rose-50/30">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 bg-cover bg-center grayscale" data-alt="Portrait of Elif Yıldız" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAiiGaSm-rNN5ySvco4sXuRwUbfaSZ__mFbK1E0iDPKZmucQIp6a02-3CRfYoRhZwhEY9ZOUibwYYNel7yoSsf6SMgj-UxoofbyNLmmsRJWwrhkWmT9E1CkI6TmUOW61O3BxZTdqONtCU-WL8AGQQAf9cjHaxw5_MiFWOYAnccuqysrKUR4llBZIV5XYn66nTkCU4mN6EvFznQXMa6eEqOM9qf_MX8lSoq2Cr-t1Dzc5EwcT_xvwGiLB0FDqnYrT5L61ZXGQMyAUJQ");'></div>
+<div>
+<p class="text-sm font-semibold text-slate-700">Elif Yıldız</p>
+<p class="text-xs text-slate-500">ID: #8928</p>
+</div>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600">Satış</td>
+<td class="py-3 px-6">
+<div class="relative">
+<select class="appearance-none w-full bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium rounded-lg py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer">
+<option value="geldi">Geldi</option>
+<option value="izinli">İzinli</option>
+<option selected="" value="raporlu">Raporlu</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-rose-600 text-[18px] pointer-events-none">expand_more</span>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-400 font-medium font-mono">-</td>
+<td class="py-3 px-6">
+<div class="flex items-center justify-end gap-2">
+<div class="relative flex items-center w-24 opacity-50 cursor-not-allowed">
+<input class="w-full text-right font-mono font-medium text-slate-400 bg-slate-100 border border-slate-200 rounded-lg py-1.5 px-2 text-sm cursor-not-allowed" disabled="" type="number" value="0"/>
+<span class="absolute left-2 text-xs text-slate-400 font-medium pointer-events-none">Saat</span>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 5: Present, High Overtime -->
+<tr class="group hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 bg-cover bg-center" data-alt="Portrait of Burak Can" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBf4TsxBV-iQjnmXAOuanrmxWP7XicS6yLmBsAoUWSevOJ1-dUifkPu4vHrJtlkyDrFUYDgHfD22KOJYgKj3JGp3QblYV9SU1kHxkWbOonK8OJOjkEcQObOQb_nsbMZER6R8Tbdrgez0-PfhMr5M_r7nh_D0zkhE1cMNIUdDeJBENiItayZTFpxb6jzLYDFnqir8d7t6j_Vbi1i_X5o0I53G1ljJFYXiyySbAgzuJzMcjD2mDzemDie1gOZ13AquFTmS2p8fHwE6bQ");'></div>
+<div>
+<p class="text-sm font-semibold text-slate-900">Burak Can</p>
+<p class="text-xs text-slate-500">ID: #8930</p>
+</div>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600">Lojistik</td>
+<td class="py-3 px-6">
+<div class="relative">
+<select class="appearance-none w-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-lg py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
+<option selected="" value="geldi">Geldi</option>
+<option value="izinli">İzinli</option>
+<option value="raporlu">Raporlu</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-emerald-600 text-[18px] pointer-events-none">expand_more</span>
+</div>
+</td>
+<td class="py-3 px-6 text-sm text-slate-600 font-medium font-mono">08:00 - 22:00</td>
+<td class="py-3 px-6">
+<div class="flex items-center justify-end gap-2">
+<div class="relative flex items-center w-24">
+<input class="w-full text-right font-mono font-medium text-primary bg-primary/5 border border-primary/30 rounded-lg py-1.5 px-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:outline-none font-bold" min="0" step="0.5" type="number" value="4"/>
+<span class="absolute left-2 text-xs text-primary/70 font-medium pointer-events-none">Saat</span>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+<p class="text-sm text-slate-500">Toplam 45 personelden 1-5 arası gösteriliyor</p>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 text-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 disabled:opacity-50" disabled="">Önceki</button>
+<button class="px-3 py-1 text-sm border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50">Sonraki</button>
+</div>
+</div>
+</div>
+<!-- Bottom Tip -->
+<div class="flex items-start gap-3 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-100">
+<span class="material-symbols-outlined text-blue-600 mt-0.5">info</span>
+<div class="text-sm">
+<p class="font-semibold">Bilgilendirme</p>
+<p class="mt-1 opacity-90">Fazla mesai girişleri maaş hesaplamasına otomatik olarak yansıtılacaktır. Onaylanan mesailer ay sonunda kilitlenir.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

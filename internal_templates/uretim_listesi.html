@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Üretim Emirleri</h1>
+            <p class="text-slate-500 text-sm">Aktif ve geçmiş üretim döngülerinin takibi.</p>
+        </div>
+        <a href="/uretim/ekle"
+            class="flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-95">
+            <span class="material-symbols-outlined">precision_manufacturing</span>
+            <span>Yeni Üretim Emri Ver</span>
+        </a>
+    </div>
+
+    <!-- Live Performance / Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-indigo-600 p-6 rounded-3xl shadow-xl shadow-indigo-200 text-white">
+            <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-1">Devam Eden Üretim</p>
+            <h3 class="text-3xl font-black">{{ emirler|selectattr('Durum', 'equalto', 'Planlandı')|list|length }} Emir
+            </h3>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tamamlanan (Bu Ay)</p>
+            <h3 class="text-3xl font-black text-emerald-600">{{ emirler|selectattr('Durum', 'equalto',
+                'Tamamlandı')|list|length }}</h3>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fire / Kayıp Oranı</p>
+            <h3 class="text-3xl font-black text-slate-900">%0.0</h3>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Toplam Üretilen Birim</p>
+            <h3 class="text-3xl font-black text-primary">{{ emirler|selectattr('Durum', 'equalto',
+                'Tamamlandı')|sum(attribute='Miktar') }}</h3>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-8 py-5 font-black text-slate-500 uppercase tracking-widest text-[10px]">Emir Bilgisi
+                    </th>
+                    <th class="px-8 py-5 font-black text-slate-500 uppercase tracking-widest text-[10px]">Reçete</th>
+                    <th class="px-8 py-5 font-black text-slate-500 uppercase tracking-widest text-[10px]">Planlanan
+                        Birim</th>
+                    <th class="px-8 py-5 font-black text-slate-500 uppercase tracking-widest text-[10px] text-center">
+                        Durum</th>
+                    <th class="px-8 py-5 font-black text-slate-500 uppercase tracking-widest text-[10px] text-right">
+                        İşlemler</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for e in emirler %}
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-8 py-5">
+                        <div class="flex flex-col">
+                            <span class="font-black text-slate-900">EMİR-{{ e.EmirID }}</span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase">{{ e.Tarih.strftime('%d.%m.%Y
+                                %H:%M') }}</span>
+                        </div>
+                    </td>
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-3">
+                            <div class="size-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                                <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-700 uppercase tracking-tighter">{{ e.Recete.ReceteAdi
+                                    }}</span>
+                                <span class="text-[10px] text-primary font-black uppercase">{{ e.Recete.Mamul.UrunAdi
+                                    }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-8 py-5 font-black text-slate-700 tabular-nums">
+                        {{ e.Miktar }} Adet
+                    </td>
+                    <td class="px-8 py-5 text-center">
+                        <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
+                            {% if e.Durum == 'Planlandı' %}bg-blue-100 text-blue-700
+                            {% elif e.Durum == 'Tamamlandı' %}bg-emerald-100 text-emerald-700
+                            {% elif e.Durum == 'Üretimde' %}bg-amber-100 text-amber-700
+                            {% else %}bg-slate-100 text-slate-700{% endif %}">
+                            {{ e.Durum }}
+                        </span>
+                    </td>
+                    <td class="px-8 py-5 text-right">
+                        {% if e.Durum == 'Planlandı' %}
+                        <a href="/uretim/{{ e.EmirID }}/tamamla"
+                            onclick="return confirm('Üretimi tamamlayıp hammadde stoklarını düşmek istediğinize emin misiniz?')"
+                            class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            <span>Üretimi Bitir</span>
+                        </a>
+                        {% else %}
+                        <span class="text-[10px] font-black uppercase text-slate-300">İŞLEM TAMAMLANDI</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-8 py-16 text-center text-slate-400">
+                        <span class="material-symbols-outlined text-6xl mb-4">move_item</span>
+                        <p class="text-lg font-bold italic">Yayında olan bir üretim emri bulunmuyor.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

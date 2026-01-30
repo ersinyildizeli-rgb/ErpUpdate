@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto bg-white p-8 shadow-sm border border-slate-200 rounded-2xl my-8 print:shadow-none print:border-none print:my-0 print:p-0">
+  <div class="flex justify-between items-start border-b border-slate-200 pb-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Finansal Rapor Özeti</h1>
+      <p class="text-sm text-slate-500 mt-1">Gelir, gider ve net sonuçların toplu görünümü</p>
+    </div>
+    <div class="text-right text-sm text-slate-600">
+      <div>Toplam Personel: <span class="font-semibold text-slate-900">{{ personel_count or 0 }}</span></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="border border-slate-200 rounded-xl p-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Toplam Gelir</p>
+      <p class="text-xl font-bold text-emerald-600">₺{{ '{:,.2f}'.format(total_income or 0) }}</p>
+    </div>
+    <div class="border border-slate-200 rounded-xl p-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Toplam Gider</p>
+      <p class="text-xl font-bold text-rose-600">₺{{ '{:,.2f}'.format(total_expense or 0) }}</p>
+    </div>
+    <div class="border border-slate-200 rounded-xl p-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Net Sonuç</p>
+      {% set net_total = (total_income or 0) - (total_expense or 0) %}
+      <p class="text-xl font-bold {% if net_total >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">₺{{ '{:,.2f}'.format(net_total) }}</p>
+    </div>
+    <div class="border border-slate-200 rounded-xl p-4">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Dönem</p>
+      <p class="text-sm font-semibold text-slate-900">{{ current_period or 'Bu Ay' }}</p>
+    </div>
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-lg font-semibold text-slate-900 mb-3">Aylık Kar/Zarar Özeti (Son 6 Ay)</h2>
+    <table class="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Dönem</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Gelir</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Gider</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Net</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200">
+        {% for m in monthly_summary %}
+        <tr>
+          <td class="px-4 py-2 font-medium text-slate-800">{{ m.label }}</td>
+          <td class="px-4 py-2 text-right text-emerald-600">₺{{ '{:,.2f}'.format(m.income or 0) }}</td>
+          <td class="px-4 py-2 text-right text-rose-600">₺{{ '{:,.2f}'.format(m.expense or 0) }}</td>
+          <td class="px-4 py-2 text-right font-semibold {% if m.net >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">₺{{ '{:,.2f}'.format(m.net or 0) }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="px-4 py-4 text-center text-slate-500 text-sm">
+            Son 6 ay için finansal hareket bulunmuyor.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mb-8">
+    <h2 class="text-lg font-semibold text-slate-900 mb-3">Gelir Dağılımı (Kategori Bazlı)</h2>
+    <table class="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Kategori</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Gelir</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Gider</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Net</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200">
+        {% for c in category_summary %}
+        <tr>
+          <td class="px-4 py-2 font-medium text-slate-800">{{ c.name }}</td>
+          <td class="px-4 py-2 text-right text-emerald-600">₺{{ '{:,.2f}'.format(c.income or 0) }}</td>
+          <td class="px-4 py-2 text-right text-rose-600">₺{{ '{:,.2f}'.format(c.expense or 0) }}</td>
+          {% set cnet = (c.income or 0) - (c.expense or 0) %}
+          <td class="px-4 py-2 text-right font-semibold {% if cnet >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">₺{{ '{:,.2f}'.format(cnet) }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="px-4 py-4 text-center text-slate-500 text-sm">
+            Kategori bazlı gelir verisi bulunmuyor.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mb-4">
+    <h2 class="text-lg font-semibold text-slate-900 mb-3">Son Finansal İşlemler</h2>
+    <table class="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Tarih</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Kategori</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Tür</th>
+          <th class="px-4 py-2 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Tutar</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200">
+        {% for f in recent_finance %}
+        <tr>
+          <td class="px-4 py-2 text-slate-800">{{ f.Tarih.strftime('%d.%m.%Y') if f.Tarih else '' }}</td>
+          <td class="px-4 py-2 text-slate-800">{{ f.Kategori or 'İşlem' }}</td>
+          <td class="px-4 py-2 text-slate-600">{{ f.IslemTuru or '' }}</td>
+          <td class="px-4 py-2 text-right font-semibold {% if (f.IslemTuru or '').lower() == 'gelir' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+            ₺{{ '{:,.2f}'.format(f.Tutar or 0) }}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="px-4 py-4 text-center text-slate-500 text-sm">
+            Henüz finansal hareket bulunmuyor.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex justify-between items-center mt-6 text-xs text-slate-400">
+    <span>Bu çıktı iç kullanım amaçlıdır.</span>
+  </div>
+</div>
+
+<style>
+@media print {
+  body {
+    background: white !important;
+  }
+  nav, header, aside, .print\:hidden {
+    display: none !important;
+  }
+  .flex-1 {
+    overflow: visible !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+</style>
+
+<script>
+window.addEventListener('load', function () {
+  window.print();
+});
+</script>
+{% endblock %}
+
