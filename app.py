@@ -177,21 +177,24 @@ def update_cari_balance(cari_id):
         # Gelir (Para girişi - Alacak tahsil edildi): Alacağımız azalır -> Bakiye düşer (-)
         
         from models import Receivable, Debt
-        total_alacak = db.session.query(func.sum(Receivable.AnaTutar)).filter(Receivable.CariID == cari_id).scalar() or 0
-        total_borc = db.session.query(func.sum(Debt.AnaTutar)).filter(Debt.CariID == cari_id).scalar() or 0
+        total_alacak = db.session.query(func.sum(Receivable.AnaTutar)).filter(Receivable.CariID == cari_id, Receivable.Aktif == True).scalar() or 0
+        total_borc = db.session.query(func.sum(Debt.AnaTutar)).filter(Debt.CariID == cari_id, Debt.Aktif == True).scalar() or 0
         
         # Karşılıksız çekleri bakiyeden düşür (Onlar gerçek gelir/gider değildir)
         incomes_query = db.session.query(func.sum(Finance.Tutar)).filter(
+            Finance.Aktif == True,
             Finance.CariID == cari_id, 
             Finance.IslemTuru == 'Gelir'
         )
         expenses_query = db.session.query(func.sum(Finance.Tutar)).filter(
+            Finance.Aktif == True,
             Finance.CariID == cari_id, 
             Finance.IslemTuru == 'Gider'
         )
         
         # Karşılıksız/Sanal/İade çekleri bakiyeden düşür
         bad_incomes = db.session.query(func.sum(Finance.Tutar)).filter(
+            Finance.Aktif == True,
             Finance.CariID == cari_id,
             Finance.IslemTuru == 'Gelir',
             (func.lower(Finance.Aciklama).like('%karşılıksız%') | 
@@ -204,6 +207,7 @@ def update_cari_balance(cari_id):
         incomes = raw_incomes - bad_incomes
         
         bad_expenses = db.session.query(func.sum(Finance.Tutar)).filter(
+            Finance.Aktif == True,
             Finance.CariID == cari_id,
             Finance.IslemTuru == 'Gider',
             (func.lower(Finance.Aciklama).like('%karşılıksız%') | 
@@ -233,11 +237,13 @@ def update_bank_balance(bank_id):
             
         # Bankaya ait net bakiye (Gelir - Gider)
         incomes = db.session.query(func.sum(Finance.Tutar)).filter(
+            Finance.Aktif == True,
             Finance.BankaID == bank_id,
             Finance.IslemTuru == 'Gelir'
         ).scalar() or 0
         
         expenses = db.session.query(func.sum(Finance.Tutar)).filter(
+            Finance.Aktif == True,
             Finance.BankaID == bank_id,
             Finance.IslemTuru == 'Gider'
         ).scalar() or 0
@@ -468,6 +474,21 @@ def create_app():
                 columns = [row[1] for row in result.fetchall()]
                 if 'KategoriID' not in columns:
                     conn.execute(text("ALTER TABLE Finans ADD COLUMN KategoriID INTEGER"))
+                
+                # Tüm tablolara Aktif kolonu kontrolü (Soft Delete için)
+                tables_for_soft_delete = [
+                    'Finans', 'BankaHesabi', 'Borclar', 'Alacaklar', 
+                    'CariHesaplar', 'Urunler', 'Faturalar', 'Teklifler', 
+                    'Siparisler', 'Receteler', 'UretimEmirleri', 'GiderKategorileri'
+                ]
+                for table in tables_for_soft_delete:
+                    try:
+                        result = conn.execute(text(f"PRAGMA table_info({table})"))
+                        cols = [row[1] for row in result.fetchall()]
+                        if 'Aktif' not in cols:
+                            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN Aktif BOOLEAN NOT NULL DEFAULT 1"))
+                    except Exception as e:
+                        print(f"Schema update (Aktif check) failed for {table}: {e}")
         except Exception as e:
             app.logger.error(f"Schema update error: {e}")
 
@@ -615,8 +636,8 @@ def create_app():
     @login_required
     def dashboard():
         try:
-            personel_count = Personel.query.count()
-            finance_entries = Finance.query.all()
+            personel_count = Personel.query.filter_by(Aktif=True).count()
+            finance_entries = Finance.query.filter_by(Aktif=True).all()
 
             cash_entries = []
             for f in finance_entries:
@@ -657,7 +678,7 @@ def create_app():
             # Finansal özet: kategori bazlı toplamlar
             categories = {}
             try:
-                rows = db.session.query(Finance.Kategori, func.coalesce(func.sum(Finance.Tutar), 0)).group_by(Finance.Kategori).all()
+                rows = db.session.query(Finance.Kategori, func.coalesce(func.sum(Finance.Tutar), 0)).filter(Finance.Aktif==True).group_by(Finance.Kategori).all()
                 for k, v in rows:
                     if k:
                         categories[k] = float(v or 0)
@@ -762,6 +783,7 @@ def create_app():
                 
                 # Query for this month - EXCLUDING checks
                 inc = db.session.query(func.sum(Finance.Tutar)).filter(
+                    Finance.Aktif == True,
                     Finance.Tarih >= m_date,
                     Finance.Tarih < next_month,
                     Finance.IslemTuru == 'Gelir',
@@ -778,6 +800,7 @@ def create_app():
                 ).scalar() or 0
                 
                 exp = db.session.query(func.sum(Finance.Tutar)).filter(
+                    Finance.Aktif == True,
                     Finance.Tarih >= m_date,
                     Finance.Tarih < next_month,
                     Finance.IslemTuru == 'Gider',
@@ -806,6 +829,7 @@ def create_app():
 
             # Expense Categories Data
             exp_categories = db.session.query(Finance.Kategori, func.sum(Finance.Tutar)).filter(
+                Finance.Aktif == True,
                 Finance.IslemTuru == 'Gider'
             ).group_by(Finance.Kategori).all()
             
@@ -815,7 +839,7 @@ def create_app():
             }
 
             # Department Data
-            dept_counts = db.session.query(Personel.Departman, func.count(Personel.PersonelID)).group_by(Personel.Departman).all()
+            dept_counts = db.session.query(Personel.Departman, func.count(Personel.PersonelID)).filter(Personel.Aktif==True).group_by(Personel.Departman).all()
             chart_data['dept_distribution'] = {
                 'labels': [row[0] or 'Tanımsız' for row in dept_counts],
                 'values': [int(row[1] or 0) for row in dept_counts]
@@ -828,6 +852,7 @@ def create_app():
             today = date.today()
             # Bugünün özeti - EXCLUDING checks
             today_income = db.session.query(func.sum(Finance.Tutar)).filter(
+                Finance.Aktif == True,
                 Finance.Tarih == today, 
                 Finance.IslemTuru == 'Gelir',
                 ~func.lower(func.coalesce(Finance.Aciklama, '')).contains('çek'),
@@ -1410,7 +1435,7 @@ def create_app():
     @login_required
     def personel_list():
         try:
-            people = Personel.query.order_by(Personel.PersonelID.desc()).all()
+            people = Personel.query.filter_by(Aktif=True).order_by(Personel.PersonelID.desc()).all()
             
             # Calculate hourly rate for each person
             company = Company.query.first()
@@ -1570,10 +1595,10 @@ def create_app():
     def personel_delete(pid):
         try:
             p = Personel.query.get_or_404(pid)
-            db.session.delete(p)
+            p.Aktif = False  # Soft delete
             db.session.commit()
-            log_action("Silme", "Personel", f"{p.Ad} {p.Soyad} personeli silindi.")
-            flash('Silindi.', 'success')
+            log_action("Arşivleme", "Personel", f"{p.Ad} {p.Soyad} personeli arşivlendi.")
+            flash('Personel arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             app.logger.exception('Delete personel error')
@@ -1846,7 +1871,7 @@ def create_app():
     @roles_required('admin', 'muhasebe')
     def kasa():
         try:
-            all_entries = Finance.query.order_by(Finance.Tarih.desc(), Finance.FinansID.desc()).all()
+            all_entries = Finance.query.filter_by(Aktif=True).order_by(Finance.Tarih.desc(), Finance.FinansID.desc()).all()
             entries = []
             for f in all_entries:
                 cat_lower = (f.Kategori or '').lower()
@@ -1963,7 +1988,7 @@ def create_app():
         
         cancel_url = request.args.get('next') or url_for('dashboard')
         docs = Document.query.filter_by(RelationType='Finans', RelationID=fid).all()
-        cariler = CariAccount.query.order_by(CariAccount.Unvan.asc()).all()
+        cariler = CariAccount.query.filter_by(Aktif=True).order_by(CariAccount.Unvan.asc()).all()
         return render_template('finans_form.html', entry=f, cancel_url=cancel_url, documents=docs, cariler=cariler)
 
     @app.route('/cari')
@@ -1972,14 +1997,14 @@ def create_app():
     def cari_list():
         """Cari hesapları listeler"""
         cari_tipi = request.args.get('tip') # Müşteri veya Tedarikçi
-        query = CariAccount.query
+        query = CariAccount.query.filter_by(Aktif=True)
         if cari_tipi:
             query = query.filter(CariAccount.CariTipi == cari_tipi)
         
         cariler = query.order_by(CariAccount.Unvan.asc()).all()
         
         # Özet verileri hesapla ve bakiyeleri tazele (Hatalı bakiyeleri düzeltmek için)
-        all_caris = CariAccount.query.all()
+        all_caris = CariAccount.query.filter_by(Aktif=True).all()
         for c in all_caris:
             update_cari_balance(c.CariID)
         
@@ -2270,27 +2295,18 @@ def create_app():
     @app.route('/cari/<int:cid>/sil', methods=['POST'])
     @login_required
     def cari_sil(cid):
-        """Cari hesabı siler"""
+        """Cari hesabı arşivler"""
         if session.get('user_role') != 'admin':
             flash('Bu işlem için yetkiniz yok.', 'danger')
             return redirect(url_for('cari_list'))
             
         cari = CariAccount.query.get_or_404(cid)
         try:
-            # Cari'ye bağlı hareketleri kontrol et
-            has_linked = Finance.query.filter_by(CariID=cid).first() or \
-                          Debt.query.filter_by(CariID=cid).first() or \
-                          Receivable.query.filter_by(CariID=cid).first()
-            
-            if has_linked:
-                flash('Bu cari hesaba ait finansal hareketler, borçlar veya alacaklar bulunduğu için silinemez. Önce bu hareketleri silmelisiniz.', 'warning')
-                return redirect(url_for('cari_list'))
-
             unvan = cari.Unvan
-            db.session.delete(cari)
+            cari.Aktif = False # Soft delete
             db.session.commit()
-            log_action("Silme", "Cari", f"{unvan} carisi silindi.")
-            flash(f'{unvan} başarıyla silindi.', 'success')
+            log_action("Arşivleme", "Cari", f"{unvan} carisi arşivlendi.")
+            flash(f'{unvan} başarıyla arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             app.logger.exception('Cari delete error')
@@ -2305,7 +2321,7 @@ def create_app():
     def urun_listesi():
         """Ürün listesini görüntüler"""
         search = request.args.get('search', '')
-        query = Urun.query
+        query = Urun.query.filter_by(Aktif=True)
         if search:
             query = query.filter(Urun.UrunAdi.ilike(f"%{search}%") | Urun.Barkod.ilike(f"%{search}%"))
         
@@ -2367,27 +2383,76 @@ def create_app():
     @app.route('/urun/<int:uid>/sil', methods=['POST'])
     @login_required
     def urun_sil(uid):
-        """Ürünü siler"""
+        """Ürünü arşivler"""
         if session.get('user_role') != 'admin':
             flash('Admin yetkisi gereklidir.', 'danger')
             return redirect(url_for('urun_listesi'))
             
         u = Urun.query.get_or_404(uid)
         try:
-            # Hareket varsa silme
-            if StokHareketi.query.filter_by(UrunID=uid).first():
-                flash('Bu ürüne ait stok hareketleri bulunduğu için silinemez.', 'warning')
-                return redirect(url_for('urun_listesi'))
-                
             name = u.UrunAdi
-            db.session.delete(u)
+            u.Aktif = False # Soft delete
             db.session.commit()
-            log_action("Silme", "Stok", f"{name} ürünü silindi.")
-            flash(f'{name} silindi.', 'success')
+            log_action("Arşivleme", "Stok", f"{name} ürünü arşivlendi.")
+            flash(f'{name} arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             flash(f'Hata: {str(e)}', 'danger')
         return redirect(url_for('urun_listesi'))
+
+    # === RECYCLE BIN ===
+    @app.route('/arsiv')
+    @login_required
+    @roles_required('admin')
+    def recycle_bin():
+        """Geri dönüşüm kutusu"""
+        deleted_items = {
+            'personel': Personel.query.filter_by(Aktif=False).all(),
+            'cari': CariAccount.query.filter_by(Aktif=False).all(),
+            'urun': Urun.query.filter_by(Aktif=False).all(),
+            'finans': Finance.query.filter_by(Aktif=False).order_by(Finance.Tarih.desc()).all()
+        }
+        return render_template('recycle_bin.html', deleted_items=deleted_items)
+    
+    @app.route('/restore/<item_type>/<int:item_id>', methods=['POST'])
+    @login_required
+    @roles_required('admin')
+    def restore_item(item_type, item_id):
+        try:
+            msg = ""
+            if item_type == 'personel':
+                item = Personel.query.get_or_404(item_id)
+                item.Aktif = True
+                msg = f"{item.Ad} {item.Soyad} geri yüklendi."
+            elif item_type == 'cari':
+                item = CariAccount.query.get_or_404(item_id)
+                item.Aktif = True
+                msg = f"{item.Unvan} geri yüklendi."
+            elif item_type == 'urun':
+                item = Urun.query.get_or_404(item_id)
+                item.Aktif = True
+                msg = f"{item.UrunAdi} geri yüklendi."
+            elif item_type == 'finans':
+                item = Finance.query.get_or_404(item_id)
+                item.Aktif = True
+                db.session.commit() # Commit first to ensure item is active before recalc ranges
+                
+                if item.BankaID:
+                    update_bank_balance(item.BankaID)
+
+                if item.CariID:
+                    update_cari_balance(item.CariID)
+                    
+                msg = "Finansal işlem geri yüklendi."
+            
+            db.session.commit()
+            log_action("Geri Yükleme", "Arşiv", msg)
+            flash(msg, 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Geri yükleme hatası: {e}", 'danger')
+        
+        return redirect(url_for('recycle_bin'))
 
     @app.route('/stok/hareket', methods=['GET', 'POST'])
     @login_required
@@ -2480,7 +2545,7 @@ def create_app():
     def fatura_listesi():
         """Faturaları listeler"""
         tip = request.args.get('tip') # 'Alış' or 'Satış'
-        query = Fatura.query
+        query = Fatura.query.filter_by(Aktif=True)
         if tip:
             query = query.filter(Fatura.FaturaTuru == tip)
         
@@ -2626,7 +2691,7 @@ def create_app():
     def teklif_listesi():
         """Teklifleri listeler"""
         tip = request.args.get('tip') # 'Alış' or 'Satış'
-        query = Teklif.query
+        query = Teklif.query.filter_by(Aktif=True)
         if tip:
             query = query.filter(Teklif.TeklifTuru == tip)
         teklifler = query.order_by(Teklif.Tarih.desc()).all()
@@ -2723,7 +2788,7 @@ def create_app():
     def siparis_listesi():
         """Siparişleri listeler"""
         tip = request.args.get('tip') # 'Alış' or 'Satış'
-        query = Siparis.query
+        query = Siparis.query.filter_by(Aktif=True)
         if tip:
             query = query.filter(Siparis.SiparisTuru == tip)
         siparisler = query.order_by(Siparis.Tarih.desc()).all()
@@ -2980,7 +3045,7 @@ def create_app():
     @roles_required('admin', 'muhasebe', 'imalat')
     def recete_listesi():
         """Tüm ürün reçetelerini listeler"""
-        receteler = Recete.query.order_by(Recete.ReceteID.desc()).all()
+        receteler = Recete.query.filter_by(Aktif=True).order_by(Recete.ReceteID.desc()).all()
         return render_template('recete_listesi.html', receteler=receteler)
 
     @app.route('/recete/ekle', methods=['GET', 'POST'])
@@ -3024,7 +3089,7 @@ def create_app():
                 db.session.rollback()
                 flash(f'Hata: {str(e)}', 'danger')
 
-        mamuller = Urun.query.order_by(Urun.UrunAdi.asc()).all()
+        mamuller = Urun.query.filter_by(Aktif=True).order_by(Urun.UrunAdi.asc()).all()
         return render_template('recete_form.html', mamuller=mamuller)
 
     @app.route('/recete/<int:rid>/duzenle', methods=['GET', 'POST'])
@@ -3066,19 +3131,19 @@ def create_app():
                 db.session.rollback()
                 flash(f'Hata: {str(e)}', 'danger')
 
-        mamuller = Urun.query.order_by(Urun.UrunAdi.asc()).all()
+        mamuller = Urun.query.filter_by(Aktif=True).order_by(Urun.UrunAdi.asc()).all()
         return render_template('recete_form.html', recete=recete, mamuller=mamuller)
 
     @app.route('/recete/<int:rid>/sil', methods=['POST'])
     @login_required
     @roles_required('admin', 'muhasebe')
     def recete_sil(rid):
-        """Reçeteyi siler"""
+        """Reçeteyi arşivler"""
         try:
             recete = Recete.query.get_or_404(rid)
-            db.session.delete(recete)
+            recete.Aktif = False # Soft delete
             db.session.commit()
-            flash('Reçete silindi.', 'success')
+            flash('Reçete arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             flash(f'Hata: {str(e)}', 'danger')
@@ -3089,7 +3154,7 @@ def create_app():
     @roles_required('admin', 'muhasebe', 'imalat')
     def uretim_listesi():
         """Üretim emirlerini listeler"""
-        emirler = UretimEmri.query.order_by(UretimEmri.EmirID.desc()).all()
+        emirler = UretimEmri.query.filter_by(Aktif=True).order_by(UretimEmri.EmirID.desc()).all()
         return render_template('uretim_listesi.html', emirler=emirler)
 
     @app.route('/uretim/ekle', methods=['GET', 'POST'])
@@ -3233,9 +3298,9 @@ def create_app():
                 db.session.rollback()
                 flash(f'Hata: {str(e)}', 'danger')
 
-        cariler = CariAccount.query.all()
-        faturalar = Fatura.query.order_by(Fatura.FaturaID.desc()).limit(100).all()
-        personeller = Personel.query.all()
+        cariler = CariAccount.query.filter_by(Aktif=True).all()
+        faturalar = Fatura.query.filter_by(Aktif=True).order_by(Fatura.FaturaID.desc()).limit(100).all()
+        personeller = Personel.query.filter_by(Aktif=True).all()
         return render_template('belge_form.html', cariler=cariler, faturalar=faturalar, personeller=personeller)
 
     @app.route('/belge/sil/<int:bid>')
@@ -3320,7 +3385,8 @@ def create_app():
             
             price_map = {p.UrunID: p.BirimFiyat for p in latest_prices}
             
-            all_products = Urun.query.all()
+            
+            all_products = Urun.query.filter_by(Aktif=True).all()
             stock_valuation = 0
             for prod in all_products:
                 p_val = price_map.get(prod.UrunID)
@@ -3332,14 +3398,14 @@ def create_app():
                 stock_valuation += (prod.StokMiktari or 0) * float(p_val)
 
             # 6. Nakit Akışı ve Finansal Sağlık
-            kasa_toplam = db.session.query(func.sum(Finance.Tutar)).filter(Finance.IslemTuru == 'Gelir').scalar() or 0
-            kasa_cikisi = db.session.query(func.sum(Finance.Tutar)).filter(Finance.IslemTuru == 'Gider').scalar() or 0
+            kasa_toplam = db.session.query(func.sum(Finance.Tutar)).filter(Finance.IslemTuru == 'Gelir', Finance.Aktif == True).scalar() or 0
+            kasa_cikisi = db.session.query(func.sum(Finance.Tutar)).filter(Finance.IslemTuru == 'Gider', Finance.Aktif == True).scalar() or 0
             net_kasa = kasa_toplam - kasa_cikisi
             
-            banka_bakiyeler = db.session.query(func.sum(BankAccount.Bakiye)).scalar() or 0
+            banka_bakiyeler = db.session.query(func.sum(BankAccount.Bakiye)).filter(BankAccount.Aktif == True).scalar() or 0
             
-            borclar = db.session.query(func.sum(Debt.KalanTutar)).scalar() or 0
-            alacaklar = db.session.query(func.sum(Receivable.KalanTutar)).scalar() or 0
+            borclar = db.session.query(func.sum(Debt.KalanTutar)).filter(Debt.Aktif == True).scalar() or 0
+            alacaklar = db.session.query(func.sum(Receivable.KalanTutar)).filter(Receivable.Aktif == True).scalar() or 0
             
             verilen_cekler = db.session.query(func.sum(CekSenet.Tutar)).filter(CekSenet.IslemTuru == 'Verilen', CekSenet.Durum != 'Ödendi').scalar() or 0
             alinan_cekler = db.session.query(func.sum(CekSenet.Tutar)).filter(CekSenet.IslemTuru == 'Alınan', CekSenet.Durum != 'Ödendi').scalar() or 0
@@ -3370,14 +3436,14 @@ def create_app():
     @roles_required('admin', 'muhasebe')
     def bankalar():
         try:
-            banks = BankAccount.query.all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
             for b in banks:
                 update_bank_balance(b.BankaID)
             # Bakiyeler güncellendikten sonra tekrar çek
-            banks = BankAccount.query.all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
             today = date.today()
 
-            checks = Finance.query.filter(func.lower(Finance.Kategori).like('%çek%')).all()
+            checks = Finance.query.filter(Finance.Aktif==True, func.lower(Finance.Kategori).like('%çek%')).all()
 
             for b in banks:
                 b.pending_checks = []
@@ -3625,17 +3691,10 @@ def create_app():
     def bankalar_delete(bid):
         try:
             b = BankAccount.query.get_or_404(bid)
-            
-            # Bağlı finansal hareketleri kontrol et
-            linked_finans = Finance.query.filter_by(BankaID=bid).first()
-            if linked_finans:
-                flash(f'Bu banka hesabına ait "{linked_finans.Aciklama}" isimli bir finansal hareket bulunduğu için hesap silinemez. Önce bu hareketi silmeli veya başka bir hesaba taşımalısınız.', 'warning')
-                return redirect(url_for('bankalar'))
-                
-            db.session.delete(b)
+            b.Aktif = False # Soft delete
             db.session.commit()
-            log_action("Silme", "Banka", f"{b.BankaAdi} hesabı silindi.")
-            flash('Banka hesabı silindi.', 'success')
+            log_action("Arşivleme", "Banka", f"{b.BankaAdi} hesabı arşivlendi.")
+            flash('Banka hesabı arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             app.logger.exception('Banka delete error')
@@ -3646,15 +3705,16 @@ def create_app():
     @login_required
     def alacaklar():
         try:
-            receivables = Receivable.query.order_by(Receivable.VadeTarihi.asc()).all()
+            receivables = Receivable.query.filter_by(Aktif=True).order_by(Receivable.VadeTarihi.asc()).all()
             total_receivables = sum(r.AnaTutar for r in receivables)
             collected_amount = sum(r.AnaTutar - r.KalanTutar for r in receivables)
             pending_amount = sum(r.KalanTutar for r in receivables)
-            banks = BankAccount.query.all()
-            cariler = CariAccount.query.all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
+            cariler = CariAccount.query.filter_by(Aktif=True).all()
             
             # Alacak tahsilatında kullanılabilecek çekler
             customer_checks = Finance.query.filter(
+                Finance.Aktif == True,
                 Finance.IslemTuru == 'Gelir',
                 (Finance.Kategori.ilike('%çek%') | Finance.Kategori.ilike('%cek%') | Finance.Aciklama.ilike('%çek%') | Finance.Aciklama.ilike('%cek%')),
                 ~Finance.Aciklama.ilike('%tahsil edildi%'),
@@ -3715,7 +3775,7 @@ def create_app():
                 db.session.rollback()
                 app.logger.exception('Alacak ekle error')
                 flash('Hata: {}'.format(e), 'danger')
-        cariler = CariAccount.query.filter(or_(CariAccount.CariTipi == 'Müşteri', CariAccount.CariTipi == 'Her İkisi')).order_by(CariAccount.Unvan.asc()).all()
+        cariler = CariAccount.query.filter(or_(CariAccount.CariTipi == 'Müşteri', CariAccount.CariTipi == 'Her İkisi'), CariAccount.Aktif == True).order_by(CariAccount.Unvan.asc()).all()
         return render_template('alacak_ekle.html', cariler=cariler)
 
     @app.route('/alacaklar/<int:aid>/edit', methods=['GET', 'POST'])
@@ -3757,7 +3817,7 @@ def create_app():
                 db.session.rollback()
                 app.logger.exception('Alacak edit error')
                 flash('Hata: {}'.format(e), 'danger')
-        cariler = CariAccount.query.all()
+        cariler = CariAccount.query.filter_by(Aktif=True).all()
         return render_template('alacak_ekle.html', entry=r, cariler=cariler)
 
     @app.route('/alacaklar/<int:aid>/delete', methods=['POST'])
@@ -3766,11 +3826,11 @@ def create_app():
         try:
             r = Receivable.query.get_or_404(aid)
             cid = r.CariID
-            db.session.delete(r)
+            r.Aktif = False # Soft delete
             db.session.commit()
             if cid:
                 update_cari_balance(cid)
-            flash('Alacak kaydı silindi.', 'success')
+            flash('Alacak kaydı arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             app.logger.exception('Alacak delete error')
@@ -3909,7 +3969,9 @@ def create_app():
 
             personel_query = Personel.query
             if selected_department:
-                personel_query = personel_query.filter(Personel.Departman == selected_department)
+                personel_query = personel_query.filter_by(Aktif=True).filter(Personel.Departman == selected_department)
+            else:
+                personel_query = personel_query.filter_by(Aktif=True)
             if search_query:
                 like_expr = f"%{search_query}%"
                 personel_query = personel_query.filter(
@@ -4247,11 +4309,11 @@ def create_app():
     @login_required
     def borclar():
         try:
-            debts = Debt.query.order_by(Debt.VadeTarihi.asc()).all()
-            banks = BankAccount.query.all()
+            debts = Debt.query.filter_by(Aktif=True).order_by(Debt.VadeTarihi.asc()).all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
             total_debts = sum(d.KalanTutar for d in debts)
             paid_debts_amount = sum(d.AnaTutar - d.KalanTutar for d in debts)
-            overdue_debts_count = Debt.query.filter(Debt.VadeTarihi < date.today(), Debt.Durum != 'Ödendi').count()
+            overdue_debts_count = Debt.query.filter(Debt.VadeTarihi < date.today(), Debt.Durum != 'Ödendi', Debt.Aktif == True).count()
             # Ciro yapılabilecek çekleri getir
             customer_checks = Finance.query.filter(
                 Finance.IslemTuru == 'Gelir',
@@ -4269,7 +4331,7 @@ def create_app():
                 overdue_debts_count=overdue_debts_count,
                 banks=banks,
                 customer_checks=customer_checks,
-                cariler=CariAccount.query.all(),
+                cariler=CariAccount.query.filter_by(Aktif=True).all(),
                 pre_selected_cari_id=pre_selected_cari_id
             )
         except Exception as e:
@@ -4357,7 +4419,7 @@ def create_app():
                 db.session.rollback()
                 app.logger.exception('Borç edit error')
                 flash('Hata: {}'.format(e), 'danger')
-        cariler = CariAccount.query.all()
+        cariler = CariAccount.query.filter_by(Aktif=True).all()
         return render_template('borc_ekle.html', debt=d, cariler=cariler)
 
     @app.route('/borclar/<int:did>/pay', methods=['POST'])
@@ -4556,12 +4618,12 @@ def create_app():
         try:
             d = Debt.query.get_or_404(did)
             cid = d.CariID
-            db.session.delete(d)
+            d.Aktif = False # Soft delete
             db.session.commit()
             if cid:
                 update_cari_balance(cid)
-            log_action("Silme", "Borç", f"{d.BorcVeren} borcu silindi.")
-            flash('Borç kaydı silindi.', 'success')
+            log_action("Arşivleme", "Borç", f"{d.BorcVeren} borcu arşivlendi.")
+            flash('Borç kaydı arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             app.logger.exception('Borç delete error')
@@ -4585,7 +4647,7 @@ def create_app():
                     else:
                         bank.Bakiye += f.Tutar
             
-            db.session.delete(f)
+            f.Aktif = False # Soft delete
             db.session.commit()
             
             if f.BankaID:
@@ -4594,8 +4656,8 @@ def create_app():
             if f.CariID:
                 update_cari_balance(f.CariID)
                 
-            log_action("Silme", "Finans", f"{f.IslemTuru}: {kategori} - {f.Tutar:,.2f} TL silindi.")
-            flash('İşlem silindi.', 'success')
+            log_action("Arşivleme", "Finans", f"{f.IslemTuru}: {kategori} - {f.Tutar:,.2f} TL arşivlendi.")
+            flash('İşlem arşivlendi.', 'success')
             
             # Geldiği sayfaya yönlendir
             next_url = request.args.get('next')
@@ -4688,8 +4750,8 @@ def create_app():
         i_count = parts[3] if len(parts) > 3 else ''
         i_start = parts[4] if len(parts) > 4 else ''
         
-        people = Personel.query.order_by(Personel.Ad.asc(), Personel.Soyad.asc()).all()
-        banks = BankAccount.query.all()
+        people = Personel.query.filter_by(Aktif=True).order_by(Personel.Ad.asc(), Personel.Soyad.asc()).all()
+        banks = BankAccount.query.filter_by(Aktif=True).all()
         return render_template(
             'kesinti_ekle.html',
             people=people,
@@ -4830,7 +4892,7 @@ def create_app():
                         kdv_indirilecek += amount
             kdv_net = kdv_hesaplanan - kdv_indirilecek
 
-            banks = BankAccount.query.all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
 
             return render_template(
                 'vergiler.html',
@@ -5054,9 +5116,9 @@ def create_app():
     def vergiler_delete(vid):
         try:
             entry = Finance.query.get_or_404(vid)
-            db.session.delete(entry)
+            entry.Aktif = False # Soft delete
             db.session.commit()
-            flash('Vergi kaydı silindi.', 'success')
+            flash('Vergi kaydı arşivlendi.', 'success')
         except Exception as e:
             db.session.rollback()
             app.logger.exception('Vergiler delete error')
@@ -5093,7 +5155,7 @@ def create_app():
             )
             checks = checks_query.order_by(Finance.Tarih.desc()).all()
 
-            banks = BankAccount.query.all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
 
             def normalize_tr(text):
                 if not text: return ""
@@ -5188,7 +5250,7 @@ def create_app():
                 bad_total=bad_total,
                 bad_count=bad_count,
                 banks=banks,
-                cariler=CariAccount.query.all(),
+                cariler=CariAccount.query.filter_by(Aktif=True).all(),
                 today=today
             )
         except Exception as e:
@@ -5598,7 +5660,7 @@ def create_app():
                                desc_extra='',
                                bank_name='',
                                documents=[],
-                               cariler=CariAccount.query.all())
+                               cariler=CariAccount.query.filter_by(Aktif=True).all())
 
     @app.route('/cekler/<int:fid>/edit', methods=['GET', 'POST'])
     @login_required
@@ -5768,7 +5830,7 @@ def create_app():
                                bank_name=bank_name,
                                desc_extra=desc_extra,
                                documents=documents,
-                               cariler=CariAccount.query.all())
+                               cariler=CariAccount.query.filter_by(Aktif=True).all())
 
     @app.route('/kesintiler')
     @login_required
@@ -5925,8 +5987,8 @@ def create_app():
                 db.session.rollback()
                 app.logger.exception('Kesintiler add error')
                 flash('Hata: {}'.format(e), 'danger')
-        people = Personel.query.order_by(Personel.Ad.asc(), Personel.Soyad.asc()).all()
-        banks = BankAccount.query.all()
+        people = Personel.query.filter_by(Aktif=True).order_by(Personel.Ad.asc(), Personel.Soyad.asc()).all()
+        banks = BankAccount.query.filter_by(Aktif=True).all()
         return render_template('kesinti_ekle.html', people=people, banks=banks)
 
 
@@ -6059,7 +6121,7 @@ def create_app():
                     person_deductions[personel_id] = person_deductions.get(personel_id, 0.0) + deduction_amount
 
             results = []
-            people = Personel.query.all()
+            people = Personel.query.filter_by(Aktif=True).all()
             
             # Get all salary payments for this month to check status
             payment_records = Finance.query.filter(
@@ -6078,7 +6140,7 @@ def create_app():
                 payroll_data['year'] = target_year
                 results.append(payroll_data)
             
-            banks = BankAccount.query.all()
+            banks = BankAccount.query.filter_by(Aktif=True).all()
             years = range(today.year - 2, today.year + 2)
             
             return render_template('bordro.html', results=results, current_month=target_month, current_year=target_year, banks=banks, years=years)

@@ -16,11 +16,8 @@ if exist "Output" rmdir /s /q "Output"
 
 echo.
 echo [3/4] Building EXE with PyInstaller...
-if exist ".venv\Scripts\pyinstaller.exe" (
-    ".venv\Scripts\pyinstaller.exe" ErpBackend.spec --clean --noconfirm
-) else (
-    pyinstaller ErpBackend.spec --clean --noconfirm
-)
+echo [3/4] Building EXE with PyInstaller...
+python -m PyInstaller ErpBackend.spec --clean --noconfirm
 
 if errorlevel 1 (
     echo.

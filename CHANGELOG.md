@@ -1,3 +1,15 @@
+# MY HOME ERP - Versiyon 1.0.98
+
+* **Geri Dönüşüm Kutusu (Recycle Bin):** Yanlışlıkla silinen verilerin kaybolmasını önlemek için "Geri Dönüşüm Kutusu" modülü eklendi. Silinen Personel, Cari, Ürün ve Finansal kayıtlar artık kalıcı olarak silinmek yerine arşivleniyor ve istendiğinde geri yüklenebiliyor.
+* **Güvenli Silme (Soft Delete):** Sistem genelindeki tüm silme fonksiyonları "Soft Delete" yapısına geçirildi. Silinen veriler "Aktif=False" olarak işaretleniyor.
+* **Veri Tutarlılığı:**
+    * Arşivlenen (silinen) kayıtlar (Borç, Alacak, Stok vb.) artık finansal raporlardan, bakiye hesaplamalarından ve işlem listelerinden başarıyla gizleniyor.
+    * Kasa, Banka ve Raporlar sayfalarında "silinmiş ama hala görünüyor" hatası giderildi, tüm sorgulara "Aktif=True" filtresi uygulandı.
+* **Hata Düzeltmeleri:**
+    * Mesailer ve Personel sayfasına erişimi engelleyen sorgu hatası (`RuntimeError`) giderildi.
+    * Çekler sayfasında uygulamanın kilitlenmesine neden olan kod tekrarı (`SyntaxError`) düzeltildi.
+    * Reçete ekleme ekranındaki kod yapısı düzeltildi ve ürün listelerinin sadece aktif stoklardan gelmesi sağlandı.
+
 # MY HOME ERP - Versiyon 1.0.97
 
 * **Mükerrer İşlem Kaydı Düzeltmesi:** Banka üzerinden yapılan ödemelerin (avans, kesinti vb.) hem Banka sayfasında hem de Nakit Kasa sayfasında görünmesi sorunu giderildi. Artık banka üzerinden yapılan işlemler sadece Banka hareketlerinde görünecek, nakit kasayı haksız yere eksiye düşürmeyecektir.

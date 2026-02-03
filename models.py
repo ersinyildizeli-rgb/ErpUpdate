@@ -29,6 +29,14 @@ if 'sqlite' in get_db_uri():
     def receive_begin(conn):
         conn.execute(text("PRAGMA read_uncommitted = 0"))
         conn.execute(text("PRAGMA synchronous = NORMAL"))
+        
+    # VACUUM ve WAL Modu Ayarları
+    @event.listens_for(Engine, "connect")
+    def set_sqlite_wal(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")  # WAL modunu aç
+        cursor.execute("PRAGMA cache_size=-64000") # 64MB cache (negatif değer kb cinsinden)
+        cursor.close()
 
 class Personel(db.Model):
     __tablename__ = 'Personel'
@@ -79,6 +87,7 @@ class Finance(db.Model):
     BankaID = db.Column(db.Integer, db.ForeignKey('BankaHesabi.BankaID'), nullable=True)
     CariID = db.Column(db.Integer, db.ForeignKey('CariHesaplar.CariID'), nullable=True)
     EklemeTarihi = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
     
     Cari = db.relationship('CariAccount', backref='finance_entries')
     
@@ -204,6 +213,7 @@ class BankAccount(db.Model):
     Bakiye = db.Column(db.Float, nullable=False, default=0.0)
     ParaBirimi = db.Column(db.String(10), nullable=False, default='TRY')
     EklemeTarihi = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
     
     @validates('IBAN')
     def validate_iban(self, key, iban):
@@ -231,6 +241,7 @@ class Debt(db.Model):
     Aciklama = db.Column(db.String(500), nullable=True)
     CariID = db.Column(db.Integer, db.ForeignKey('CariHesaplar.CariID'), nullable=True)
     EklemeTarihi = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
     
     def __init__(self, **kwargs):
         # SQLite için tarih alanlarını doğru formata getir
@@ -268,6 +279,7 @@ class Receivable(db.Model):
     Aciklama = db.Column(db.String(500), nullable=True)
     CariID = db.Column(db.Integer, db.ForeignKey('CariHesaplar.CariID'), nullable=True)
     EklemeTarihi = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
     
     def __init__(self, **kwargs):
         # SQLite için tarih alanlarını doğru formata getir
@@ -379,6 +391,7 @@ class CariAccount(db.Model):
     Adres = db.Column(db.String(500), nullable=True)
     Bakiye = db.Column(db.Float, nullable=False, default=0.0)
     EklemeTarihi = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f"<CariAccount {self.CariID} {self.Unvan}>"
@@ -398,6 +411,7 @@ class Urun(db.Model):
     Barkod = db.Column(db.String(50), nullable=True)
     StokMiktari = db.Column(db.Float, nullable=False, default=0.0)
     EklemeTarihi = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f"<Urun {self.UrunID} {self.UrunAdi}>"
@@ -438,6 +452,7 @@ class Fatura(db.Model):
     KDVToplam = db.Column(db.Float, default=0.0)
     GenelToplam = db.Column(db.Float, default=0.0)
     Aciklama = db.Column(db.String(500), nullable=True)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     Cari = db.relationship('CariAccount', backref='faturalar')
     Kalemler = db.relationship('FaturaKalemi', backref='fatura', cascade="all, delete-orphan")
@@ -483,6 +498,7 @@ class Teklif(db.Model):
     KDVToplam = db.Column(db.Float, default=0.0)
     GenelToplam = db.Column(db.Float, default=0.0)
     Aciklama = db.Column(db.String(500), nullable=True)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     Cari = db.relationship('CariAccount', backref='teklifler')
     Kalemler = db.relationship('TeklifKalemi', backref='teklif', cascade="all, delete-orphan")
@@ -519,6 +535,7 @@ class Siparis(db.Model):
     KDVToplam = db.Column(db.Float, default=0.0)
     GenelToplam = db.Column(db.Float, default=0.0)
     Aciklama = db.Column(db.String(500), nullable=True)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     Cari = db.relationship('CariAccount', backref='siparisler')
     Kalemler = db.relationship('SiparisKalemi', backref='siparis', cascade="all, delete-orphan")
@@ -551,6 +568,7 @@ class Recete(db.Model):
     ReceteAdi = db.Column(db.String(200), nullable=False)
     VarsayilanMiktar = db.Column(db.Float, default=1.0) # 1 birim üretim için gerekenler
     Aciklama = db.Column(db.String(500), nullable=True)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     Mamul = db.relationship('Urun', foreign_keys=[MamulID])
     Kalemler = db.relationship('ReceteKalemi', backref='recete', cascade="all, delete-orphan")
@@ -578,6 +596,7 @@ class UretimEmri(db.Model):
     Tarih = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     Durum = db.Column(db.String(30), default='Planlandı') # Planlandı, Üretimde, Tamamlandı, İptal
     Aciklama = db.Column(db.String(500), nullable=True)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     Recete = db.relationship('Recete', backref='emirler')
 
@@ -589,6 +608,7 @@ class ExpenseCategory(db.Model):
     KategoriID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     KategoriAdi = db.Column(db.String(100), nullable=False)
     Aciklama = db.Column(db.String(200), nullable=True)
+    Aktif = db.Column(db.Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f"<ExpenseCategory {self.KategoriAdi}>"

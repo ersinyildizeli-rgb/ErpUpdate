@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Geri Dönüşüm Kutusu</h1>
+            <p class="text-slate-500 text-sm mt-1">Arşivlenmiş/Silinmiş kayıtları buradan geri yükleyebilirsiniz.</p>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div x-data="{ activeTab: 'personel' }"
+        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+            <nav class="flex -mb-px px-4" aria-label="Tabs">
+                <button @click="activeTab = 'personel'"
+                    :class="activeTab === 'personel' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                    class="whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                    Personel <span class="ml-2 bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-xs">{{
+                        deleted_items.personel|length }}</span>
+                </button>
+                <button @click="activeTab = 'cari'"
+                    :class="activeTab === 'cari' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                    class="whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                    Cari Hesaplar <span class="ml-2 bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-xs">{{
+                        deleted_items.cari|length }}</span>
+                </button>
+                <button @click="activeTab = 'urun'"
+                    :class="activeTab === 'urun' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                    class="whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                    Ürünler <span class="ml-2 bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-xs">{{
+                        deleted_items.urun|length }}</span>
+                </button>
+                <button @click="activeTab = 'finans'"
+                    :class="activeTab === 'finans' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'"
+                    class="whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm transition-colors">
+                    Finans & İşlemler <span class="ml-2 bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-xs">{{
+                        deleted_items.finans|length }}</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="p-6">
+            <!-- PERSONEL TAB -->
+            <div x-show="activeTab === 'personel'" style="display: none;">
+                {% if deleted_items.personel %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead
+                            class="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400">
+                            <tr>
+                                <th class="px-6 py-3">Ad Soyad</th>
+                                <th class="px-6 py-3">Departman</th>
+                                <th class="px-6 py-3">Telefon</th>
+                                <th class="px-6 py-3 text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in deleted_items.personel %}
+                            <tr
+                                class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ p.Ad }} {{ p.Soyad
+                                    }}</td>
+                                <td class="px-6 py-4">{{ p.Departman }}</td>
+                                <td class="px-6 py-4">{{ p.Telefon }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <form
+                                        action="{{ url_for('restore_item', item_type='personel', item_id=p.PersonelID) }}"
+                                        method="POST">
+                                        <button type="submit"
+                                            class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 font-medium">
+                                            <span
+                                                class="material-symbols-outlined align-bottom text-lg">restore_from_trash</span>
+                                            Geri Yükle
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-slate-500 py-8">Silinmiş personel kaydı bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+
+            <!-- CARI TAB -->
+            <div x-show="activeTab === 'cari'" style="display: none;">
+                {% if deleted_items.cari %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead
+                            class="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400">
+                            <tr>
+                                <th class="px-6 py-3">Ünvan</th>
+                                <th class="px-6 py-3">Tipi</th>
+                                <th class="px-6 py-3">Telefon</th>
+                                <th class="px-6 py-3 text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in deleted_items.cari %}
+                            <tr
+                                class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ c.Unvan }}</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 rounded text-xs font-medium {{ 'bg-blue-100 text-blue-800' if c.CariTipi == 'Müşteri' else 'bg-orange-100 text-orange-800' }}">
+                                        {{ c.CariTipi }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">{{ c.Telefon }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <form action="{{ url_for('restore_item', item_type='cari', item_id=c.CariID) }}"
+                                        method="POST">
+                                        <button type="submit"
+                                            class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 font-medium">
+                                            <span
+                                                class="material-symbols-outlined align-bottom text-lg">restore_from_trash</span>
+                                            Geri Yükle
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-slate-500 py-8">Silinmiş cari hesap bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+
+            <!-- URUN TAB -->
+            <div x-show="activeTab === 'urun'" style="display: none;">
+                {% if deleted_items.urun %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead
+                            class="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400">
+                            <tr>
+                                <th class="px-6 py-3">Ürün Adı</th>
+                                <th class="px-6 py-3">Stok Kodu/Barkod</th>
+                                <th class="px-6 py-3">Birim</th>
+                                <th class="px-6 py-3 text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in deleted_items.urun %}
+                            <tr
+                                class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ u.UrunAdi }}</td>
+                                <td class="px-6 py-4">{{ u.Barkod or '-' }}</td>
+                                <td class="px-6 py-4">{{ u.Birim }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <form action="{{ url_for('restore_item', item_type='urun', item_id=u.UrunID) }}"
+                                        method="POST">
+                                        <button type="submit"
+                                            class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 font-medium">
+                                            <span
+                                                class="material-symbols-outlined align-bottom text-lg">restore_from_trash</span>
+                                            Geri Yükle
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-slate-500 py-8">Silinmiş ürün bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+
+            <!-- FINANCE TAB -->
+            <div x-show="activeTab === 'finans'" style="display: none;">
+                {% if deleted_items.finans %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead
+                            class="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-400">
+                            <tr>
+                                <th class="px-6 py-3">Tarih</th>
+                                <th class="px-6 py-3">Türü</th>
+                                <th class="px-6 py-3">Kategori</th>
+                                <th class="px-6 py-3">Açıklama</th>
+                                <th class="px-6 py-3">Tutar</th>
+                                <th class="px-6 py-3 text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in deleted_items.finans %}
+                            <tr
+                                class="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <td class="px-6 py-4">{{ f.Tarih.strftime('%d.%m.%Y') }}</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 rounded text-xs font-medium {{ 'bg-green-100 text-green-800' if f.IslemTuru == 'Gelir' else 'bg-red-100 text-red-800' }}">
+                                        {{ f.IslemTuru }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">{{ f.Kategori }}</td>
+                                <td class="px-6 py-4 text-xs">{{ f.Aciklama }}</td>
+                                <td class="px-6 py-4 font-bold">{{ "{:,.2f}".format(f.Tutar) }} TL</td>
+                                <td class="px-6 py-4 text-right">
+                                    <form action="{{ url_for('restore_item', item_type='finans', item_id=f.FinansID) }}"
+                                        method="POST">
+                                        <button type="submit"
+                                            class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 font-medium">
+                                            <span
+                                                class="material-symbols-outlined align-bottom text-lg">restore_from_trash</span>
+                                            Geri Yükle
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-slate-500 py-8">Silinmiş finans kaydı bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
